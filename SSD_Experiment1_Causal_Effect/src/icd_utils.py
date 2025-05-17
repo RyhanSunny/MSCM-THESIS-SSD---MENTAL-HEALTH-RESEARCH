@@ -70,13 +70,22 @@ def charlson_index(hc_df: pd.DataFrame, code_col: str = "DiagnosisCode_calc", pi
     # keep unique (patient, code) to speed up
     codes = (hc_df[[pid_col, code_col]].dropna().drop_duplicates())
     scores = {pid:0 for pid in codes[pid_col].unique()}
-
+    
+    # Track category counts for debugging
+    category_counts = {cat: 0 for cat in CHARLSON_RE.keys()}
+    
     for cat, pat in CHARLSON_RE.items():
         weight = WEIGHTS[cat]
         matched = codes.loc[codes[code_col].str.match(pat, na=False), pid_col].unique()
+        category_counts[cat] = len(matched)
         for pid in matched:
              scores[pid] += weight
-
+    
+    # Log category distribution
+    print("\nCharlson category counts:")
+    for cat, count in sorted(category_counts.items(), key=lambda x: x[1], reverse=True):
+        print(f"{cat:12s}: {count:8,d} patients")
+    
     return pd.Series(scores, name="Charlson")
 
 # -- Charlson helper (fast) ------------------------------------------

@@ -163,12 +163,32 @@ except ImportError:
     log.warning("src.icd_utils.charlson_index not found, Charlson set to 0")
     elig["Charlson"] = 0
 else:
-    elig["Charlson"] = (
-        charlson_index(health_condition)
-        .reindex(elig["Patient_ID"])
-        .fillna(0)
-        .astype(int)
+    # Calculate Charlson scores and ensure they're integers
+    charlson_scores = charlson_index(health_condition)
+    charlson_scores = charlson_scores.fillna(0).astype('int16')
+    
+    # Merge scores into eligibility dataframe
+    elig = elig.merge(
+        charlson_scores.rename('Charlson'),
+        left_on='Patient_ID',
+        right_index=True,
+        how='left'
     )
+    elig['Charlson'] = elig['Charlson'].fillna(0).astype('int16')
+    
+    # Diagnostic checks
+    log.info("\nCharlson score distribution:")
+    log.info(elig["Charlson"].describe(percentiles=[.5, .75, .9, .95]))
+    
+    # Check unique codes per patient
+    tmp = health_condition.groupby("Patient_ID")["DiagnosisCode_calc"].nunique()
+    log.info("\nUnique diagnosis codes per patient:")
+    log.info(tmp.describe())
+    
+    # Verify Charlson column is integer
+    log.info(f"\nCharlson column dtype: {elig['Charlson'].dtype}")
+    log.info(f"Sample values: {elig['Charlson'].head().tolist()}")
+    log.info(f"Value counts:\n{elig['Charlson'].value_counts().sort_index().head(10)}")
 
 # --------------------------------------------------------------------------- #
 # 6  Palliative-care exclusion & Charlson > 5
