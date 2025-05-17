@@ -1,0 +1,262 @@
+data_paths:
+  raw_data: "extracted_data/"
+  prepared_data: "prepared_data/"
+  file_extension: ".csv"
+
+use_gpu: true
+
+# For large files, this is the number of rows per chunk.
+chunk_size: 500000
+
+tables:
+  Encounter:
+    filename: "Encounter_prepared"
+    required_columns:
+      - Encounter_ID
+      - Patient_ID
+      - Network_ID
+      - Site_ID
+      - Provider_ID
+      - Cycle_ID
+      - EncounterDate
+      - Reason_orig
+      - Reason_calc
+      - EncounterType
+      - DateCreated
+    date_columns:
+      - EncounterDate
+      - DateCreated
+
+  EncounterDiagnosis:
+    filename: "EncounterDiagnosis_prepared"
+    required_columns:
+      - EncounterDiagnosis_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - DiagnosisText_orig
+      - DiagnosisText_calc
+      - DiagnosisCodeType_orig
+      - DiagnosisCodeType_calc
+      - DiagnosisCode_orig
+      - DiagnosisCode_calc
+      - DateCreated
+    date_columns:
+      - DateCreated
+
+  FamilyHistory:
+    filename: "FamilyHistory_prepared"
+    required_columns:
+      - FamilyHistory_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - Relationship_orig
+      - Relationship_Side_calc
+      - Relationship_Degree_calc
+      - DiagnosisText_orig
+      - DiagnosisText_calc
+      - DiagnosisCodeType_orig
+      - DiagnosisCodeType_calc
+      - DiagnosisCode_orig
+      - DiagnosisCode_calc
+      - AgeAtOnset
+      - VitalStatus
+      - WasCauseOfDeath
+      - AgeAtDeath
+      - DateCreated
+    date_columns:
+      - DateCreated
+
+  HealthCondition:
+    filename: "HealthCondition_prepared"
+    required_columns:
+      - HealthCondition_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - DiagnosisText_orig
+      - DiagnosisText_calc
+      - DiagnosisCodeType_orig
+      - DiagnosisCodeType_calc
+      - DiagnosisCode_orig
+      - DiagnosisCode_calc
+      - DateOfOnset
+      - SignificantNegativeFlag
+      - ActiveInactiveFlag
+      - DateCreated
+    date_columns:
+      - DateCreated
+
+  Lab:
+    filename: "Lab_prepared"
+    required_columns:
+      - Lab_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - TestResult_orig
+      - TestResult_calc
+      - PerformedDate
+      - Name_orig
+      - Name_calc
+      - CodeType_orig
+      - CodeType_calc
+      - Code_orig
+      - Code_calc
+      - UpperNormal
+      - LowerNormal
+      - NormalRange
+      - UnitOfMeasure_orig
+      - UnitOfMeasure_calc
+      - DateCreated
+    date_columns:
+      - PerformedDate
+      - DateCreated
+
+  MedicalProcedure:
+    filename: "MedicalProcedure_prepared"
+    required_columns:
+      - MedicalProcedure_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - PerformedDate
+      - Name_orig
+      - Name_calc
+      - DateCreated
+    date_columns:
+      - PerformedDate
+      - DateCreated
+
+  Medication:
+    filename: "Medication_prepared"
+    required_columns:
+      - Medication_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - Reason
+      - DIN
+      - Name_orig
+      - Name_calc
+      - CodeType_orig
+      - CodeType_calc
+      - Code_orig
+      - Code_calc
+      - Strength
+      - Dose
+      - UnitOfMeasure
+      - Frequency
+      - DurationCount
+      - DurationUnit
+      - DispensedCount
+      - DispensedForm
+      - RefillCount
+      - DateCreated
+      - StartDate
+      - StopDate
+    date_columns:
+      - StartDate
+      - StopDate
+      - DateCreated
+
+  Referral:
+    filename: "Referral_prepared"
+    required_columns:
+      - Referral_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - CompletedDate
+      - Name_orig
+      - Name_calc
+      - ConceptCode
+      - DescriptionCode
+      - DateCreated
+    date_columns:
+      - CompletedDate
+      - DateCreated
+
+  RiskFactor:
+    filename: "RiskFactor_prepared"
+    required_columns:
+      - RiskFactor_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - StartDate
+      - EndDate
+      - Name_orig
+      - Name_calc
+      - Value_orig
+      - Value_calc
+      - Status_orig
+      - Status_calc
+      - Frequency
+      - FrequencyType
+      - FrequencyUnit
+      - Duration
+      - DurationType
+      - DurationUnit
+      - EndDuration
+      - EndDurationType
+      - EndDurationUnit
+      - RiskDetails
+      - DateCreated
+    date_columns:
+      - StartDate
+      - EndDate
+      - DateCreated
+
+  PatientDemographic_merged:
+    filename: "PatientDemographic_merged_prepared"
+    required_columns:
+      - PatientDemographic_ID
+      - Patient_ID
+      - Network_ID
+      - Site_ID
+      - Cycle_ID
+      - Occupation
+      - HighestEducation
+      - HousingStatus
+      - ResidencePostalCode
+      - PatientStatus_orig
+      - PatientStatus_calc
+      - Language
+      - Ethnicity
+      - DeceasedYear
+      - DateCreated
+      - Sex
+      - BirthYear
+      - BirthMonth
+      - OptedOut
+      - OptOutDate
+    date_columns:
+      - DateCreated
+
+quality_thresholds:
+  max_missing_pct: 0.3
+  min_date: "2000-01-01"
+  max_date: "2025-12-31"
+
+# sampling:
+#   n_patients: 100000
+#   stratify_columns:
+#     - Sex

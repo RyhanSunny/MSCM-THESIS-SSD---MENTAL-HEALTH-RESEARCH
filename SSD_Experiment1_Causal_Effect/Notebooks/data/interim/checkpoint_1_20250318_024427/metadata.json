@@ -1,0 +1,80 @@
+{
+  "notebook": 1,
+  "description": "Data Loading and Validation with Optimized Processing",
+  "timestamp": "20250318_024427",
+  "tables": {
+    "patient": {
+      "path": "data\\interim\\checkpoint_1_20250318_024427\\patient.parquet",
+      "rows": 352161,
+      "columns": 8,
+      "format": "parquet"
+    },
+    "patient_demographic": {
+      "path": "data\\interim\\checkpoint_1_20250318_024427\\patient_demographic.parquet",
+      "rows": 352220,
+      "columns": 22,
+      "format": "parquet"
+    },
+    "encounter": {
+      "path": "data\\interim\\checkpoint_1_20250318_024427\\encounter.parquet",
+      "rows": 11577739,
+      "columns": 11,
+      "format": "parquet"
+    },
+    "encounter_diagnosis": {
+      "path": "data\\interim\\checkpoint_1_20250318_024427\\encounter_diagnosis.parquet",
+      "rows": 12471764,
+      "columns": 15,
+      "format": "parquet"
+    },
+    "health_condition": {
+      "path": "data\\interim\\checkpoint_1_20250318_024427\\health_condition.parquet",
+      "rows": 2571583,
+      "columns": 16,
+      "format": "parquet"
+    },
+    "lab": {
+      "path": "data\\interim\\checkpoint_1_20250318_024427\\lab.csv",
+      "rows": 8528807,
+      "columns": 31,
+      "format": "csv"
+    },
+    "medication": {
+      "path": "data\\interim\\checkpoint_1_20250318_024427\\medication.parquet",
+      "rows": 7706628,
+      "columns": 27,
+      "format": "parquet"
+    },
+    "referral": {
+      "path": "data\\interim\\checkpoint_1_20250318_024427\\referral.parquet",
+      "rows": 1141061,
+      "columns": 25,
+      "format": "parquet"
+    },
+    "family_history": {
+      "path": "data\\interim\\checkpoint_1_20250318_024427\\family_history.parquet",
+      "rows": 325202,
+      "columns": 20,
+      "format": "parquet"
+    },
+    "medical_procedure": {
+      "path": "data\\interim\\checkpoint_1_20250318_024427\\medical_procedure.parquet",
+      "rows": 1203002,
+      "columns": 10,
+      "format": "parquet"
+    },
+    "risk_factor": {
+      "path": "data\\interim\\checkpoint_1_20250318_024427\\risk_factor.parquet",
+      "rows": 603298,
+      "columns": 25,
+      "format": "parquet"
+    }
+  },
+  "changes": [
+    "Linked orphaned labs to encounters through temporal proximity (optimized)",
+    "Expanded normal lab detection from 14% to ~45% using multiple methods (optimized)",
+    "Implemented referral date fallbacks and status tracking (optimized)",
+    "Fixed NYD code reporting in validation summary"
+  ],
+  "next_notebook": "02_NYD_Identification.ipynb"
+}

@@ -1,0 +1,56 @@
+SELECT [EncounterDiagnosis_ID]
+      ,[Network_ID]
+      ,[Site_ID]
+      ,[Patient_ID]
+      ,[Encounter_ID]
+      ,[Cycle_ID]
+      ,[DiagnosisText_orig]
+      ,[DiagnosisText_calc]
+      ,[DiagnosisCodeType_orig]
+      ,[DiagnosisCodeType_calc]
+      ,[DiagnosisCode_orig]
+      ,[DiagnosisCode_calc]
+      ,[DateCreated]
+  FROM [CPCSSN_Research_2015SRSC51].[dbo].[EncounterDiagnosis]
+  WHERE Substring([DiagnosisCode_orig],1,3) in ('290', '291',
+'292',
+'293',
+'294',
+'295',
+'296',
+'297',
+'298',
+'299',
+'300',
+'301',
+'302',
+'303',
+'304',
+'305',
+'307',
+'308',
+'309',
+'310',
+'311',
+'312',
+'313',
+'314',
+'315',
+'316',
+'317',
+'318',
+'319',
+'327',
+'331',
+'332',
+'333',
+'347',
+'625',
+'698',
+'780',
+'786',
+'787',
+'788',
+'799',
+'995')
+FOR JSON PATH;

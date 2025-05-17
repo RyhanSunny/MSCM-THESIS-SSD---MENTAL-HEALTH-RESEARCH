@@ -1,0 +1,51 @@
+{
+  "notebook": 1,
+  "description": "Data Loading and Validation",
+  "timestamp": "20250311_025257",
+  "validation_report": "output\\data_validation_report.json",
+  "saved_tables": {
+    "patient": {
+      "path": "data\\interim\\checkpoint_1_20250311_025257\\patient.parquet",
+      "rows": 352161,
+      "columns": 8,
+      "size_mb": 2.4971914291381836
+    },
+    "encounter": {
+      "path": "data\\interim\\checkpoint_1_20250311_025257\\encounter.parquet",
+      "rows": 11577739,
+      "columns": 11,
+      "size_mb": 134.03811836242676
+    },
+    "encounter_diagnosis": {
+      "path": "data\\interim\\checkpoint_1_20250311_025257\\encounter_diagnosis.parquet",
+      "rows": 12471764,
+      "columns": 15,
+      "size_mb": 244.7948875427246
+    },
+    "health_condition": {
+      "path": "data\\interim\\checkpoint_1_20250311_025257\\health_condition.parquet",
+      "rows": 2571583,
+      "columns": 16,
+      "size_mb": 58.124714851379395
+    },
+    "lab": {
+      "path": "data\\interim\\checkpoint_1_20250311_025257\\lab.parquet",
+      "rows": 8528807,
+      "columns": 25,
+      "size_mb": 97.05774784088135
+    },
+    "medication": {
+      "path": "data\\interim\\checkpoint_1_20250311_025257\\medication.parquet",
+      "rows": 7706628,
+      "columns": 27,
+      "size_mb": 167.86571311950684
+    },
+    "referral": {
+      "path": "data\\interim\\checkpoint_1_20250311_025257\\referral.parquet",
+      "rows": 1141061,
+      "columns": 22,
+      "size_mb": 15.391294479370117
+    }
+  },
+  "next_notebook": "02_NYD_Identification.ipynb"
+}

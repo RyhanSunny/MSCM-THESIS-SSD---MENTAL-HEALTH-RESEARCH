@@ -1,0 +1,343 @@
+# config.yaml
+
+data_paths:
+  raw_data: "extracted_data/"
+  prepared_data: "C:/Users/ProjectC4M/Documents/CPCSSN Datasets Care4Mind/New Extraction Feb 2025/SSD_Experiment1_Causal_Effect/100k_sample/"
+  file_extension: ".csv"
+
+# If you have a CUDA-capable environment with RAPIDS installed, set use_gpu to true
+# Otherwise, keep it false
+use_gpu: true
+
+# For large files, you can enable chunking. This is the number of rows per chunk.
+# If chunk_size is null or 0, no chunking will be used.
+chunk_size: 500000
+
+tables:
+  Patient:
+    filename: "C4MPatient"
+    required_columns:
+      - Patient_ID
+      - Sex
+      - BirthYear
+      - BirthMonth
+      - OptedOut
+      - OptOutDate
+    date_columns:
+      - OptOutDate
+
+  PatientDemographic:
+    filename: "C4MPatientDemographic"
+    required_columns:
+      - PatientDemographic_ID
+      - Patient_ID
+      - Network_ID
+      - Site_ID
+      - Cycle_ID
+      - Occupation
+      - HighestEducation
+      - HousingStatus
+      - ResidencePostalCode
+      - PatientStatus_orig
+      - PatientStatus_calc
+      - Language
+      - Ethnicity
+      - DeceasedYear
+      - DateCreated
+
+    date_columns:
+      - DateCreated
+
+  Encounter:
+    filename: "C4MEncounter"
+    required_columns:
+      - Encounter_ID
+      - Patient_ID
+      - Network_ID
+      - Site_ID
+      - Provider_ID
+      - Cycle_ID
+      - EncounterDate
+      - Reason_orig
+      - Reason_calc
+      - EncounterType
+      - DateCreated
+
+    date_columns:
+      - EncounterDate
+      - DateCreated
+
+  EncounterDiagnosis:
+    filename: "C4MEncounterDiagnosis"
+    required_columns:
+      - EncounterDiagnosis_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - DiagnosisText_orig
+      - DiagnosisText_calc
+      - DiagnosisCodeType_orig
+      - DiagnosisCodeType_calc
+      - DiagnosisCode_orig
+      - DiagnosisCode_calc
+      - DateCreated
+    date_columns:
+      - DateCreated
+
+  FamilyHistory:
+    filename: "C4MFamilyHistory"
+    required_columns:
+      - FamilyHistory_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - Relationship_orig
+      - Relationship_Side_calc
+      - Relationship_Degree_calc
+      - DiagnosisText_orig
+      - DateCreated
+      - DiagnosisText_calc
+      - DiagnosisCodeType_orig
+      - DiagnosisCodeType_calc
+      - DiagnosisCode_orig
+      - DiagnosisCode_calc
+      - AgeAtOnset
+      - VitalStatus
+      - WasCauseOfDeath
+      - AgeAtDeath
+    date_columns:
+      - DateCreated
+
+  HealthCondition:
+    filename: "C4MHealthCondition"
+    required_columns:
+      - HealthCondition_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - DiagnosisText_orig
+      - DiagnosisText_calc
+      - DiagnosisCodeType_orig
+      - DiagnosisCodeType_calc
+      - DiagnosisCode_orig
+      - DiagnosisCode_calc
+      - DateOfOnset
+      - SignificantNegativeFlag
+      - ActiveInactiveFlag
+      - DateCreated
+    date_columns:
+      - DateCreated
+
+  Lab:
+    filename: "C4MLab"
+    required_columns:
+      - Lab_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - TestResult_orig
+      - TestResult_calc
+      - PerformedDate
+      - Name_orig
+      - Name_calc
+      - CodeType_orig
+      - CodeType_calc
+      - Code_orig
+      - Code_calc
+      - UpperNormal
+      - LowerNormal
+      - NormalRange
+      - UnitOfMeasure_orig
+      - UnitOfMeasure_calc
+      - DateCreated
+    date_columns:
+      - PerformedDate
+      - DateCreated
+
+  MedicalProcedure:
+    filename: "C4MMedicalProcedure"
+    required_columns:
+      - MedicalProcedure_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - PerformedDate
+      - Encounter_ID
+      - Cycle_ID
+      - Name_orig
+      - Name_calc
+      - DateCreated
+    date_columns:
+      - PerformedDate
+      - DateCreated
+
+  Medication:
+    filename: "C4MMedication"
+    required_columns:
+      - Medication_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - Reason
+      - DIN
+      - Name_orig
+      - Name_calc
+      - CodeType_orig
+      - CodeType_calc
+      - Code_orig
+      - Code_calc
+      - Strength
+      - Dose
+      - UnitOfMeasure
+      - Frequency
+      - DurationCount
+      - DurationUnit
+      - DispensedCount
+      - DispensedForm
+      - RefillCount
+      - DateCreated
+      - StartDate
+      - StopDate
+    date_columns:
+      - StartDate
+      - StopDate
+      - DateCreated
+
+  Referral:
+    filename: "C4MReferral"
+    required_columns:
+      - Referral_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - CompletedDate
+      - Name_orig
+      - Name_calc
+      - ConceptCode
+      - DescriptionCode
+      - DateCreated
+    date_columns:
+      - CompletedDate
+      - DateCreated
+
+  RiskFactor:
+    filename: "C4MRiskFactor_fixed"
+    required_columns:
+      - RiskFactor_ID
+      - Network_ID
+      - Site_ID
+      - Patient_ID
+      - Encounter_ID
+      - Cycle_ID
+      - StartDate
+      - EndDate
+      - Name_orig
+      - Name_calc
+      - Value_orig
+      - Value_calc
+      - Status_orig
+      - Status_calc
+      - Frequency
+      - FrequencyType
+      - FrequencyUnit
+      - Duration
+      - DurationType
+      - DurationUnit
+      - EndDuration
+      - EndDurationType
+      - EndDurationUnit
+      - RiskDetails
+      - DateCreated
+    date_columns:
+      - StartDate
+      - EndDate
+      - DateCreated
+
+# Data quality thresholds
+quality_thresholds:
+  # Basic thresholds
+  max_missing_pct: 0.3
+  min_date: "1900-01-01" # The find_date_ranges function in the data_preparation script will tell us the actual date range
+  max_date: "2025-01-01" # We can then update the YAML with the correct dates if needed for future runs
+
+  
+# ICD Code validations (based on SQL filter)
+  mental_health_icd9_ranges:
+    - ["290", "319"]  # Primary mental health codes
+    - ["327", "327"]  # Sleep disorders
+    - ["331", "333"]  # Other neurological conditions
+    - ["347", "347"]  # Narcolepsy
+    - ["625", "625"]  # Female psychological symptoms
+    - ["698", "698"]  # Related pruritus
+    - ["780", "780"]  # General symptoms
+    - ["786", "788"]  # Symptoms involving systems
+    - ["799", "799"]  # Other ill-defined conditions
+    - ["995", "995"]  # Specific reactions
+  
+  # Value range checks
+  demographic_rules:
+    min_birth_year: 1900
+    max_birth_year: 2024
+  
+  # Categorical validations (based on CPCSSN standards)
+  valid_categories:
+    Sex: ["M", "F", "O", "U", ""]  # Including blank as it might exist
+    ActiveInactiveFlag: ["ACTIVE", "INACTIVE", ""]
+  
+  # Required paired fields
+  required_pairs:
+    - ["DiagnosisCode_orig", "DiagnosisCodeType_orig"]
+    - ["DiagnosisCode_calc", "DiagnosisCodeType_calc"]
+  
+  # Primary key uniqueness
+  unique_keys:
+    Patient: ["Patient_ID"]
+    PatientDemographic: ["PatientDemographic_ID"]
+    Encounter: ["Encounter_ID"]
+    EncounterDiagnosis: ["EncounterDiagnosis_ID"]
+    
+  # Foreign key relationships (critical for integrity)
+  foreign_keys:
+    PatientDemographic: 
+      - {key: "Patient_ID", ref_table: "Patient", ref_key: "Patient_ID"}
+    Encounter:
+      - {key: "Patient_ID", ref_table: "Patient", ref_key: "Patient_ID"}
+    EncounterDiagnosis:
+      - {key: "Patient_ID", ref_table: "Patient", ref_key: "Patient_ID"}
+      - {key: "Encounter_ID", ref_table: "Encounter", ref_key: "Encounter_ID"}
+      
+  # Data completeness per table
+  completeness_rules:
+    Patient:
+      required: ["Patient_ID", "Sex", "BirthYear"]
+    EncounterDiagnosis:
+      required: ["DiagnosisCode_orig", "DiagnosisCodeType_orig"]
+
+  # Additional validation
+  icd9_required_columns:
+    - "DiagnosisCode_orig"
+    - "DiagnosisCodeType_orig"
+    - "DiagnosisCode_calc"
+    - "DiagnosisCodeType_calc"
+  
+  # Verify ICD code types
+  valid_code_types:
+    - "ICD9"
+
+# # Sampling
+# sampling:
+#   n_patients: 100000
+#   stratify_columns:
+#     - Sex

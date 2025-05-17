@@ -1,0 +1,1183 @@
+{
+  "timestamp": "2025-03-18 02:44:27",
+  "data_quality": {
+    "patient": {
+      "exists": true,
+      "loaded_successfully": true,
+      "row_count": 352161,
+      "column_count": 6,
+      "missing_required_columns": [],
+      "missing_data_percentage": {
+        "Patient_ID": 0.0,
+        "Sex": 0.00011358441167534167,
+        "BirthYear": 0.0004003850511555794,
+        "BirthMonth": 0.3981729947382021,
+        "OptedOut": 0.0,
+        "OptOutDate": 1.0
+      },
+      "date_column_quality": {},
+      "invalid_row_percentage": 0.0
+    },
+    "patient_demographic": {
+      "exists": true,
+      "loaded_successfully": true,
+      "row_count": 352220,
+      "column_count": 22,
+      "missing_required_columns": [],
+      "missing_data_percentage": {
+        "PatientDemographic_ID": 0.0,
+        "Network_ID": 0.0,
+        "Site_ID": 0.0,
+        "Patient_ID": 0.0,
+        "Cycle_ID": 0.0,
+        "Occupation": 0.9242376923513713,
+        "HighestEducation": 0.9861790926125716,
+        "HousingStatus": 0.9999290216342059,
+        "ResidencePostalCode": 1.0,
+        "PatientStatus_orig": 0.011714269490659247,
+        "PatientStatus_calc": 0.27381466129123844,
+        "Language": 0.8535716313667594,
+        "Ethnicity": 0.9755493725512464,
+        "DeceasedYear": 0.9816251206632218,
+        "DateCreated": 0.0,
+        "Sex": 0.0,
+        "BirthYear": 0.0004003179830787576,
+        "BirthMonth": 0.3982425756629379,
+        "OptedOut": 0.0,
+        "OptOutDate": 1.0,
+        "recorded_deceased": 0.0,
+        "age": 1.0
+      },
+      "date_column_quality": {},
+      "invalid_row_percentage": 0.0
+    },
+    "encounter": {
+      "exists": true,
+      "loaded_successfully": true,
+      "row_count": 11577739,
+      "column_count": 11,
+      "missing_required_columns": [],
+      "missing_data_percentage": {
+        "Encounter_ID": 0.0,
+        "Network_ID": 0.0,
+        "Site_ID": 0.0,
+        "Patient_ID": 0.0,
+        "Provider_ID": 0.0,
+        "Cycle_ID": 0.0,
+        "EncounterDate": 3.8867692560697736e-06,
+        "Reason_orig": 0.5678360861304612,
+        "Reason_calc": 1.0,
+        "EncounterType": 0.2530570087993865,
+        "DateCreated": 0.0
+      },
+      "date_column_quality": {
+        "EncounterDate": {
+          "coverage": 0.9999961132307439,
+          "parse_failure_rate": 0.0,
+          "min_date": "1800-02-01 00:00:00",
+          "max_date": "2016-03-24 00:00:00",
+          "null_count": "45"
+        },
+        "DateCreated": {
+          "coverage": 1.0,
+          "parse_failure_rate": 0.0,
+          "min_date": "1900-01-01 00:00:00",
+          "max_date": "2015-07-21 00:00:00",
+          "null_count": "0"
+        }
+      },
+      "invalid_row_percentage": 0.0
+    },
+    "encounter_diagnosis": {
+      "exists": true,
+      "loaded_successfully": true,
+      "row_count": 12471764,
+      "column_count": 14,
+      "missing_required_columns": [],
+      "missing_data_percentage": {
+        "EncounterDiagnosis_ID": 0.0,
+        "Network_ID": 0.0,
+        "Site_ID": 0.0,
+        "Patient_ID": 0.0,
+        "Encounter_ID": 0.01377519651590585,
+        "Cycle_ID": 0.0,
+        "DiagnosisText_orig": 0.10365181701642205,
+        "DiagnosisText_calc": 0.34757007910027804,
+        "DiagnosisCodeType_orig": 0.3318536976806168,
+        "DiagnosisCodeType_calc": 0.34757007910027804,
+        "DiagnosisCode_orig": 0.19412963555115378,
+        "DiagnosisCode_calc": 0.34757007910027804,
+        "DateCreated": 0.0,
+        "orphan_encounter": 0.0
+      },
+      "date_column_quality": {
+        "DateCreated": {
+          "coverage": 1.0,
+          "parse_failure_rate": 0.0,
+          "min_date": "1976-06-01 00:00:00",
+          "max_date": "2015-07-21 00:00:00",
+          "null_count": "0"
+        }
+      },
+      "invalid_row_percentage": 0.0
+    },
+    "health_condition": {
+      "exists": true,
+      "loaded_successfully": true,
+      "row_count": 2571583,
+      "column_count": 16,
+      "missing_required_columns": [],
+      "missing_data_percentage": {
+        "HealthCondition_ID": 0.0,
+        "Network_ID": 0.0,
+        "Site_ID": 0.0,
+        "Patient_ID": 0.0,
+        "Encounter_ID": 0.2680753450306679,
+        "Cycle_ID": 0.0,
+        "DiagnosisText_orig": 0.008915520129041139,
+        "DiagnosisText_calc": 0.07114061649964244,
+        "DiagnosisCodeType_orig": 0.04402230066072143,
+        "DiagnosisCodeType_calc": 0.07114061649964244,
+        "DiagnosisCode_orig": 0.06112071825019842,
+        "DiagnosisCode_calc": 0.07114061649964244,
+        "DateOfOnset": 0.20478281276552224,
+        "SignificantNegativeFlag": 0.0,
+        "ActiveInactiveFlag": 0.6471784111187545,
+        "DateCreated": 0.0
+      },
+      "date_column_quality": {
+        "DateOfOnset": {
+          "coverage": 0.7952171872344778,
+          "parse_failure_rate": 8.31302347592544e-06,
+          "min_date": "1800-01-01 00:00:00",
+          "max_date": "2209-01-26 00:00:00",
+          "null_count": "526616"
+        },
+        "DateCreated": {
+          "coverage": 1.0,
+          "parse_failure_rate": 0.0,
+          "min_date": "1900-01-01 00:00:00",
+          "max_date": "2015-06-30 00:00:00",
+          "null_count": "0"
+        }
+      },
+      "invalid_row_percentage": 0.0
+    },
+    "lab": {
+      "exists": true,
+      "loaded_successfully": true,
+      "row_count": 8528807,
+      "column_count": 22,
+      "missing_required_columns": [],
+      "missing_data_percentage": {
+        "Lab_ID": 0.0,
+        "Network_ID": 0.0,
+        "Site_ID": 0.0,
+        "Patient_ID": 0.0,
+        "Encounter_ID": 0.9759391905573663,
+        "Cycle_ID": 0.0,
+        "PerformedDate": 0.00022465041124743472,
+        "Name_orig": 3.4471409659053136e-05,
+        "Name_calc": 0.4723518775838168,
+        "CodeType_orig": 0.9590681322721923,
+        "CodeType_calc": 0.4723518775838168,
+        "Code_orig": 0.9570508513089815,
+        "Code_calc": 0.4723518775838168,
+        "TestResult_orig": 0.0472134027654747,
+        "TestResult_calc": 0.4897490352402159,
+        "UpperNormal": 0.8406185061990499,
+        "LowerNormal": 0.8500462022414155,
+        "NormalRange": 0.4170130711129939,
+        "UnitOfMeasure_orig": 0.3539860850409676,
+        "UnitOfMeasure_calc": 0.5100770834654835,
+        "DateCreated": 5.862484635893391e-07,
+        "orphan_encounter": 0.0
+      },
+      "date_column_quality": {
+        "PerformedDate": {
+          "coverage": 0.9997753495887526,
+          "parse_failure_rate": 0.0,
+          "min_date": "1904-10-12 00:00:00",
+          "max_date": "2015-06-30 00:00:00",
+          "null_count": "1916"
+        },
+        "DateCreated": {
+          "coverage": 0.9999994137515364,
+          "parse_failure_rate": 0.0,
+          "min_date": "1900-01-01 00:00:00",
+          "max_date": "2015-07-15 00:00:00",
+          "null_count": "5"
+        }
+      },
+      "invalid_row_percentage": 0.0
+    },
+    "medication": {
+      "exists": true,
+      "loaded_successfully": true,
+      "row_count": 7706628,
+      "column_count": 27,
+      "missing_required_columns": [],
+      "missing_data_percentage": {
+        "Medication_ID": 0.0,
+        "Network_ID": 0.0,
+        "Site_ID": 0.0,
+        "Patient_ID": 0.0,
+        "Encounter_ID": 0.28416137382004164,
+        "Cycle_ID": 0.0,
+        "StartDate": 0.0020333147000218513,
+        "StopDate": 0.2544655068338578,
+        "Reason": 0.8508300906700051,
+        "DIN": 0.42619651551884946,
+        "Name_orig": 0.000326601984681238,
+        "Name_calc": 0.040962143235666756,
+        "CodeType_orig": 0.3668407246333935,
+        "CodeType_calc": 0.037405983524830835,
+        "Code_orig": 0.1983785904808173,
+        "Code_calc": 0.040962143235666756,
+        "Strength": 0.7259364277087204,
+        "Dose": 0.27963228535229673,
+        "UnitOfMeasure": 0.408189548009843,
+        "Frequency": 0.09299994757759165,
+        "DurationCount": 0.31000458306797735,
+        "DurationUnit": 0.30691373711044573,
+        "DispensedCount": 0.08130144597611302,
+        "DispensedForm": 0.4289832077012151,
+        "RefillCount": 0.1868147781364301,
+        "DateCreated": 0.0,
+        "orphan_encounter": 0.0
+      },
+      "date_column_quality": {
+        "StartDate": {
+          "coverage": 0.9979666852999781,
+          "parse_failure_rate": 0.0,
+          "min_date": "1800-01-13 00:00:00",
+          "max_date": "2072-05-24 00:00:00",
+          "null_count": "15670"
+        },
+        "StopDate": {
+          "coverage": 0.7455344931661422,
+          "parse_failure_rate": 0.0,
+          "min_date": "1900-01-09 00:00:00",
+          "max_date": "2190-07-21 00:00:00",
+          "null_count": "1961071"
+        },
+        "DateCreated": {
+          "coverage": 1.0,
+          "parse_failure_rate": 0.0,
+          "min_date": "1800-01-13 00:00:00",
+          "max_date": "2072-05-24 00:00:00",
+          "null_count": "0"
+        }
+      },
+      "invalid_row_percentage": 0.0
+    },
+    "referral": {
+      "exists": true,
+      "loaded_successfully": true,
+      "row_count": 1141061,
+      "column_count": 12,
+      "missing_required_columns": [],
+      "missing_data_percentage": {
+        "Referral_ID": 0.0,
+        "Network_ID": 0.0,
+        "Site_ID": 0.0,
+        "Patient_ID": 0.0,
+        "Encounter_ID": 0.2102157553364807,
+        "Cycle_ID": 0.0,
+        "CompletedDate": 0.9740530961973111,
+        "Name_orig": 0.1040102150542346,
+        "Name_calc": 0.13197716861762868,
+        "ConceptCode": 0.13197716861762868,
+        "DescriptionCode": 0.5989513268791063,
+        "DateCreated": 0.0
+      },
+      "date_column_quality": {
+        "CompletedDate": {
+          "coverage": 0.025946903802688902,
+          "parse_failure_rate": 0.0,
+          "min_date": "1931-03-11 00:00:00",
+          "max_date": "2103-04-30 00:00:00",
+          "null_count": "1111454"
+        },
+        "DateCreated": {
+          "coverage": 1.0,
+          "parse_failure_rate": 0.0,
+          "min_date": "1969-12-31 00:00:00",
+          "max_date": "2015-08-11 00:00:00",
+          "null_count": "0"
+        }
+      },
+      "invalid_row_percentage": 0.0
+    },
+    "family_history": {
+      "exists": true,
+      "loaded_successfully": true,
+      "row_count": 325202,
+      "column_count": 20,
+      "missing_required_columns": [],
+      "missing_data_percentage": {
+        "FamilyHistory_ID": 0.0,
+        "Network_ID": 0.0,
+        "Site_ID": 0.0,
+        "Patient_ID": 0.0,
+        "Encounter_ID": 0.9627001063954096,
+        "Cycle_ID": 0.0,
+        "DiagnosisText_orig": 0.08254254278878974,
+        "DiagnosisText_calc": 1.0,
+        "DiagnosisCodeType_orig": 0.5262144759257323,
+        "DiagnosisCodeType_calc": 1.0,
+        "DiagnosisCode_orig": 0.526611152452937,
+        "DiagnosisCode_calc": 1.0,
+        "Relationship_orig": 0.08432604965529117,
+        "Relationship_Side_calc": 1.0,
+        "Relationship_Degree_calc": 1.0,
+        "AgeAtOnset": 0.8974760302827166,
+        "VitalStatus": 0.5082318066924557,
+        "WasCauseOfDeath": 0.0,
+        "AgeAtDeath": 0.9281800234930905,
+        "DateCreated": 0.0
+      },
+      "date_column_quality": {},
+      "invalid_row_percentage": 0.0
+    },
+    "medical_procedure": {
+      "exists": true,
+      "loaded_successfully": true,
+      "row_count": 1203002,
+      "column_count": 10,
+      "missing_required_columns": [],
+      "missing_data_percentage": {
+        "MedicalProcedure_ID": 0.0,
+        "Network_ID": 0.0,
+        "Site_ID": 0.0,
+        "Patient_ID": 0.0,
+        "Encounter_ID": 0.4931479748163345,
+        "Cycle_ID": 0.0,
+        "PerformedDate": 0.07352107477793055,
+        "Name_orig": 0.028840351055110465,
+        "Name_calc": 1.0,
+        "DateCreated": 0.0
+      },
+      "date_column_quality": {
+        "PerformedDate": {
+          "coverage": 0.9264789252220694,
+          "parse_failure_rate": 0.0,
+          "min_date": "1777-01-01 00:00:00",
+          "max_date": "2207-01-01 00:00:00",
+          "null_count": "88446"
+        },
+        "DateCreated": {
+          "coverage": 1.0,
+          "parse_failure_rate": 0.0,
+          "min_date": "1900-01-01 00:00:00",
+          "max_date": "2015-06-30 00:00:00",
+          "null_count": "0"
+        }
+      },
+      "invalid_row_percentage": 0.0
+    },
+    "risk_factor": {
+      "exists": true,
+      "loaded_successfully": true,
+      "row_count": 603298,
+      "column_count": 25,
+      "missing_required_columns": [],
+      "missing_data_percentage": {
+        "RiskFactor_ID": 0.0,
+        "Network_ID": 0.0,
+        "Site_ID": 0.0,
+        "Patient_ID": 0.0,
+        "Encounter_ID": 0.4033247250943978,
+        "Cycle_ID": 0.0,
+        "StartDate": 0.9263879542116831,
+        "EndDate": 0.9938637290360651,
+        "Name_orig": 0.1596574164011815,
+        "Name_calc": 0.1417408975332257,
+        "Value_orig": 0.6682501848174534,
+        "Value_calc": 0.699135418980338,
+        "Status_orig": 0.5517306538393961,
+        "Status_calc": 1.0,
+        "Frequency": 0.9992308941849634,
+        "FrequencyType": 1.0,
+        "FrequencyUnit": 0.9995408570888682,
+        "Duration": 1.0,
+        "DurationType": 1.0,
+        "DurationUnit": 1.0,
+        "EndDuration": 1.0,
+        "EndDurationType": 1.0,
+        "EndDurationUnit": 1.0,
+        "RiskDetails": 0.9999983424443641,
+        "DateCreated": 0.0
+      },
+      "date_column_quality": {
+        "StartDate": {
+          "coverage": 0.07361204578831688,
+          "parse_failure_rate": 0.0,
+          "min_date": "1922-07-15 00:00:00",
+          "max_date": "2015-06-30 00:00:00",
+          "null_count": "558888"
+        },
+        "EndDate": {
+          "coverage": 0.006136270963934904,
+          "parse_failure_rate": 0.0,
+          "min_date": "1940-06-15 00:00:00",
+          "max_date": "2015-06-15 00:00:00",
+          "null_count": "599596"
+        },
+        "DateCreated": {
+          "coverage": 1.0,
+          "parse_failure_rate": 0.0,
+          "min_date": "1900-01-01 00:00:00",
+          "max_date": "2015-06-30 00:00:00",
+          "null_count": "0"
+        }
+      },
+      "invalid_row_percentage": 0.0
+    }
+  },
+  "relationships": {
+    "encounter.Patient_ID -> patient.Patient_ID": {
+      "dependent_table": "encounter",
+      "reference_table": "patient",
+      "foreign_key": "Patient_ID",
+      "primary_key": "Patient_ID",
+      "total_unique_keys": 351991,
+      "matching_keys": 351991,
+      "orphaned_keys": 0,
+      "match_percentage": 1.0,
+      "orphan_percentage": 0.0
+    },
+    "encounter_diagnosis.Encounter_ID -> encounter.Encounter_ID": {
+      "dependent_table": "encounter_diagnosis",
+      "reference_table": "encounter",
+      "foreign_key": "Encounter_ID",
+      "primary_key": "Encounter_ID",
+      "total_unique_keys": 10039549,
+      "matching_keys": 9362095,
+      "orphaned_keys": 677454,
+      "match_percentage": 0.9325214708349947,
+      "orphan_percentage": 0.06747852916500532
+    },
+    "encounter_diagnosis.Patient_ID -> patient.Patient_ID": {
+      "dependent_table": "encounter_diagnosis",
+      "reference_table": "patient",
+      "foreign_key": "Patient_ID",
+      "primary_key": "Patient_ID",
+      "total_unique_keys": 352161,
+      "matching_keys": 352161,
+      "orphaned_keys": 0,
+      "match_percentage": 1.0,
+      "orphan_percentage": 0.0
+    },
+    "lab.Patient_ID -> patient.Patient_ID": {
+      "dependent_table": "lab",
+      "reference_table": "patient",
+      "foreign_key": "Patient_ID",
+      "primary_key": "Patient_ID",
+      "total_unique_keys": 207836,
+      "matching_keys": 207836,
+      "orphaned_keys": 0,
+      "match_percentage": 1.0,
+      "orphan_percentage": 0.0
+    },
+    "lab.Encounter_ID -> encounter.Encounter_ID": {
+      "dependent_table": "lab",
+      "reference_table": "encounter",
+      "foreign_key": "Encounter_ID",
+      "primary_key": "Encounter_ID",
+      "total_unique_keys": 16583,
+      "matching_keys": 1860,
+      "orphaned_keys": 14723,
+      "match_percentage": 0.11216305855394078,
+      "orphan_percentage": 0.8878369414460592
+    },
+    "medication.Patient_ID -> patient.Patient_ID": {
+      "dependent_table": "medication",
+      "reference_table": "patient",
+      "foreign_key": "Patient_ID",
+      "primary_key": "Patient_ID",
+      "total_unique_keys": 292050,
+      "matching_keys": 292050,
+      "orphaned_keys": 0,
+      "match_percentage": 1.0,
+      "orphan_percentage": 0.0
+    },
+    "referral.Patient_ID -> patient.Patient_ID": {
+      "dependent_table": "referral",
+      "reference_table": "patient",
+      "foreign_key": "Patient_ID",
+      "primary_key": "Patient_ID",
+      "total_unique_keys": 215996,
+      "matching_keys": 215996,
+      "orphaned_keys": 0,
+      "match_percentage": 1.0,
+      "orphan_percentage": 0.0
+    },
+    "health_condition.Patient_ID -> patient.Patient_ID": {
+      "dependent_table": "health_condition",
+      "reference_table": "patient",
+      "foreign_key": "Patient_ID",
+      "primary_key": "Patient_ID",
+      "total_unique_keys": 262760,
+      "matching_keys": 262760,
+      "orphaned_keys": 0,
+      "match_percentage": 1.0,
+      "orphan_percentage": 0.0
+    }
+  },
+  "temporal": {
+    "encounter": {
+      "EncounterDate": {
+        "min_date": "1800-02-01 00:00:00",
+        "max_date": "2016-03-24 00:00:00",
+        "null_percentage": 3.8867692560697736e-06,
+        "future_date_percentage": 0.0,
+        "past_date_percentage": 2.591189575402494e-07
+      },
+      "DateCreated": {
+        "min_date": "1900-01-01 00:00:00",
+        "max_date": "2015-07-21 00:00:00",
+        "null_percentage": 0.0,
+        "future_date_percentage": 0.0,
+        "past_date_percentage": 0.0
+      }
+    },
+    "encounter_diagnosis": {
+      "DateCreated": {
+        "min_date": "1976-06-01 00:00:00",
+        "max_date": "2015-07-21 00:00:00",
+        "null_percentage": 0.0,
+        "future_date_percentage": 0.0,
+        "past_date_percentage": 0.0
+      }
+    },
+    "health_condition": {
+      "DateOfOnset": {
+        "min_date": "1800-01-01 00:00:00",
+        "max_date": "2209-01-26 00:00:00",
+        "null_percentage": 0.20478281276552224,
+        "future_date_percentage": 4.890054460536527e-06,
+        "past_date_percentage": 1.956021784214611e-06
+      },
+      "DateCreated": {
+        "min_date": "1900-01-01 00:00:00",
+        "max_date": "2015-06-30 00:00:00",
+        "null_percentage": 0.0,
+        "future_date_percentage": 0.0,
+        "past_date_percentage": 0.0
+      }
+    },
+    "lab": {
+      "PerformedDate": {
+        "min_date": "1904-10-12 00:00:00",
+        "max_date": "2015-06-30 00:00:00",
+        "null_percentage": 0.00022465041124743472,
+        "future_date_percentage": 0.0,
+        "past_date_percentage": 0.0
+      },
+      "DateCreated": {
+        "min_date": "1900-01-01 00:00:00",
+        "max_date": "2015-07-15 00:00:00",
+        "null_percentage": 5.862484635893391e-07,
+        "future_date_percentage": 0.0,
+        "past_date_percentage": 0.0
+      }
+    },
+    "medication": {
+      "StartDate": {
+        "min_date": "1800-01-13 00:00:00",
+        "max_date": "2072-05-24 00:00:00",
+        "null_percentage": 0.0020333147000218513,
+        "future_date_percentage": 7.801368828174591e-07,
+        "past_date_percentage": 1.3002281380290987e-07
+      },
+      "StopDate": {
+        "min_date": "1900-01-09 00:00:00",
+        "max_date": "2190-07-21 00:00:00",
+        "null_percentage": 0.2544655068338578,
+        "future_date_percentage": 0.00017857276500781388,
+        "past_date_percentage": 0.0
+      },
+      "DateCreated": {
+        "min_date": "1800-01-13 00:00:00",
+        "max_date": "2072-05-24 00:00:00",
+        "null_percentage": 0.0,
+        "future_date_percentage": 3.892753095127986e-07,
+        "past_date_percentage": 1.297584365042662e-07
+      }
+    },
+    "referral": {
+      "CompletedDate": {
+        "min_date": "1931-03-11 00:00:00",
+        "max_date": "2103-04-30 00:00:00",
+        "null_percentage": 0.9740530961973111,
+        "future_date_percentage": 6.755159252879387e-05,
+        "past_date_percentage": 0.0
+      },
+      "DateCreated": {
+        "min_date": "1969-12-31 00:00:00",
+        "max_date": "2015-08-11 00:00:00",
+        "null_percentage": 0.0,
+        "future_date_percentage": 0.0,
+        "past_date_percentage": 0.0
+      }
+    },
+    "medical_procedure": {
+      "PerformedDate": {
+        "min_date": "1777-01-01 00:00:00",
+        "max_date": "2207-01-01 00:00:00",
+        "null_percentage": 0.07352107477793055,
+        "future_date_percentage": 2.6916547934783e-06,
+        "past_date_percentage": 1.7944365289855333e-06
+      },
+      "DateCreated": {
+        "min_date": "1900-01-01 00:00:00",
+        "max_date": "2015-06-30 00:00:00",
+        "null_percentage": 0.0,
+        "future_date_percentage": 0.0,
+        "past_date_percentage": 0.0
+      }
+    },
+    "risk_factor": {
+      "StartDate": {
+        "min_date": "1922-07-15 00:00:00",
+        "max_date": "2015-06-30 00:00:00",
+        "null_percentage": 0.9263879542116831,
+        "future_date_percentage": 0.0,
+        "past_date_percentage": 0.0
+      },
+      "EndDate": {
+        "min_date": "1940-06-15 00:00:00",
+        "max_date": "2015-06-15 00:00:00",
+        "null_percentage": 0.9938637290360651,
+        "future_date_percentage": 0.0,
+        "past_date_percentage": 0.0
+      },
+      "DateCreated": {
+        "min_date": "1900-01-01 00:00:00",
+        "max_date": "2015-06-30 00:00:00",
+        "null_percentage": 0.0,
+        "future_date_percentage": 0.0,
+        "past_date_percentage": 0.0
+      }
+    },
+    "medication_sequence": {
+      "check": "StartDate_before_StopDate",
+      "valid_percentage": 0.9996227494943433,
+      "invalid_count": "2166",
+      "total_checked": "5741543"
+    },
+    "referral_sequence": {
+      "check": "multiple_referrals",
+      "patients_with_multiple_refs": "5912",
+      "percentage": 0.02737087723846738
+    }
+  },
+  "population": {
+    "sex_normalized": {
+      "counts": {
+        "Female": 208501,
+        "Male": 143617,
+        "Unknown": 42,
+        "Other": 1
+      },
+      "percentage": {
+        "Female": 59.206158546801035,
+        "Male": 40.781631128943864,
+        "Unknown": 0.011926363225910876,
+        "Other": 0.0002839610291883542
+      }
+    },
+    "age": {
+      "mean": 55.66089809134288,
+      "median": 56.0,
+      "min": -12.0,
+      "max": 125.0,
+      "distribution": {
+        "<18": 20010,
+        "18-34": 56463,
+        "35-49": 69661,
+        "50-64": 81147,
+        "65-79": 73213,
+        "80+": 51576
+      },
+      "percentage": {
+        "<18": 5.681092268774434,
+        "18-34": 16.03056035841134,
+        "35-49": 19.77763960695132,
+        "50-64": 23.038660386518693,
+        "65-79": 20.78609736500663,
+        "80+": 14.643079203113954
+      }
+    },
+    "sex": {
+      "counts": {
+        "Female": 185694,
+        "Male": 126316,
+        "FEMALE": 22845,
+        "MALE": 17323,
+        "Unknown": 2,
+        "Undifferentiated": 1
+      },
+      "percentage": {
+        "Female": 52.720876949415285,
+        "Male": 35.86271119552781,
+        "FEMALE": 6.485984651681756,
+        "MALE": 4.918218959119416,
+        "Unknown": 0.0005678253142203332,
+        "Undifferentiated": 0.0002839126571101666
+      }
+    },
+    "coverage": {
+      "patient_demographic": {
+        "patients": 352160,
+        "percentage": 0.9999971603897081
+      },
+      "encounter": {
+        "patients": 351991,
+        "percentage": 0.9995172662503798
+      },
+      "encounter_diagnosis": {
+        "patients": 352161,
+        "percentage": 1.0
+      },
+      "health_condition": {
+        "patients": 262760,
+        "percentage": 0.7461360002953195
+      },
+      "lab": {
+        "patients": 207836,
+        "percentage": 0.5901732446239079
+      },
+      "medication": {
+        "patients": 292050,
+        "percentage": 0.8293081857445884
+      },
+      "referral": {
+        "patients": 215996,
+        "percentage": 0.6133444646056775
+      },
+      "family_history": {
+        "patients": 92902,
+        "percentage": 0.2638054753365648
+      },
+      "medical_procedure": {
+        "patients": 159981,
+        "percentage": 0.4542836941058209
+      },
+      "risk_factor": {
+        "patients": 190436,
+        "percentage": 0.5407640255451341
+      }
+    },
+    "encounters": {
+      "mean": 32.8921449696157,
+      "median": 22.0,
+      "p90": 72.0,
+      "eligible_count": 344066,
+      "eligible_percentage": 0.9768469228126659
+    },
+    "combined_eligibility": {
+      "eligible_count": 327382,
+      "eligible_percentage": 0.9294789351004057,
+      "age_criteria": "\u226518",
+      "encounter_criteria": "\u22652"
+    }
+  },
+  "coding": {
+    "code_types": {
+      "counts": {
+        "ICD9": 8136952
+      },
+      "percentage": {
+        "ICD9": 65.24299208997219
+      }
+    },
+    "nyd_patterns": {
+      "799": {
+        "code_count": "184927",
+        "patient_count": 64120,
+        "percentage": 1.4827653890820898
+      },
+      "^V71": {
+        "code_count": "654",
+        "patient_count": 575,
+        "percentage": 0.005243845217083967
+      },
+      "^R69": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      },
+      "^Z03": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      },
+      "^780\\.9": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      },
+      "^V65\\.5": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      }
+    },
+    "common_roots": {
+      "nan": 4334812,
+      "401": 544608,
+      "250": 298080,
+      "V70": 280468,
+      "300": 266989,
+      "780": 261846,
+      "311": 231790,
+      "799": 177653,
+      "272": 170642,
+      "724": 167541,
+      "786": 135582,
+      "715": 108108,
+      "789": 96081,
+      "V04": 88000,
+      "719": 87352,
+      "460": 85932,
+      "493": 85504,
+      "V22": 84470,
+      "244": 81464,
+      "781": 80681
+    },
+    "nyd_text_patterns": {
+      "\\bNYD\\b": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      },
+      "\\bnot yet diagnosed\\b": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      },
+      "\\bdiagnosis deferred\\b": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      },
+      "\\bunknown etiology\\b": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      },
+      "\\brule out\\b": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      },
+      "\\bunexplained\\b": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      },
+      "\\bundiagnosed\\b": {
+        "code_count": "1359",
+        "patient_count": 1089,
+        "percentage": 0.01089661414375705
+      },
+      "\\bundetermined\\b": {
+        "code_count": "20",
+        "patient_count": 20,
+        "percentage": 0.00016036223905455555
+      },
+      "\\bsymptoms\\b": {
+        "code_count": "431974",
+        "patient_count": 125436,
+        "percentage": 3.463615892667629
+      },
+      "\\bsymptom\\b NOT OTHERWISE SPECIFIED": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      },
+      "without definitive diagnosis": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      },
+      "no clear": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      },
+      "no specific": {
+        "code_count": "0",
+        "patient_count": 0,
+        "percentage": 0.0
+      }
+    },
+    "symptom_codes": {
+      "total_count": "867700",
+      "patient_count": 214774,
+      "percentage": 6.957315741381893,
+      "patient_percentage": 60.98744608289959,
+      "top_codes": {
+        "780": 128863,
+        "781": 76306,
+        "7862": 52057,
+        "787": 51249,
+        "7807": 47291,
+        "7890": 46235,
+        "786": 30745,
+        "7840": 28048,
+        "78900": 22033,
+        "7865": 21908
+      }
+    },
+    "multi_system": {
+      "counts": {
+        "0": 138298,
+        "1": 101915,
+        "2": 58305,
+        "3": 30196,
+        "4": 14309,
+        "5": 6115,
+        "6": 2277,
+        "7": 639,
+        "8": 107
+      },
+      "percentage": {
+        "0": 39.27124241469101,
+        "1": 28.93988828973112,
+        "2": 16.55634780682699,
+        "3": 8.574487237371544,
+        "4": 4.06319836665616,
+        "5": 1.7364216934867858,
+        "6": 0.6465792634618825,
+        "7": 0.1814510976513583,
+        "8": 0.030383830123153897
+      }
+    }
+  },
+  "lab": {
+    "overview": {
+      "total_labs": 8528807,
+      "patient_count": 207836,
+      "avg_per_patient": 41.036235300910334
+    },
+    "test_types": {
+      "counts": {
+        "TOTAL CHOLESTEROL": 711481,
+        "HDL": 710700,
+        "LDL": 704991,
+        "TRIGLYCERIDES": 688773,
+        "FASTING GLUCOSE": 646306,
+        "HBA1C": 449108,
+        "GFR": 197833,
+        "INR": 173373,
+        "URINE ALBUMIN CREATININE RATIO": 124056,
+        "MICROALBUMIN": 85715,
+        "GLUCOSE TOLERANCE": 7873
+      },
+      "percentage": {
+        "TOTAL CHOLESTEROL": 8.342092862460131,
+        "HDL": 8.332935661458865,
+        "LDL": 8.265997811886235,
+        "TRIGLYCERIDES": 8.075842260236396,
+        "FASTING GLUCOSE": 7.577917990171428,
+        "HBA1C": 5.265777499713618,
+        "GFR": 2.319585845945394,
+        "INR": 2.0327930975574895,
+        "URINE ALBUMIN CREATININE RATIO": 1.454552787980781,
+        "MICROALBUMIN": 1.005005741131204,
+        "GLUCOSE TOLERANCE": 0.09231068307677733
+      }
+    },
+    "normal_range": {
+      "total_with_bounds": "1219699",
+      "percentage": 14.300933295829065,
+      "by_test": {
+        "TOTAL CHOLESTEROL": {
+          "total": "711481",
+          "with_bounds": "159118",
+          "percentage": 22.364335800956034
+        },
+        "HDL": {
+          "total": "710700",
+          "with_bounds": "137948",
+          "percentage": 19.410158998170818
+        },
+        "LDL": {
+          "total": "704991",
+          "with_bounds": "141267",
+          "percentage": 20.03812814631676
+        },
+        "TRIGLYCERIDES": {
+          "total": "688773",
+          "with_bounds": "174687",
+          "percentage": 25.362056875051724
+        },
+        "FASTING GLUCOSE": {
+          "total": "646306",
+          "with_bounds": "176601",
+          "percentage": 27.32467283299242
+        },
+        "HBA1C": {
+          "total": "449108",
+          "with_bounds": "109416",
+          "percentage": 24.362959466319907
+        },
+        "GFR": {
+          "total": "197833",
+          "with_bounds": "133869",
+          "percentage": 67.66767930527263
+        },
+        "INR": {
+          "total": "173373",
+          "with_bounds": "143588",
+          "percentage": 82.82027766722615
+        },
+        "URINE ALBUMIN CREATININE RATIO": {
+          "total": "124056",
+          "with_bounds": "32097",
+          "percentage": 25.87299284194235
+        },
+        "MICROALBUMIN": {
+          "total": "85715",
+          "with_bounds": "10389",
+          "percentage": 12.120398996675027
+        }
+      }
+    },
+    "numeric_results": {
+      "count": "4304804",
+      "percentage": 50.47369462106482
+    },
+    "patient_labs": {
+      "mean": 41.036235300910334,
+      "median": 15.0,
+      "p90": 79.0,
+      "max": 4064
+    },
+    "normal_analysis": {
+      "normal_count": "483817",
+      "normal_percentage": 40.638176705181145,
+      "patient_thresholds": {
+        "ge_3": "46326",
+        "ge_4": "39952",
+        "ge_5": "33985"
+      }
+    }
+  },
+  "referral": {
+    "overview": {
+      "total_referrals": 1141061,
+      "patient_count": 215996,
+      "avg_per_patient": 5.282787644215634
+    },
+    "ref_types": {
+      "counts": {
+        "REFERRAL TO ANESTHETIC SERVICE": 296113,
+        "REFERRAL TO ACCIDENT AND EMERGENCY SERVICE": 104518,
+        "REFERRAL TO DERMATOLOGY SERVICE": 62564,
+        "REFERRAL TO OBSTETRICS AND GYNECOLOGY SERVICE": 51453,
+        "REFERRAL TO GASTROENTEROLOGY SERVICE": 50668,
+        "REFERRAL TO EAR, NOSE AND THROAT SERVICE": 40156,
+        "REFERRAL TO ORTHOPEDIC SERVICE": 39470,
+        "REFERRAL TO GENERAL SURGICAL SERVICE": 30380,
+        "REFERRAL TO GENERAL MEDICAL SERVICE": 29879,
+        "REFERRAL TO OPHTHALMOLOGY SERVICE": 27271,
+        "REFERRAL TO CARDIOLOGY SERVICE": 22393,
+        "REFERRAL TO NEUROLOGY SERVICE": 21100,
+        "REFERRAL TO PHYSIOTHERAPY SERVICE": 21085,
+        "REFERRAL TO PSYCHIATRY SERVICE": 18167,
+        "REFERRAL TO PLASTIC SURGERY SERVICE": 17060
+      },
+      "percentage": {
+        "REFERRAL TO ANESTHETIC SERVICE": 25.950672225235987,
+        "REFERRAL TO ACCIDENT AND EMERGENCY SERVICE": 9.159720645960206,
+        "REFERRAL TO DERMATOLOGY SERVICE": 5.482967168275842,
+        "REFERRAL TO OBSTETRICS AND GYNECOLOGY SERVICE": 4.509224309655663,
+        "REFERRAL TO GASTROENTEROLOGY SERVICE": 4.440428688737938,
+        "REFERRAL TO EAR, NOSE AND THROAT SERVICE": 3.5191808325759975,
+        "REFERRAL TO ORTHOPEDIC SERVICE": 3.4590613472899343,
+        "REFERRAL TO GENERAL SURGICAL SERVICE": 2.662434348382777,
+        "REFERRAL TO GENERAL MEDICAL SERVICE": 2.6185278438225477,
+        "REFERRAL TO OPHTHALMOLOGY SERVICE": 2.3899686344551254,
+        "REFERRAL TO CARDIOLOGY SERVICE": 1.9624717696950469,
+        "REFERRAL TO NEUROLOGY SERVICE": 1.8491561800815206,
+        "REFERRAL TO PHYSIOTHERAPY SERVICE": 1.8478416140767233,
+        "REFERRAL TO PSYCHIATRY SERVICE": 1.592114707276824,
+        "REFERRAL TO PLASTIC SURGERY SERVICE": 1.495099736122784
+      }
+    },
+    "psychiatry": {
+      "referral_count": "20765",
+      "referral_percentage": 1.8197975393077146,
+      "patient_count": 13948,
+      "patient_percentage": 6.457526991240578
+    },
+    "body_systems": {
+      "cardio": {
+        "referral_count": "26273",
+        "referral_percentage": 2.3025061762692793,
+        "patient_count": 16431,
+        "patient_percentage": 7.607085316394747
+      },
+      "gastro": {
+        "referral_count": "57913",
+        "referral_percentage": 5.075364069055029,
+        "patient_count": 35924,
+        "patient_percentage": 16.631789477582917
+      },
+      "neuro": {
+        "referral_count": "25273",
+        "referral_percentage": 2.2148684426161265,
+        "patient_count": 17258,
+        "patient_percentage": 7.989962777088465
+      },
+      "musculo": {
+        "referral_count": "53979",
+        "referral_percentage": 4.730597224863526,
+        "patient_count": 32543,
+        "patient_percentage": 15.066482712642825
+      },
+      "respiratory": {
+        "referral_count": "6246",
+        "referral_percentage": 0.5473852843975914,
+        "patient_count": 5286,
+        "patient_percentage": 2.4472675419915184
+      },
+      "endo": {
+        "referral_count": "7594",
+        "referral_percentage": 0.6655209493620412,
+        "patient_count": 5684,
+        "patient_percentage": 2.6315302135224727
+      },
+      "derm": {
+        "referral_count": "62872",
+        "referral_percentage": 5.509959590241013,
+        "patient_count": 40251,
+        "patient_percentage": 18.635067316061406
+      },
+      "gyn": {
+        "referral_count": "68342",
+        "referral_percentage": 5.989337993323757,
+        "patient_count": 41946,
+        "patient_percentage": 19.41980407044575
+      }
+    },
+    "patterns": {
+      "counts": {
+        "psych_only": "5897",
+        "body_only": "110759",
+        "both": "8051",
+        "neither": "91289"
+      },
+      "percentage": {
+        "psych_only": 2.730143150799089,
+        "body_only": 51.27826441230393,
+        "both": 3.7273838404414894,
+        "neither": 42.26420859645549
+      }
+    }
+  }
+}

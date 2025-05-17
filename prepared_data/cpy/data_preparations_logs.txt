@@ -1,0 +1,167 @@
+PS C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025> python data_preparation_v2.py
+Starting data preparation pipeline...
+2025-02-22 02:09:32,200 - INFO - Initializing pipeline...
+2025-02-22 02:09:32,216 - INFO - Configuration loaded successfully
+2025-02-22 02:09:32,216 - INFO - Chunk size set to: 500000
+Pipeline initialized successfully
+
+Analyzing date ranges across tables...
+Loading Encounter for date analysis...
+2025-02-22 02:09:32,216 - INFO - Loading table: Encounter from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MEncounter.csv
+2025-02-22 02:09:48,057 - WARNING - Found 3 dates outside expected range (1900-01-01 to 2025-01-01) in column EncounterDate (table Encounter)
+2025-02-22 02:09:48,117 - INFO - Processed 10 chunks of Encounter
+2025-02-22 02:10:04,995 - INFO - Processed 20 chunks of Encounter
+2025-02-22 02:10:16,264 - INFO - Successfully loaded Encounter: 11577739 rows
+Loading EncounterDiagnosis for date analysis...
+2025-02-22 02:10:16,493 - INFO - Loading table: EncounterDiagnosis from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MEncounterDiagnosis.csv  
+2025-02-22 02:10:39,591 - INFO - Processed 10 chunks of EncounterDiagnosis
+2025-02-22 02:11:00,229 - INFO - Processed 20 chunks of EncounterDiagnosis
+2025-02-22 02:11:14,625 - INFO - Successfully loaded EncounterDiagnosis: 12471764 rows
+Loading HealthCondition for date analysis...
+2025-02-22 02:11:15,150 - INFO - Loading table: HealthCondition from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MHealthCondition.csv        
+2025-02-22 02:11:29,084 - INFO - Successfully loaded HealthCondition: 2571583 rows
+Loading Lab for date analysis...
+2025-02-22 02:11:29,187 - INFO - Loading table: Lab from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MLab.csv
+2025-02-22 02:11:54,618 - INFO - Processed 10 chunks of Lab
+2025-02-22 02:12:27,488 - INFO - Successfully loaded Lab: 8528807 rows
+Loading MedicalProcedure for date analysis...
+2025-02-22 02:12:28,011 - INFO - Loading table: MedicalProcedure from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MMedicalProcedure.csv      
+2025-02-22 02:12:31,902 - WARNING - Found 5 dates outside expected range (1900-01-01 to 2025-01-01) in column PerformedDate (table MedicalProcedure)
+2025-02-22 02:12:32,687 - INFO - Successfully loaded MedicalProcedure: 1203002 rows
+Loading Medication for date analysis...
+2025-02-22 02:12:32,727 - INFO - Loading table: Medication from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MMedication.csv
+2025-02-22 02:12:39,407 - WARNING - Found 2 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:12:49,416 - WARNING - Found 51 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:12:52,773 - WARNING - Found 1 dates outside expected range (1900-01-01 to 2025-01-01) in column StartDate (table Medication)
+2025-02-22 02:12:52,883 - WARNING - Found 226 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:12:52,923 - WARNING - Found 1 dates outside expected range (1900-01-01 to 2025-01-01) in column DateCreated (table Medication)
+2025-02-22 02:12:56,045 - WARNING - Found 124 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:12:59,491 - WARNING - Found 88 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:13:02,561 - WARNING - Found 1 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:13:05,614 - WARNING - Found 4 dates outside expected range (1900-01-01 to 2025-01-01) in column StartDate (table Medication)
+2025-02-22 02:13:05,674 - WARNING - Found 64 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:13:05,726 - WARNING - Found 1 dates outside expected range (1900-01-01 to 2025-01-01) in column DateCreated (table Medication)
+2025-02-22 02:13:05,734 - INFO - Processed 10 chunks of Medication
+2025-02-22 02:13:12,161 - WARNING - Found 3 dates outside expected range (1900-01-01 to 2025-01-01) in column StartDate (table Medication)
+2025-02-22 02:13:12,423 - WARNING - Found 108 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:13:12,489 - WARNING - Found 3 dates outside expected range (1900-01-01 to 2025-01-01) in column DateCreated (table Medication)
+2025-02-22 02:13:15,579 - WARNING - Found 186 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:13:18,772 - WARNING - Found 220 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:13:22,198 - WARNING - Found 64 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:13:29,543 - INFO - Successfully loaded Medication: 7706628 rows
+Loading Referral for date analysis...
+2025-02-22 02:13:30,064 - INFO - Loading table: Referral from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MReferral.csv
+2025-02-22 02:13:31,688 - WARNING - Found 2 dates outside expected range (1900-01-01 to 2025-01-01) in column CompletedDate (table Referral)
+2025-02-22 02:13:34,227 - INFO - Successfully loaded Referral: 1141061 rows
+Loading RiskFactor for date analysis...
+2025-02-22 02:13:34,289 - INFO - Loading table: RiskFactor from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MRiskFactor_fixed.csv
+2025-02-22 02:13:40,727 - INFO - Successfully loaded RiskFactor: 603298 rows
+
+Proceeding with full data processing...
+Processing table: Patient
+2025-02-22 02:13:48,014 - INFO - Loading table: Patient from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MPatient.csv
+2025-02-22 02:13:48,500 - INFO - Successfully loaded Patient: 352161 rows
+Processing table: PatientDemographic
+2025-02-22 02:13:48,501 - INFO - Loading table: PatientDemographic from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MPatientDemographic.csv
+2025-02-22 02:13:49,688 - WARNING - Found 2 dates outside expected range (1900-01-01 to 2025-01-01) in column DateCreated (table PatientDemographic)
+2025-02-22 02:13:49,690 - INFO - Successfully loaded PatientDemographic: 352220 rows
+Processing table: Encounter
+2025-02-22 02:13:49,690 - INFO - Loading table: Encounter from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MEncounter.csv
+2025-02-22 02:14:04,747 - WARNING - Found 3 dates outside expected range (1900-01-01 to 2025-01-01) in column EncounterDate (table Encounter)
+2025-02-22 02:14:04,831 - INFO - Processed 10 chunks of Encounter
+2025-02-22 02:14:21,323 - INFO - Processed 20 chunks of Encounter
+2025-02-22 02:14:32,645 - INFO - Successfully loaded Encounter: 11577739 rows
+Processing table: EncounterDiagnosis
+2025-02-22 02:14:32,878 - INFO - Loading table: EncounterDiagnosis from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MEncounterDiagnosis.csv  
+2025-02-22 02:14:55,188 - INFO - Processed 10 chunks of EncounterDiagnosis
+2025-02-22 02:15:14,822 - INFO - Processed 20 chunks of EncounterDiagnosis
+2025-02-22 02:15:29,027 - INFO - Successfully loaded EncounterDiagnosis: 12471764 rows
+Processing table: FamilyHistory
+2025-02-22 02:15:29,500 - INFO - Loading table: FamilyHistory from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MFamilyHistory.csv
+2025-02-22 02:15:30,901 - INFO - Successfully loaded FamilyHistory: 325202 rows
+Processing table: HealthCondition
+2025-02-22 02:15:30,902 - INFO - Loading table: HealthCondition from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MHealthCondition.csv        
+2025-02-22 02:15:44,834 - INFO - Successfully loaded HealthCondition: 2571583 rows
+Processing table: Lab
+2025-02-22 02:15:44,969 - INFO - Loading table: Lab from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MLab.csv
+2025-02-22 02:16:09,962 - INFO - Processed 10 chunks of Lab
+2025-02-22 02:16:43,213 - INFO - Successfully loaded Lab: 8528807 rows
+Processing table: MedicalProcedure
+2025-02-22 02:16:43,687 - INFO - Loading table: MedicalProcedure from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MMedicalProcedure.csv      
+2025-02-22 02:16:47,589 - WARNING - Found 5 dates outside expected range (1900-01-01 to 2025-01-01) in column PerformedDate (table MedicalProcedure)
+2025-02-22 02:16:48,367 - INFO - Successfully loaded MedicalProcedure: 1203002 rows
+Processing table: Medication
+2025-02-22 02:16:48,402 - INFO - Loading table: Medication from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MMedication.csv
+2025-02-22 02:16:54,870 - WARNING - Found 2 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:17:04,417 - WARNING - Found 51 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:17:07,661 - WARNING - Found 1 dates outside expected range (1900-01-01 to 2025-01-01) in column StartDate (table Medication)
+2025-02-22 02:17:07,753 - WARNING - Found 226 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:17:07,814 - WARNING - Found 1 dates outside expected range (1900-01-01 to 2025-01-01) in column DateCreated (table Medication)
+2025-02-22 02:17:11,051 - WARNING - Found 124 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:17:14,325 - WARNING - Found 88 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:17:17,507 - WARNING - Found 1 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:17:20,746 - WARNING - Found 4 dates outside expected range (1900-01-01 to 2025-01-01) in column StartDate (table Medication)
+2025-02-22 02:17:20,820 - WARNING - Found 64 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:17:20,870 - WARNING - Found 1 dates outside expected range (1900-01-01 to 2025-01-01) in column DateCreated (table Medication)
+2025-02-22 02:17:20,887 - INFO - Processed 10 chunks of Medication
+2025-02-22 02:17:27,359 - WARNING - Found 3 dates outside expected range (1900-01-01 to 2025-01-01) in column StartDate (table Medication)
+2025-02-22 02:17:27,651 - WARNING - Found 108 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:17:27,716 - WARNING - Found 3 dates outside expected range (1900-01-01 to 2025-01-01) in column DateCreated (table Medication)
+2025-02-22 02:17:31,061 - WARNING - Found 186 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:17:34,474 - WARNING - Found 220 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:17:37,876 - WARNING - Found 64 dates outside expected range (1900-01-01 to 2025-01-01) in column StopDate (table Medication)
+2025-02-22 02:17:45,851 - INFO - Successfully loaded Medication: 7706628 rows
+Processing table: Referral
+2025-02-22 02:17:46,597 - INFO - Loading table: Referral from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MReferral.csv
+2025-02-22 02:17:48,191 - WARNING - Found 2 dates outside expected range (1900-01-01 to 2025-01-01) in column CompletedDate (table Referral)
+2025-02-22 02:17:50,549 - INFO - Successfully loaded Referral: 1141061 rows
+Processing table: RiskFactor
+2025-02-22 02:17:50,571 - INFO - Loading table: RiskFactor from C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\extracted_data\C4MRiskFactor_fixed.csv
+2025-02-22 02:17:56,476 - INFO - Successfully loaded RiskFactor: 603298 rows
+2025-02-22 02:17:56,528 - INFO - Wrote 6 outlier rows to C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\outliers\Encounter_Outside_Date_Range_1900to2025.csv
+2025-02-22 02:17:56,531 - INFO - Wrote 10 outlier rows to C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\outliers\MedicalProcedure_Outside_Date_Range_1900to2025.csv
+2025-02-22 02:17:56,560 - INFO - Wrote 2294 outlier rows to C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\outliers\Medication_Outside_Date_Range_1900to2025.csv
+2025-02-22 02:17:56,576 - INFO - Wrote 4 outlier rows to C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\outliers\Referral_Outside_Date_Range_1900to2025.csv
+2025-02-22 02:17:56,579 - INFO - Wrote 2 outlier rows to C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\outliers\PatientDemographic_Outside_Date_Range_1900to2025.csv
+
+Merging Patient and PatientDemographic tables...
+Created merged PatientDemographic_Merged table with 'recorded_deceased' and 'age' columns.
+2025-02-22 02:18:16,619 - INFO - Flagged 822935 rows in EncounterDiagnosis as orphan (missing Encounter_ID).
+2025-02-22 02:18:25,221 - INFO - Flagged 4339188 rows in Medication as orphan (missing Encounter_ID).
+2025-02-22 02:18:32,331 - INFO - Flagged 8524736 rows in Lab as orphan (missing Encounter_ID).
+
+Validating table relationships...
+WARNING: Found data relationship issues:
+  EncounterDiagnosis: 637677 Encounter_IDs not found in Encounter table
+  Medication: 245318 Encounter_IDs not found in Encounter table
+  Lab: 14724 Encounter_IDs not found in Encounter table
+
+Assessing data quality...
+2025-02-22 02:18:41,717 - INFO - Assessing quality metrics for Patient
+2025-02-22 02:18:41,820 - INFO - Assessing quality metrics for PatientDemographic
+2025-02-22 02:18:42,755 - INFO - Assessing quality metrics for Encounter
+2025-02-22 02:18:48,904 - INFO - Assessing quality metrics for EncounterDiagnosis
+2025-02-22 02:18:58,350 - INFO - Assessing quality metrics for FamilyHistory
+2025-02-22 02:18:59,368 - INFO - Assessing quality metrics for HealthCondition
+2025-02-22 02:19:01,772 - INFO - Assessing quality metrics for Lab
+2025-02-22 02:19:12,697 - INFO - Assessing quality metrics for MedicalProcedure
+2025-02-22 02:19:13,968 - INFO - Assessing quality metrics for Medication
+2025-02-22 02:19:23,682 - INFO - Assessing quality metrics for Referral
+2025-02-22 02:19:24,395 - INFO - Assessing quality metrics for RiskFactor
+2025-02-22 02:19:24,944 - INFO - Assessing quality metrics for PatientDemographic_Merged
+
+Saving prepared data...
+2025-02-22 02:19:25,598 - INFO - Saved Patient -> C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\Patient_prepared.csv
+2025-02-22 02:19:26,656 - INFO - Saved PatientDemographic -> C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\PatientDemographic_prepared.csv        
+2025-02-22 02:20:04,870 - INFO - Saved Encounter -> C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\Encounter_prepared.csv
+2025-02-22 02:20:46,413 - INFO - Saved EncounterDiagnosis -> C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\EncounterDiagnosis_prepared.csv        
+2025-02-22 02:20:47,595 - INFO - Saved FamilyHistory -> C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\FamilyHistory_prepared.csv
+2025-02-22 02:20:57,334 - INFO - Saved HealthCondition -> C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\HealthCondition_prepared.csv
+2025-02-22 02:21:35,251 - INFO - Saved Lab -> C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\Lab_prepared.csv
+2025-02-22 02:21:39,181 - INFO - Saved MedicalProcedure -> C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\MedicalProcedure_prepared.csv
+2025-02-22 02:22:26,261 - INFO - Saved Medication -> C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\Medication_prepared.csv
+2025-02-22 02:22:29,795 - INFO - Saved Referral -> C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\Referral_prepared.csv
+2025-02-22 02:22:32,301 - INFO - Saved RiskFactor -> C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\RiskFactor_prepared.csv
+2025-02-22 02:22:33,566 - INFO - Saved PatientDemographic_Merged -> C:\Users\ProjectC4M\Documents\CPCSSN Datasets Care4Mind\New Extraction Feb 2025\prepared_data\PatientDemographic_Merged_prepared.csv
+
+Data preparation completed successfully!
