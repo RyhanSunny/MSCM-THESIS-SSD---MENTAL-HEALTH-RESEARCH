@@ -33,3 +33,9 @@ This checkpoint contains data processed through notebook 1.
 
 ## Next Steps
 Continue with Notebook 2 for NYD identification refinement.
+
+## Provenance and Data Source
+- This checkpoint contains the full prepared data tables for the SSD pipeline, generated from the raw CPCSSN extracts (`extracted_data/`) and processed through the data preparation notebooks.
+- These files are the canonical data source for all main analyses in the pipeline.
+- The `100k_sample` is for development/testing only and should not be used for production analyses.
+- For full provenance, see the data preparation logs and the `prepared_data/` folder.

@@ -66,6 +66,12 @@ def charlson_index(hc_df: pd.DataFrame, code_col: str = "DiagnosisCode_calc", pi
     """
     Return a Series (indexed by Patient_ID) with the Charlson comorbidity score (Quan 2011 ICD-10-CA mapping).
     `hc_df` is the health_condition table.
+    This function:
+        Scans all diagnosis codes for each patient in the health_condition table.
+        Uses a set of regular expressions (regexes) to match codes to Charlson categories (e.g., diabetes, cancer, etc.), following the Quan 2011 Canadian mapping.
+        Each category has a weight (e.g., diabetes = 1, metastatic cancer = 6).
+        The patient’s total score is the sum of all applicable weights.
+        The code ensures the score is an integer and fills missing values with 0.
     """
     # keep unique (patient, code) to speed up
     codes = (hc_df[[pid_col, code_col]].dropna().drop_duplicates())

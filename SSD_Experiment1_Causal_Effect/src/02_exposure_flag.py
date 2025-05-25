@@ -15,6 +15,13 @@ window (index-date → index-date + 365 d):
 
 Outputs  
 `data_derived/exposure.parquet`
+
+HYPOTHESIS MAPPING:
+This script directly supports:
+- H1, H2, H3: The exposure flag identifies patients with SSD patterns which are
+  the treatment group for testing effects on healthcare utilization and costs
+- H4, H5, H6: Provides the exposure variable for mediation analyses through
+  psychological factors, health anxiety, and physician factors
 """
 
 from __future__ import annotations
@@ -35,6 +42,15 @@ except locale.Error:
     except locale.Error:
         pass
 
+# Add src and utils to path
+SRC = (Path(__file__).resolve().parents[1] / "src").as_posix()
+if SRC not in sys.path:
+    sys.path.insert(0, SRC)
+
+UTILS = (Path(__file__).resolve().parents[1] / "utils").as_posix()
+if UTILS not in sys.path:
+    sys.path.insert(0, UTILS)
+
 # ------------------------------------------------------------------ #
 #  Logging
 # ------------------------------------------------------------------ #
@@ -47,6 +63,30 @@ logging.basicConfig(
         logging.FileHandler("02_exposure_flag.log", mode="w", encoding='utf-8')
     ])
 log = logging.getLogger("exposure")
+
+# Import and set global seeds
+try:
+    from global_seeds import set_global_seeds
+    set_global_seeds()
+    log.info("Global seeds set for reproducibility")
+except ImportError:
+    log.warning("Could not import global_seeds utility")
+
+# Import configuration
+try:
+    from config_loader import load_config, get_config
+    config = load_config()
+    log.info("Configuration loaded successfully")
+except Exception as e:
+    log.error(f"Could not load configuration: {e}")
+    raise
+
+# Import lab utilities
+try:
+    from helpers.lab_utils import is_normal_lab, add_normal_flags
+    log.info("Lab utilities imported successfully")
+except ImportError as e:
+    log.warning(f"Could not import lab utilities: {e} - will use existing is_normal column")
 
 # ------------------------------------------------------------------ #
 #  Project paths
@@ -111,13 +151,21 @@ enc_diag = enc_diag[enc_diag.Patient_ID.isin(keep)]
 # ------------------------------------------------------------------ #
 #  2  Window boundaries
 # ------------------------------------------------------------------ #
-# cohort has per-patient IndexDate_lab (already calculated)
+# Use exposure window from config (2018-01-01 to 2019-01-01)
+exp_window_start = pd.Timestamp(get_config("temporal.exposure_window_start"))
+exp_window_end = pd.Timestamp(get_config("temporal.exposure_window_end"))
+
+# For each patient, exposure window is relative to their index date
 cohort["exp_start"] = cohort.IndexDate_lab
 cohort["exp_end"]   = cohort.IndexDate_lab + pd.Timedelta(days=365)
 
+log.info(f"Exposure window: {exp_window_start} to {exp_window_end} (relative to index date)")
+
 # ------------------------------------------------------------------ #
-#  3  Criterion 1 – ≥3 normal labs
+#  3  Criterion 1 – ≥{config} normal labs
 # ------------------------------------------------------------------ #
+MIN_NORMAL_LABS = get_config("exposure.min_normal_labs", 3)
+
 # Normal-lab detection from Notebook 1
 if "is_normal" not in lab.columns:
     raise RuntimeError("Column is_normal missing – run Notebook 1 first!")
@@ -159,8 +207,8 @@ else:
                  .apply(lambda x: (x==True).sum())
                  .rename("normal_lab_count"))
 
-crit1 = norm_count >= 3
-log.info(f"Patients meeting ≥3 normal-lab rule: {crit1.sum():,}")
+crit1 = norm_count >= MIN_NORMAL_LABS
+log.info(f"Patients meeting ≥{MIN_NORMAL_LABS} normal-lab rule: {crit1.sum():,}")
 
 # Clean up memory
 del lab
@@ -168,9 +216,10 @@ import gc
 gc.collect()
 
 # ------------------------------------------------------------------ #
-#  4  Criterion 2 – ≥2 symptom-referrals
+#  4  Criterion 2 – ≥{config} symptom-referrals
 # ------------------------------------------------------------------ #
-SYMPTOM_RE = re.compile(r"^(78[0-9]|799)")
+MIN_SYMPTOM_REFERRALS = get_config("exposure.min_symptom_referrals", 2)
+SYMPTOM_RE = re.compile(get_config("exposure.symptom_code_regex", r"^(78[0-9]|799)"))
 
 # Step a: Filter encounter_diagnosis first to reduce memory usage
 enc_diag_filtered = enc_diag[enc_diag.DiagnosisCode_calc.str.match(SYMPTOM_RE, na=False)][["Encounter_ID", "DiagnosisCode_calc"]]
@@ -214,22 +263,44 @@ def process_referral_chunks(referral_df, enc_diag_filtered, cohort):
     return ref_count
 
 ref_count = process_referral_chunks(referral, enc_diag_filtered, cohort)
-crit2 = ref_count >= 2
-log.info(f"Patients meeting ≥2 symptom-referral rule: {crit2.sum():,}")
+crit2 = ref_count >= MIN_SYMPTOM_REFERRALS
+log.info(f"Patients meeting ≥{MIN_SYMPTOM_REFERRALS} symptom-referral rule: {crit2.sum():,}")
 
 del referral, enc_diag_filtered
 import gc
 gc.collect()
 
 # ------------------------------------------------------------------ #
-#  5  Criterion 3 – ≥90 d prescription coverage
+#  5  Criterion 3 – ≥{config} d prescription coverage
 # ------------------------------------------------------------------ #
-ATC_KEEP = (
-    med.Code_calc.str.startswith(("N05B", "N05C", "N02B", "N05CH"), na=False) |
-    med.Name_calc.str.contains(
-        r"ZOPICLONE|ZOLPIDEM|BUSPIRONE|BENZODIAZEPINE|GABAPENTIN",
-        case=False, na=False)
-)
+MIN_DRUG_DAYS = get_config("exposure.min_drug_days", 90)
+
+# Load drug ATC codes from config
+drug_atc_config = get_config("exposure.drug_atc_codes", {})
+all_atc_codes = []
+for drug_class, codes in drug_atc_config.items():
+    all_atc_codes.extend(codes)
+
+# Also load from drug_atc.csv if available
+drug_atc_path = ROOT / 'code_lists' / 'drug_atc.csv'
+if drug_atc_path.exists():
+    log.info(f"Loading drug ATC codes from {drug_atc_path}")
+    drug_atc_df = pd.read_csv(drug_atc_path)
+    # Add any codes from CSV that aren't in config
+    csv_codes = drug_atc_df['atc_code'].unique().tolist()
+    all_atc_codes.extend([code for code in csv_codes if code not in all_atc_codes])
+    log.info(f"Total ATC codes: {len(all_atc_codes)}")
+
+# Drug name patterns from config
+drug_name_patterns = get_config("exposure.drug_name_patterns", [])
+drug_name_regex = "|".join(drug_name_patterns) if drug_name_patterns else None
+
+# Filter medications
+atc_conditions = [med.Code_calc.str.startswith(code, na=False) for code in all_atc_codes]
+ATC_KEEP = pd.concat(atc_conditions, axis=1).any(axis=1)
+
+if drug_name_regex:
+    ATC_KEEP = ATC_KEEP | med.Name_calc.str.contains(drug_name_regex, case=False, na=False)
 
 med = med[ATC_KEEP].copy()
 med["StartDate"] = pd.to_datetime(med.StartDate, errors="coerce")
@@ -248,8 +319,8 @@ med["days"] = (med.clip_stop - med.clip_start).dt.days.clip(lower=0)
 
 drug_days = (med.groupby("Patient_ID")["days"].sum()
              .rename("drug_days_in_window"))
-crit3 = drug_days >= 90
-log.info(f"Patients with ≥90 d qualifying Rx: {crit3.sum():,}")
+crit3 = drug_days >= MIN_DRUG_DAYS
+log.info(f"Patients with ≥{MIN_DRUG_DAYS} d qualifying Rx: {crit3.sum():,}")
 
 # ------------------------------------------------------------------ #
 #  6  Put it together
@@ -261,9 +332,9 @@ exposure = (exposure
             .merge(drug_days,               how="left")
             .fillna(0))
 
-exposure["crit1_normal_labs"]   = exposure.normal_lab_count   >= 3
-exposure["crit2_sympt_ref"]     = exposure.symptom_referral_n >= 2
-exposure["crit3_drug_90d"]      = exposure.drug_days_in_window >= 90
+exposure["crit1_normal_labs"]   = exposure.normal_lab_count   >= MIN_NORMAL_LABS
+exposure["crit2_sympt_ref"]     = exposure.symptom_referral_n >= MIN_SYMPTOM_REFERRALS
+exposure["crit3_drug_90d"]      = exposure.drug_days_in_window >= MIN_DRUG_DAYS
 
 exposure["exposure_flag"] = (
     exposure.crit1_normal_labs &
@@ -286,3 +357,25 @@ cols_keep = ["Patient_ID",
 
 exposure[cols_keep].to_parquet(OUT_PATH, index=False, compression="snappy")
 log.info(f"Wrote {OUT_PATH}")
+
+# ------------------------------------------------------------------ #
+#  8  Update study documentation
+# ------------------------------------------------------------------ #
+import subprocess
+try:
+    result = subprocess.run([
+        sys.executable, 
+        str(ROOT / "scripts" / "update_study_doc.py"),
+        "--step", "Exposure flag generated",
+        "--kv", f"artefact=exposure.parquet",
+        "--kv", f"n_exposed={exposure.exposure_flag.sum()}",
+        "--kv", f"pct_exposed={exposure.exposure_flag.mean():.2%}",
+        "--kv", "hypotheses=H1,H2,H3,H4,H5,H6",
+        "--kv", f"script=02_exposure_flag.py"
+    ], capture_output=True, text=True)
+    if result.returncode == 0:
+        log.info("Study documentation updated successfully")
+    else:
+        log.warning(f"Study doc update failed: {result.stderr}")
+except Exception as e:
+    log.warning(f"Could not update study doc: {e}")

@@ -128,10 +128,24 @@ protocol:
       source: Lab_prepared.csv
       type: binary
   version: '1.0'
-license: MIT  # QA/Utility
-deterministic_random_state: true  # QA/Utility
-cohort_rows: 250025  # All hypotheses
-selection_diagram_pdf: figs/selection_diagram.pdf  # QA/Utility
-weight_diag_notebook: figs/weights.html  # QA/Utility
-death_rates_table: reports/death_rates_table.csv  # H1, H3
-ices_margins_file: external/ices_margins_2018_2021.csv  # H6
+license: MIT
+deterministic_random_state: 'true'
+cohort_rows: 250025
+selection_diagram_pdf: figs/selection_diagram.pdf
+weight_diag_notebook: figs/weights.html
+death_rates_table: reports/death_rates_table.csv
+ices_margins_file: external/ices_margins_2018_2021.csv
+docker_tag: ssd-pipeline:1.1
+log:
+- timestamp: '20250524_200628'
+  step: Docker build 1.1
+- timestamp: '20250524_201139'
+  step: Global seeds util added
+- timestamp: '20250524_201323'
+  step: MIT LICENSE and CITATION.cff added
+- timestamp: '20250524_201649'
+  step: Release lock script implemented
+- timestamp: '20250525_040659'
+  step: Cohort eligibility completed
+release_lock_script: present
+script: 01_cohort_builder.py

@@ -1,0 +1,219 @@
+stages:
+  cohort:
+    cmd: python src/01_cohort_builder.py
+    deps:
+      - src/01_cohort_builder.py
+      - config/config.yaml
+      - Notebooks/data/interim/checkpoint_1_20250318_024427/
+    outs:
+      - data_derived/cohort.parquet
+    metrics:
+      - data_derived/cohort_report.md:
+          cache: false
+    params:
+      - temporal.reference_date
+      - temporal.censor_date
+      - cohort.min_age
+      - cohort.max_age
+
+  exposure:
+    cmd: python src/02_exposure_flag.py
+    deps:
+      - src/02_exposure_flag.py
+      - data_derived/cohort.parquet
+      - code_lists/drug_atc.csv
+      - src/helpers/lab_utils.py
+    outs:
+      - data_derived/exposure.parquet
+    params:
+      - exposure.min_normal_labs
+      - exposure.min_symptom_referrals
+      - exposure.min_drug_days
+
+  mediator:
+    cmd: python src/03_mediator_autoencoder.py
+    deps:
+      - src/03_mediator_autoencoder.py
+      - data_derived/cohort.parquet
+      - data_derived/exposure.parquet
+    outs:
+      - data_derived/mediator.parquet
+      - models/autoencoder_weights.h5
+      - code_lists/ae56_features.csv
+    params:
+      - mediator.encoding_dim
+      - mediator.n_epochs
+
+  outcomes:
+    cmd: python src/04_outcome_flag.py
+    deps:
+      - src/04_outcome_flag.py
+      - data_derived/cohort.parquet
+      - data_derived/exposure.parquet
+    outs:
+      - data_derived/outcomes.parquet
+    params:
+      - outcome.window_start
+      - outcome.window_end
+
+  confounders:
+    cmd: python src/05_confounder_flag.py
+    deps:
+      - src/05_confounder_flag.py
+      - data_derived/cohort.parquet
+    outs:
+      - data_derived/confounders.parquet
+    params:
+      - confounders.baseline_window_days
+
+  lab_flags:
+    cmd: python src/06_lab_flag.py
+    deps:
+      - src/06_lab_flag.py
+      - data_derived/cohort.parquet
+    outs:
+      - data_derived/lab_sensitivity.parquet
+
+  missing_data:
+    cmd: python src/07_missing_data.py
+    deps:
+      - src/07_missing_data.py
+      - data_derived/cohort.parquet
+    outs:
+      - data_derived/cohort_imputed.parquet
+    params:
+      - missing_data.method
+      - missing_data.iterations
+
+  referral_sequences:
+    cmd: python src/07_referral_sequence.py
+    deps:
+      - src/07_referral_sequence.py
+      - data_derived/cohort.parquet
+    outs:
+      - data_derived/referral_sequences.parquet
+
+  misclassification_adjust:
+    cmd: python src/07a_misclassification_adjust.py
+    deps:
+      - src/07a_misclassification_adjust.py
+      - data_derived/patient_master.parquet
+    outs:
+      - data_derived/cohort_bias_corrected.parquet
+      - results/simex_results.json
+    params:
+      - misclassification.sensitivity
+      - misclassification.specificity
+      - misclassification.simex_B
+
+  patient_master:
+    cmd: python src/08_patient_master_table.py
+    deps:
+      - src/08_patient_master_table.py
+      - data_derived/cohort.parquet
+      - data_derived/exposure.parquet
+      - data_derived/mediator.parquet
+      - data_derived/outcomes.parquet
+      - data_derived/confounders.parquet
+    outs:
+      - data_derived/patient_master.parquet
+
+  ps_matching:
+    cmd: python src/05_ps_match.py
+    deps:
+      - src/05_ps_match.py
+      - data_derived/patient_master.parquet
+    outs:
+      - data_derived/ps_weighted.parquet
+      - data_derived/ps_matched.parquet
+      - models/ps_xgboost.json
+      - figures/love_plot.pdf
+      - results/ps_matching_results.json
+    params:
+      - ps_model.max_depth
+      - ps_model.learning_rate
+      - ps_matching.caliper
+
+  temporal_adjustment:
+    cmd: python src/12_temporal_adjust.py
+    deps:
+      - src/12_temporal_adjust.py
+      - data_derived/ps_weighted.parquet
+    outs:
+      - results/segmented_regression.pkl
+      - results/temporal_adjustment_summary.json
+      - figures/temporal_trends.pdf
+
+  causal_estimation:
+    cmd: python src/06_causal_estimators.py
+    deps:
+      - src/06_causal_estimators.py
+      - data_derived/ps_weighted.parquet
+    outs:
+      - results/ate_estimates.json
+      - results/cate_analysis.json
+      - figures/cate_distribution.pdf
+
+  evalue_calculation:
+    cmd: python src/13_evalue_calc.py
+    deps:
+      - src/13_evalue_calc.py
+      - data_derived/ps_weighted.parquet
+      - results/ate_estimates.json
+    outs:
+      - results/evalue_results.json
+
+  placebo_tests:
+    cmd: python src/14_placebo_tests.py
+    deps:
+      - src/14_placebo_tests.py
+      - data_derived/ps_weighted.parquet
+    outs:
+      - results/placebo_test_results.json
+
+  robustness_checks:
+    cmd: python src/15_robustness.py
+    deps:
+      - src/15_robustness.py
+      - data_derived/ps_weighted.parquet
+    outs:
+      - results/robustness_results.json
+      - figures/robustness_forest_plot.pdf
+
+  competing_risk:
+    cmd: python src/finegray_competing.py
+    deps:
+      - src/finegray_competing.py
+      - data_derived/patient_master.parquet
+    outs:
+      - results/competing_risk_results.json
+      - figures/cumulative_incidence.pdf
+
+  death_rates:
+    cmd: python src/death_rates_analysis.py
+    deps:
+      - src/death_rates_analysis.py
+      - data_derived/patient_master.parquet
+    outs:
+      - results/death_rates_table.csv
+      - results/immortal_time_bias.json
+      - figures/death_rates_plot.pdf
+
+  qc_master:
+    cmd: cd notebooks && papermill 09_qc_master.ipynb 09_qc_master_output.ipynb -p qc_status PENDING
+    deps:
+      - notebooks/09_qc_master.ipynb
+      - data_derived/patient_master.parquet
+      - data_derived/ps_weighted.parquet
+    outs:
+      - notebooks/09_qc_master_output.ipynb
+      - results/qc_results.json
+
+# Define complete pipeline
+all:
+  cmd: echo "Running complete SSD pipeline"
+  deps:
+    - data_derived/patient_master.parquet
+    - results/ate_estimates.json
+    - results/robustness_results.json
+    - results/qc_results.json

@@ -1,0 +1,316 @@
+---
+title: "SSD Study: Baseline Characteristics and Descriptive Analysis"
+author: "Ryhan Suny"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    latex_engine: pdflatex
+    toc: true
+    number_sections: true
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+# Load required libraries
+required_packages <- c("dplyr", "knitr", "ggplot2", "tableone", 
+                      "flextable", "yaml", "arrow")
+
+for (pkg in required_packages) {
+  if (!require(pkg, character.only = TRUE)) {
+    install.packages(pkg)
+    library(pkg, character.only = TRUE)
+  }
+}
+```
+
+```{r load-config}
+# Load configuration
+config <- yaml::read_yaml("../config/config.yaml")
+
+# Set paths
+data_path <- "../data_derived"
+results_path <- "../results"
+```
+
+# Introduction
+
+This report presents baseline characteristics and descriptive statistics for the SSD (Somatic Symptom Disorder) causal analysis study. The analysis examines the relationship between patterns of negative diagnostic tests, unresolved specialist referrals, and persistent medication use on healthcare utilization.
+
+## Study Design
+
+- **Study Period**: `r config$temporal$reference_date` to `r config$temporal$outcome_window_end`
+- **Population**: Primary care patients ≥18 years with ≥30 months observation
+- **Design**: Retrospective cohort study using CPCSSN data
+
+```{r load-data}
+# Load analysis datasets
+tryCatch({
+  patient_master <- arrow::read_parquet(file.path(data_path, "patient_master.parquet"))
+  cohort_exists <- TRUE
+}, error = function(e) {
+  cohort_exists <- FALSE
+  patient_master <- data.frame()
+})
+
+if (!cohort_exists) {
+  # Load individual components if master table doesn't exist
+  tryCatch({
+    cohort <- arrow::read_parquet(file.path(data_path, "cohort.parquet"))
+    exposure <- arrow::read_parquet(file.path(data_path, "exposure.parquet"))
+    outcomes <- arrow::read_parquet(file.path(data_path, "outcomes.parquet"))
+    confounders <- arrow::read_parquet(file.path(data_path, "confounders.parquet"))
+    
+    # Simple merge for demonstration
+    patient_master <- cohort %>%
+      left_join(exposure, by = "Patient_ID") %>%
+      left_join(outcomes, by = "Patient_ID") %>%
+      left_join(confounders, by = "Patient_ID")
+  }, error = function(e) {
+    patient_master <- data.frame()
+  })
+}
+```
+
+# Sample Characteristics
+
+```{r sample-size}
+if (nrow(patient_master) > 0) {
+  total_n <- nrow(patient_master)
+  
+  # Get exposure variable name (adjust based on actual column names)
+  exposure_vars <- grep("ssd_flag|exposure|treatment", names(patient_master), value = TRUE, ignore.case = TRUE)
+  exposure_var <- if(length(exposure_vars) > 0) exposure_vars[1] else NULL
+  
+  if (!is.null(exposure_var)) {
+    exposed_n <- sum(patient_master[[exposure_var]], na.rm = TRUE)
+    unexposed_n <- total_n - exposed_n
+  } else {
+    exposed_n <- NA
+    unexposed_n <- NA
+  }
+} else {
+  total_n <- 0
+  exposed_n <- NA
+  unexposed_n <- NA
+}
+```
+
+## Overall Sample Size
+
+- **Total Eligible Patients**: `r format(total_n, big.mark = ",")`
+- **Exposed (SSD Pattern)**: `r if(!is.na(exposed_n)) format(exposed_n, big.mark = ",") else "Data not available"`
+- **Unexposed**: `r if(!is.na(unexposed_n)) format(unexposed_n, big.mark = ",") else "Data not available"`
+
+```{r baseline-table, results='asis'}
+if (nrow(patient_master) > 0 && !is.null(exposure_var)) {
+  
+  # Define variables for Table 1
+  demographic_vars <- c()
+  clinical_vars <- c()
+  
+  # Check for common variable patterns
+  if ("Sex" %in% names(patient_master)) demographic_vars <- c(demographic_vars, "Sex")
+  if (any(grepl("Age", names(patient_master)))) {
+    age_var <- grep("Age", names(patient_master), value = TRUE)[1]
+    demographic_vars <- c(demographic_vars, age_var)
+  }
+  if ("Charlson" %in% names(patient_master)) clinical_vars <- c(clinical_vars, "Charlson")
+  if ("LongCOVID_flag" %in% names(patient_master)) clinical_vars <- c(clinical_vars, "LongCOVID_flag")
+  if ("NYD_count" %in% names(patient_master)) clinical_vars <- c(clinical_vars, "NYD_count")
+  
+  # Additional variables that might exist
+  utilization_vars <- grep("encounter|visit|referral", names(patient_master), value = TRUE, ignore.case = TRUE)
+  if (length(utilization_vars) > 0) {
+    clinical_vars <- c(clinical_vars, utilization_vars[1:min(3, length(utilization_vars))])
+  }
+  
+  all_vars <- c(demographic_vars, clinical_vars)
+  
+  if (length(all_vars) > 0) {
+    # Create Table 1
+    table1 <- CreateTableOne(
+      vars = all_vars,
+      strata = exposure_var,
+      data = patient_master,
+      test = TRUE,
+      smd = TRUE
+    )
+    
+    # Print the table
+    print(table1, smd = TRUE, showAllLevels = TRUE)
+    
+  } else {
+    cat("**Note**: Baseline characteristics table cannot be generated as expected variables are not found in the dataset.\n\n")
+    cat("Available variables: ", paste(names(patient_master)[1:min(10, ncol(patient_master))], collapse = ", "), "...\n\n")
+  }
+  
+} else {
+  cat("**Note**: Baseline characteristics table cannot be generated. Patient master table or exposure variable not available.\n\n")
+}
+```
+
+# Exposure Characteristics
+
+```{r exposure-analysis}
+if (nrow(patient_master) > 0) {
+  # Look for exposure components
+  lab_vars <- grep("lab|normal", names(patient_master), value = TRUE, ignore.case = TRUE)
+  referral_vars <- grep("referral", names(patient_master), value = TRUE, ignore.case = TRUE)
+  medication_vars <- grep("med|drug", names(patient_master), value = TRUE, ignore.case = TRUE)
+  
+  cat("## SSD Pattern Components\n\n")
+  
+  if (length(lab_vars) > 0) {
+    cat("### Normal Laboratory Results\n")
+    for (var in lab_vars[1:min(3, length(lab_vars))]) {
+      if (is.numeric(patient_master[[var]])) {
+        cat("- **", var, "**: Mean =", round(mean(patient_master[[var]], na.rm = TRUE), 2), "\n")
+      }
+    }
+    cat("\n")
+  }
+  
+  if (length(referral_vars) > 0) {
+    cat("### Specialist Referrals\n")
+    for (var in referral_vars[1:min(3, length(referral_vars))]) {
+      if (is.numeric(patient_master[[var]])) {
+        cat("- **", var, "**: Mean =", round(mean(patient_master[[var]], na.rm = TRUE), 2), "\n")
+      }
+    }
+    cat("\n")
+  }
+  
+  if (length(medication_vars) > 0) {
+    cat("### Medication Patterns\n")
+    for (var in medication_vars[1:min(3, length(medication_vars))]) {
+      if (is.numeric(patient_master[[var]])) {
+        cat("- **", var, "**: Mean =", round(mean(patient_master[[var]], na.rm = TRUE), 2), "\n")
+      }
+    }
+    cat("\n")
+  }
+}
+```
+
+# Outcome Variables
+
+```{r outcomes-summary}
+if (nrow(patient_master) > 0) {
+  outcome_vars <- grep("encounter|visit|cost|utilization", names(patient_master), value = TRUE, ignore.case = TRUE)
+  
+  if (length(outcome_vars) > 0) {
+    cat("## Healthcare Utilization Outcomes\n\n")
+    
+    for (var in outcome_vars[1:min(5, length(outcome_vars))]) {
+      if (is.numeric(patient_master[[var]])) {
+        var_summary <- summary(patient_master[[var]])
+        cat("### ", var, "\n")
+        cat("- Mean:", round(var_summary["Mean"], 2), "\n")
+        cat("- Median:", round(var_summary["Median"], 2), "\n")
+        cat("- Range:", round(var_summary["Min."], 2), "-", round(var_summary["Max."], 2), "\n\n")
+      }
+    }
+  } else {
+    cat("**Note**: Outcome variables not yet available in the dataset.\n\n")
+  }
+}
+```
+
+# Data Quality Assessment
+
+```{r data-quality}
+if (nrow(patient_master) > 0) {
+  cat("## Missing Data Summary\n\n")
+  
+  # Calculate missingness
+  missing_pct <- patient_master %>%
+    summarise_all(~round(sum(is.na(.))/n() * 100, 1)) %>%
+    gather(key = "Variable", value = "Missing_Percent") %>%
+    filter(Missing_Percent > 0) %>%
+    arrange(desc(Missing_Percent))
+  
+  if (nrow(missing_pct) > 0) {
+    kable(missing_pct, caption = "Variables with Missing Data")
+  } else {
+    cat("No missing data detected in the current dataset.\n\n")
+  }
+  
+  cat("## Dataset Dimensions\n\n")
+  cat("- **Observations**: ", format(nrow(patient_master), big.mark = ","), "\n")
+  cat("- **Variables**: ", ncol(patient_master), "\n")
+  cat("- **Memory Size**: ", format(object.size(patient_master), units = "MB"), "\n\n")
+}
+```
+
+# Temporal Distribution
+
+```{r temporal-analysis}
+if (nrow(patient_master) > 0) {
+  # Look for date variables
+  date_vars <- grep("date|Date", names(patient_master), value = TRUE)
+  
+  if (length(date_vars) > 0) {
+    cat("## Study Timeline\n\n")
+    
+    for (var in date_vars[1:min(3, length(date_vars))]) {
+      if (class(patient_master[[var]])[1] %in% c("Date", "POSIXct", "POSIXt")) {
+        date_range <- range(patient_master[[var]], na.rm = TRUE)
+        cat("- **", var, "**: ", as.character(date_range[1]), " to ", as.character(date_range[2]), "\n")
+      }
+    }
+    cat("\n")
+  }
+}
+```
+
+# Study Progress
+
+```{r study-progress}
+# Check for analysis outputs
+analysis_files <- list.files(results_path, pattern = "\\.(json|csv|pkl)$", full.names = FALSE)
+
+cat("## Analysis Pipeline Status\n\n")
+
+expected_outputs <- c(
+  "ate_estimates.json" = "Causal effect estimates",
+  "ps_matching_results.json" = "Propensity score matching",
+  "robustness_results.json" = "Robustness checks",
+  "evalue_results.json" = "E-value sensitivity analysis",
+  "qc_results.json" = "Quality control"
+)
+
+for (file in names(expected_outputs)) {
+  status <- if (file %in% analysis_files) "✓ Complete" else "○ Pending"
+  cat("- **", expected_outputs[file], "**: ", status, "\n")
+}
+```
+
+# Appendix
+
+## Configuration Summary
+
+```{r config-summary}
+cat("### Study Configuration\n\n")
+cat("- **Reference Date**: ", config$temporal$reference_date, "\n")
+cat("- **Exposure Window**: ", config$temporal$exposure_window_start, " to ", config$temporal$exposure_window_end, "\n")
+cat("- **Outcome Window**: ", config$temporal$outcome_window_start, " to ", config$temporal$outcome_window_end, "\n")
+cat("- **Minimum Age**: ", config$cohort$min_age, " years\n")
+cat("- **Minimum Observation**: ", config$cohort$min_observation_months, " months\n")
+```
+
+## Data Processing Notes
+
+- All analyses use the most recent data checkpoint: `checkpoint_1_20250318_024427`
+- Missing data handling implemented using MICE forest imputation
+- Propensity score matching with GPU-accelerated XGBoost
+- Temporal confounding adjustment for COVID-19 period
+
+---
+
+*Report generated on: `r Sys.time()`*
+
+*Pipeline version: `r config$study$version`*

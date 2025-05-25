@@ -11,6 +11,12 @@
 • Writes   data_derived/cohort.parquet
 
 Only eligibility logic lives here – no NYD, no lab-normal counts, no SSD flag.
+
+HYPOTHESIS MAPPING:
+This script supports ALL hypotheses (H1-H6) and the Research Question by:
+- Building the base cohort that all subsequent analyses depend on
+- Ensuring data quality and eligibility criteria are met
+- Providing the denominator for prevalence calculations (RQ)
 """
 
 # --------------------------------------------------------------------------- #
@@ -28,6 +34,11 @@ import numpy  as np
 SRC = (Path(__file__).resolve().parents[1] / "src").as_posix()
 if SRC not in sys.path:
     sys.path.insert(0, SRC)
+
+# Add utils to path as well
+UTILS = (Path(__file__).resolve().parents[1] / "utils").as_posix()
+if UTILS not in sys.path:
+    sys.path.insert(0, UTILS)
 # ------------------------------------------------------------------
 
 # ---------- logging ----------
@@ -39,6 +50,23 @@ logging.basicConfig(
         logging.FileHandler("01_cohort_builder.log", mode="w")])
 log = logging.getLogger("cohort")
 
+# Import and set global seeds for reproducibility
+try:
+    from global_seeds import set_global_seeds
+    set_global_seeds()
+    log.info("Global seeds set for reproducibility")
+except ImportError:
+    log.warning("Could not import global_seeds utility - proceeding without seed setting")
+
+# Import configuration
+try:
+    from config_loader import load_config, get_config
+    config = load_config()
+    log.info("Configuration loaded successfully")
+except Exception as e:
+    log.error(f"Could not load configuration: {e}")
+    raise
+
 # ---------- project roots ----------
 ROOT       = Path(__file__).resolve().parents[1]               # project root
 CHECK_ROOT = ROOT / "Notebooks" / "data" / "interim"           # where checkpoints live
@@ -47,13 +75,14 @@ DERIVED.mkdir(exist_ok=True, parents=True)
 
 OUT_FILE   = DERIVED / "cohort.parquet"
 
-# ---------- constants ----------
-REF_DATE        = pd.Timestamp("2015-01-01")
-CENSOR_DATE     = pd.Timestamp("2015-06-30")
-SPAN_REQ_MONTHS = 30
-CHARLSON_MAX    = 5
-PALLIATIVE_RE   = re.compile(r"^(V66\.7|Z51\.5)$")
-OPT_OUT_COL     = "OptedOut"
+# ---------- constants from config ----------
+REF_DATE        = pd.Timestamp(get_config("temporal.reference_date"))
+CENSOR_DATE     = pd.Timestamp(get_config("temporal.censor_date"))
+SPAN_REQ_MONTHS = get_config("cohort.min_observation_months", 30)
+CHARLSON_MAX    = get_config("cohort.max_charlson_score", 5)
+PALLIATIVE_CODES = get_config("cohort.palliative_codes", ["V66.7", "Z51.5"])
+PALLIATIVE_RE   = re.compile("|".join(f"^{code}$" for code in PALLIATIVE_CODES))
+OPT_OUT_COL     = get_config("cohort.opt_out_column", "OptedOut")
 
 # --------------------------------------------------------------------------- #
 # Helper: find newest checkpoint folder
@@ -113,11 +142,12 @@ log.info("Tables loaded.\n"
          f"  encounter_diagnosis {len(enc_diag):,}")
 
 # --------------------------------------------------------------------------- #
-# 2  Age ≥18 on 01-Jan-2015
+# 2  Age ≥18 on reference date
 # --------------------------------------------------------------------------- #
-patient["Age_at_2015"] = REF_DATE.year - patient["BirthYear"]
-elig = patient.loc[patient["Age_at_2015"] >= 18].copy()
-log.info(f">=18 y filter: {len(elig):,} remain")
+MIN_AGE = get_config("cohort.min_age", 18)
+patient[f"Age_at_{REF_DATE.year}"] = REF_DATE.year - patient["BirthYear"]
+elig = patient.loc[patient[f"Age_at_{REF_DATE.year}"] >= MIN_AGE].copy()
+log.info(f">={MIN_AGE} y filter: {len(elig):,} remain")
 
 # Remove CPCSSN opt-outs
 if OPT_OUT_COL in elig.columns:
@@ -158,9 +188,9 @@ elig = elig.merge(idx_lab, left_on="Patient_ID", right_index=True, how="left")
 #      Re-use helper saved in Notebook 1
 # --------------------------------------------------------------------------- #
 try:
-    from src.icd_utils import charlson_index
+    from icd_utils import charlson_index
 except ImportError:
-    log.warning("src.icd_utils.charlson_index not found, Charlson set to 0")
+    log.warning("icd_utils.charlson_index not found, Charlson set to 0")
     elig["Charlson"] = 0
 else:
     # Calculate Charlson scores and ensure they're integers
@@ -206,12 +236,63 @@ elig = elig[elig["Charlson"] <= CHARLSON_MAX]
 log.info(f"Charlson > {CHARLSON_MAX} exclusion: {pre-len(elig):,}")
 
 # --------------------------------------------------------------------------- #
+# 6.5  Add Long-COVID and NYD flags
+# --------------------------------------------------------------------------- #
+# Long-COVID flag from config
+covid_codes = get_config("long_covid.icd_codes", ["U07.1", "U09.9"])
+covid_patterns = get_config("long_covid.text_patterns", ["post-acute COVID", "long COVID"])
+covid_code_re = re.compile("|".join(f"^{code}" for code in covid_codes))
+covid_text_re = re.compile("|".join(covid_patterns), re.IGNORECASE)
+
+covid_ids = health_condition.loc[
+    health_condition["DiagnosisCode_calc"].str.match(covid_code_re, na=False) |
+    health_condition["DiagnosisText_calc"].str.contains(covid_text_re, na=False),
+    "Patient_ID"].unique()
+
+elig["LongCOVID_flag"] = elig["Patient_ID"].isin(covid_ids).astype(int)
+log.info(f"Long-COVID patients identified: {elig['LongCOVID_flag'].sum():,}")
+
+# NYD flag counter from config
+nyd_codes = get_config("nyd.codes", ["799.9", "V71.0", "V71.1", "V71.2", "V71.3", "V71.4", "V71.5", "V71.6", "V71.7", "V71.8", "V71.9"])
+nyd_re = re.compile("|".join(f"^{code}" for code in nyd_codes))
+nyd_counts = health_condition.loc[
+    health_condition["DiagnosisCode_calc"].str.match(nyd_re, na=False)
+].groupby("Patient_ID").size()
+
+elig = elig.merge(nyd_counts.rename("NYD_count"), left_on="Patient_ID", right_index=True, how="left")
+elig["NYD_count"] = elig["NYD_count"].fillna(0).astype(int)
+log.info(f"Patients with NYD codes: {(elig['NYD_count'] > 0).sum():,}")
+
+# --------------------------------------------------------------------------- #
 # 7  Save cohort
 # --------------------------------------------------------------------------- #
-cols_out = ["Patient_ID", "Sex", "BirthYear", "Age_at_2015",
-            "SpanMonths", "IndexDate_lab", "Charlson"]
+age_col = f"Age_at_{REF_DATE.year}"
+cols_out = ["Patient_ID", "Sex", "BirthYear", age_col,
+            "SpanMonths", "IndexDate_lab", "Charlson", 
+            "LongCOVID_flag", "NYD_count"]
 elig = elig[cols_out]
 
 log.info(f"Writing cohort -> {OUT_FILE}  ({len(elig):,} rows)")
 elig.to_parquet(OUT_FILE, index=False, compression="snappy")
 log.info("Done.")
+
+# --------------------------------------------------------------------------- #
+# 8  Update study documentation
+# --------------------------------------------------------------------------- #
+import subprocess
+try:
+    result = subprocess.run([
+        sys.executable, 
+        str(ROOT / "scripts" / "update_study_doc.py"),
+        "--step", "Cohort eligibility completed",
+        "--kv", f"artefact=cohort.parquet",
+        "--kv", f"n_patients={len(elig)}",
+        "--kv", "hypotheses=H1,H2,H3,H4,H5,H6,RQ",
+        "--kv", f"script=01_cohort_builder.py"
+    ], capture_output=True, text=True)
+    if result.returncode == 0:
+        log.info("Study documentation updated successfully")
+    else:
+        log.warning(f"Study doc update failed: {result.stderr}")
+except Exception as e:
+    log.warning(f"Could not update study doc: {e}")

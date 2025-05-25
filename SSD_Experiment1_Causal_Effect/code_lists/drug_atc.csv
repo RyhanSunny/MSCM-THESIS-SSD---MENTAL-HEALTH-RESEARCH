@@ -1,0 +1,43 @@
+atc_code,class,description
+N05B,anxiolytic,Anxiolytics
+N05BA,anxiolytic,Benzodiazepine derivatives
+N05BB,anxiolytic,Diphenylmethane derivatives
+N05BC,anxiolytic,Carbamates
+N05BD,anxiolytic,Dibenzo-bicyclo-octadiene derivatives
+N05BE,anxiolytic,Azaspirodecanedione derivatives
+N05BX,anxiolytic,Other anxiolytics
+N05C,hypnotic,Hypnotics and sedatives
+N05CA,hypnotic,Barbiturates plain
+N05CB,hypnotic,Barbiturates combinations
+N05CC,hypnotic,Aldehydes and derivatives
+N05CD,hypnotic,Benzodiazepine derivatives
+N05CE,hypnotic,Piperidinedione derivatives
+N05CF,hypnotic,Benzodiazepine related drugs
+N05CH,hypnotic,Melatonin receptor agonists
+N05CH01,hypnotic,Melatonin
+N05CH02,hypnotic,Ramelteon
+N05CM,hypnotic,Other hypnotics and sedatives
+N05CX,hypnotic,Hypnotics and sedatives in combination excluding barbiturates
+N02A,opioid,Opioids
+N02AA,opioid,Natural opium alkaloids
+N02AB,opioid,Phenylpiperidine derivatives
+N02AC,opioid,Diphenylpropylamine derivatives
+N02AD,opioid,Benzomorphan derivatives
+N02AE,opioid,Oripavine derivatives
+N02AF,opioid,Morphinan derivatives
+N02AG,opioid,Opioids in combination with antispasmodics
+N02AJ,opioid,Opioids in combination with non-opioid analgesics
+N02AX,opioid,Other opioids
+N02B,analgesic,Other analgesics and antipyretics
+N02BA,analgesic,Salicylic acid and derivatives
+N02BB,analgesic,Pyrazolones
+N02BE,analgesic,Anilides
+N02BG,analgesic,Other analgesics and antipyretics
+M01A,nsaid,Anti-inflammatory and antirheumatic products non-steroids
+M01AA,nsaid,Butylpyrazolidines
+M01AB,nsaid,Acetic acid derivatives and related substances
+M01AC,nsaid,Oxicams
+M01AE,nsaid,Propionic acid derivatives
+M01AG,nsaid,Fenamates
+M01AH,nsaid,Coxibs
+M01AX,nsaid,Other anti-inflammatory and antirheumatic agents non-steroids

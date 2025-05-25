@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+title: "SSD Experiment 1: Causal Effect Analysis Pipeline"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: "Suny"
+    given-names: "Ryhan"
+    email: "sajibrayhan.suny@torontomu.ca"
+    affiliation: "Toronto Metropolitan University"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+  - name: "Car4Mind Research Team"
+    affiliation: "University of Toronto"
+  - family-names: "Guergachi"
+    given-names: "Aziz"
+    name-suffix: "Dr."
+    affiliation: "Toronto Metropolitan University"
+    role: "Supervisor"
+identifiers:
+  - type: url
+    value: "https://github.com/mscm-thesis/ssd-experiment1-causal-effect"
+    description: "GitHub Repository"
+repository-code: "https://github.com/mscm-thesis/ssd-experiment1-causal-effect"
+url: "https://github.com/mscm-thesis/ssd-experiment1-causal-effect"
+abstract: "A comprehensive pipeline for analyzing the causal effects of negative lab tests on healthcare utilization in patients with Somatic Symptom Disorder (SSD)."
+keywords:
+  - causal inference
+  - somatic symptom disorder
+  - healthcare utilization
+  - machine learning
+  - epidemiology
+license: MIT
+version: 1.1.0
+date-released: 2025-01-24
+location:
+  name: "Toronto, ON, Canada"

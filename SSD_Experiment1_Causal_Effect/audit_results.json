@@ -1,0 +1,348 @@
+{
+  "timestamp": "2025-05-25T02:31:50.882760",
+  "phases": {
+    "Phase_1_Infrastructure": {
+      "complete": false,
+      "scripts": {
+        "config_loader.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": false,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "artefact_tracker.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": true,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": false,
+          "has_config_integration": false,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": [
+            "May contain dummy/test data",
+            "Missing config integration"
+          ]
+        },
+        "helpers/lab_utils.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": true,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": false,
+          "has_config_integration": false,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": [
+            "May contain dummy/test data",
+            "Missing config integration"
+          ]
+        }
+      },
+      "missing_scripts": [],
+      "issues": []
+    },
+    "Phase_2_Data_Preparation": {
+      "complete": false,
+      "scripts": {
+        "01_cohort_builder.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": false,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": [
+            "REF_DATE should be 2018-01-01"
+          ]
+        },
+        "02_exposure_flag.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": false,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "03_mediator_autoencoder.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": false,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "04_outcome_flag.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": false,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "05_confounder_flag.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": false,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "06_lab_flag.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": false,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "07_missing_data.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": false,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "07_referral_sequence.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": false,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "07a_misclassification_adjust.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": true,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "08_patient_master_table.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": false,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        }
+      },
+      "missing_scripts": [],
+      "issues": []
+    },
+    "Phase_3_Causal_Analysis": {
+      "complete": false,
+      "scripts": {
+        "05_ps_match.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": true,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "12_temporal_adjust.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": true,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": true,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": [
+            "Contains placeholder code"
+          ]
+        },
+        "06_causal_estimators.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": true,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        }
+      },
+      "missing_scripts": [],
+      "issues": []
+    },
+    "Phase_4_Sensitivity": {
+      "complete": true,
+      "scripts": {
+        "13_evalue_calc.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": true,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "14_placebo_tests.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": true,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "15_robustness.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": true,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "finegray_competing.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": true,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        },
+        "death_rates_analysis.py": {
+          "exists": true,
+          "has_todos": false,
+          "has_placeholders": false,
+          "has_dummy_data": false,
+          "has_hypothesis_mapping": false,
+          "has_proper_imports": true,
+          "has_config_integration": true,
+          "has_error_handling": true,
+          "has_documentation": true,
+          "issues": []
+        }
+      },
+      "missing_scripts": [],
+      "issues": []
+    }
+  },
+  "gaps": [],
+  "placeholders": [],
+  "false_assumptions": [
+    {
+      "script": "13_evalue_calc.py",
+      "assumption": "baseline_rate = 10",
+      "issue": "arbitrary baseline rate"
+    }
+  ],
+  "documentation_issues": [
+    "Missing: README.md"
+  ],
+  "hypothesis_coverage": {
+    "H1": {
+      "covered": true,
+      "details": [
+        "01_cohort_builder.py: Explicitly mentioned",
+        "02_exposure_flag.py: Explicitly mentioned",
+        "06_lab_flag.py: Explicitly mentioned"
+      ]
+    },
+    "H2": {
+      "covered": true,
+      "details": [
+        "07_referral_sequence.py: Explicitly mentioned"
+      ]
+    },
+    "H3": {
+      "covered": true,
+      "details": [
+        "02_exposure_flag.py: Explicitly mentioned",
+        "04_outcome_flag.py: Explicitly mentioned"
+      ]
+    },
+    "H4": {
+      "covered": true,
+      "details": [
+        "03_mediator_autoencoder.py: Explicitly mentioned"
+      ]
+    },
+    "H5": {
+      "covered": true,
+      "details": [
+        "06_causal_estimators.py: Explicitly mentioned"
+      ]
+    },
+    "H6": {
+      "covered": true,
+      "details": [
+        "06_causal_estimators.py: Explicitly mentioned"
+      ]
+    }
+  }
+}
