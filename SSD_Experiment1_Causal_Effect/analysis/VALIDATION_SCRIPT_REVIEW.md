@@ -15,7 +15,7 @@ This review examines all validation scripts in the `/analysis` folder for mistak
 ### 1. **charlson_validation.py**
 
 #### Issues Found:
-- **Hard-coded value**: Line 18 - Author name is placeholder `[Your Name]`
+- **Hard-coded value**: Line 18 uses a placeholder author name
 - **Path assumption**: Assumes patient demographic data exists but has fallback (lines 449-454)
 - **Data assumption**: Line 287 - Uses current year (2025) for age calculation instead of study year
 

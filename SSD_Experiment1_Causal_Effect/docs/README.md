@@ -116,13 +116,10 @@ The project implements comprehensive QA:
 
 ## Results Summary
 
-*Results will be populated upon pipeline completion*
+Results will be added after the full pipeline completes.
 
-- **Primary finding**: TBD
-- **Effect size**: TBD
-- **Confidence interval**: TBD
-- **E-value**: TBD
-- **Robustness**: TBD
+The primary findings and effect estimates are forthcoming and will be
+documented once analyses are finalized.
 
 ## Contact
 

@@ -192,5 +192,5 @@ The large sample size provides substantial margin for:
 ---
 
 **Document prepared by**: Ryhan Suny  
-**Date**: `r Sys.Date()`  
+**Date**: 2025-06-15
 **Software**: R version 4.3.0, power calculations verified with simulation

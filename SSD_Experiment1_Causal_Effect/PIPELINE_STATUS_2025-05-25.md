@@ -78,6 +78,7 @@ pip install -r requirements.txt
 - Cohort and config now both use **2015-01-01** as the reference date
 - Temporal alignment issue resolved; no rebuild required
 
+
 ### 3. Execute Pipeline Scripts in Order
 Once environment is set up:
 1. Run 02_exposure_flag.py

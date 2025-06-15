@@ -320,12 +320,12 @@ class SSDSequentialAnalyzer:
 #### **Implementation Steps**:
 
 **Step 2.2.1**: Create unified patient table
-- [ ] **New File**: `src/09_felipe_patient_table.py`
+- [ ] **New File**: `src/09_patient_table.py`
 - [ ] **Format**: `PID, age, sex, NYD (y/n), body part, referred to psy (y/n), other (y/n), SSD (1/0), Number of specialist referrals`
 
 ```python
-# File: src/09_felipe_patient_table.py
-def create_felipe_patient_table():
+# File: src/09_patient_table.py
+def create_patient_table():
     """
     Create patient characteristics table in Dr. Felipe's requested format
     """
@@ -350,10 +350,9 @@ def create_felipe_patient_table():
     felipe_table['num_specialist_referrals'] = referral_sequences['sequence_length']
     
     return felipe_table
-```
 
 **Step 2.2.2**: Clinical validation analysis
-- [ ] **Output**: `analysis/felipe_table_analysis.py`
+- [ ] **Output**: `analysis/patient_table_analysis.py`
 - [ ] **Purpose**: Generate clinical insights from the unified table
 
 ---

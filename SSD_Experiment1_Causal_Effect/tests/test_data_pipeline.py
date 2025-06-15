@@ -131,6 +131,7 @@ class TestExposureDefinition:
         assert nyd_pattern.sum() == 4  # All referrals have symptom/NYD codes
 
 
+
 class TestOutcomeDefinition:
     """Test outcome variable construction."""
     

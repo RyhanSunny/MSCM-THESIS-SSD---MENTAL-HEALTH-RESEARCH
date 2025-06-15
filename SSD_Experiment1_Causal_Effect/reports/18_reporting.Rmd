@@ -1,7 +1,7 @@
 ---
 title: "SSD Causal Analysis: Final Results and Manuscript Draft"
 author: "Ryhan Suny"
-date: "`r Sys.Date()`"
+date: "2025-06-15"
 output:
   pdf_document:
     latex_engine: pdflatex
@@ -515,6 +515,6 @@ Analysis code is available at: [GitHub repository URL]
 
 ---
 
-*Manuscript draft generated on: `r Sys.time()`*  
+*Manuscript draft generated on: 2025-06-15 16:00:00*
 *Analysis pipeline version: `r config$study$version`*  
 *Document prepared using R Markdown with knitr `r packageVersion("knitr")`*

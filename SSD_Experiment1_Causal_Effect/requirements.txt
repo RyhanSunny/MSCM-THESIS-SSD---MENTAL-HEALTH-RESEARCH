@@ -1,48 +1,6 @@
-# Core data science libraries
-pandas==2.2.2
-numpy==1.26.4
-scikit-learn==1.5.2
-matplotlib==3.10.3
-seaborn==0.13.2
-
-# Machine learning and causal inference
-lightgbm==4.3.0
-xgboost==2.1.0
-miceforest>=6.0.0,<7.0.0
-econml>=0.15.0,<0.16.0
-dowhy==0.11.1
-
-# Deep learning for autoencoder
-tensorflow>=2.15.0,<3.0.0
-
-# Statistical analysis
-statsmodels==0.14.1
-scipy==1.12.0
-lifelines==0.28.0
-
-# Table creation and reporting
-tableone==0.9.1
-
-# Utility libraries
-pyarrow==15.0.0
-pyyaml==6.0.1
-tqdm==4.66.2
-joblib==1.3.2
-
-# Jupyter and development
-jupyterlab==4.1.1
-ipykernel==6.29.0
-papermill==2.5.0
-
-# Data validation and testing
-pytest==8.0.0
-pytest-cov==4.1.0
-
-# Version control for data
-dvc==3.47.0
-
-# Visualization
-plotly==5.19.0
-
-# For R integration (optional)
-rpy2==3.5.15
+pandas
+numpy
+pyarrow
+scikit-learn
+pytest
+pyyaml

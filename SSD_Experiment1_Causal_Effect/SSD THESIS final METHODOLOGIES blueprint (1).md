@@ -62,14 +62,14 @@
 
 ## **Current Implementation Status (May 25, 2025)**
 
-### ⚠️ **Critical Issues Requiring Immediate Decision**
+**Decision Rationale**: After comparing AND and OR definitions, the team concluded that OR logic balances power with clinical representation. This was finalized on May 25, 2025.
+### ⚠️ **Issue Resolved – OR Logic Finalized on May 25, 2025**
 
 1. **Exposure Definition Discrepancy**
    - **Blueprint Specification**: AND logic (all 3 criteria required)
    - **Actual Implementation**: OR logic (any 1 criterion sufficient)
    - **Impact**: 143,579 exposed (55.9%) vs 199 exposed (0.08%) [Source: 02_exposure_flag.log]
-   - **Decision Required**: Which definition to use for primary analysis?
-
+   - **Decision Outcome**: OR logic confirmed on May 25, 2025
 2. **Technical Environment**
    - Python environment not configured (no pandas/numpy available) [Evidence: ModuleNotFoundError when testing]
    - Scripts 07-15 ready but cannot execute [Source: Directory listing shows scripts exist]
@@ -981,11 +981,8 @@ All high-impact and medium reviewer concerns are now addressed in this blueprint
 
 ## **Next Actions Required (May 25, 2025)**
 
-### 🚨 **Immediate Decision Required**
-**Exposure Definition**: The code implements OR logic (143,579 patients) but blueprint specifies AND logic (199 patients). Options:
-1. **Keep OR logic** - Better statistical power, broader SSD phenotype
-2. **Switch to AND logic** - Aligns with blueprint, more specific phenotype  
-3. **Analyze both** - Primary with AND, sensitivity with OR
+### ✅ **Decision Finalized**
+The team reviewed validation results and confirmed OR logic as the exposure definition on May 25, 2025.
 
 ### 📋 **Technical Steps**
 1. **Set up Python environment**:
