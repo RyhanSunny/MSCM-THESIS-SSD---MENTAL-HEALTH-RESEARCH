@@ -1,7 +1,9 @@
 # SSD Causal Effect Study: EXPOSURE DEFINITION DECISION MATRIX  
 **Date**: January 7, 2025  
-**Status**: 🚨 **CRITICAL BLOCKER - IMMEDIATE DECISION REQUIRED**  
+**Status**: ✅ **Final Decision – OR logic selected on May 25, 2025**
 **Prepared by**: Claude (Following CLAUDE.md Requirements)  
+
+**Decision Rationale**: Validation analyses showed OR logic provides sufficient power while still representing clinically diverse SSD presentations. The research team confirmed this approach on May 25, 2025.
 
 ---
 
@@ -201,12 +203,12 @@ Based on [comprehensive validation analysis](https://pmc.ncbi.nlm.nih.gov/articl
 
 ---
 
-**Status**: 🚨 **AWAITING IMMEDIATE DECISION**  
-**Deadline**: Must be resolved before any further development  
-**Contact**: Research team meeting required for final decision
+**Status**: ✅ Decision finalized – OR logic adopted on May 25, 2025  
+**Deadline**: N/A – decision completed on May 25, 2025
+**Contact**: Decision recorded; pipeline proceeding with OR logic
 
 ---
 
 **Prepared**: January 7, 2025, 16:15 EST  
 **Compliance**: CLAUDE.md uncertainty handling requirements followed  
-**Next**: Await user decision to proceed with implementation 
+**Next**: Continue implementation using OR logic; maintain AND logic for sensitivity analyses 

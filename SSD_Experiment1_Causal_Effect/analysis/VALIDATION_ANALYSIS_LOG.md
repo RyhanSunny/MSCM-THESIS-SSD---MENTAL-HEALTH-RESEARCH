@@ -1,9 +1,10 @@
 # SSD Causal Effect Study - Validation Analysis Log
 **Date**: May 25, 2025  
 **Analyst**: Ryhan Suny  
-**Status**: CRITICAL ISSUE IDENTIFIED - REQUIRES IMMEDIATE ACTION
+**Status**: Issue resolved – OR logic confirmed on May 25, 2025
 
 ## Executive Summary
+**Decision Rationale**: Following analysis, the research team adopted OR logic on May 25, 2025 to ensure adequate power and clinical coverage.
 
 A comprehensive validation analysis has been conducted on the SSD causal effect pipeline (scripts 01-06). The analysis revealed a **critical discrepancy** in the exposure definition that must be resolved before any further analysis can proceed.
 
@@ -39,7 +40,7 @@ A comprehensive validation analysis has been conducted on the SSD causal effect 
 | 04_outcome_flag | ✓ Complete | 256,746 | 256,746 | Outcomes defined |
 | 05_confounder_flag | ✓ Complete | 256,746 | 256,746 | Confounders extracted |
 | 06_lab_flag | ✓ Complete | 256,746 | 256,746 | Sensitivity measures |
-| 07-18 | ⏸ BLOCKED | - | - | Awaiting exposure resolution |
+| 07-18 | ⏸ BLOCKED | - | - | Re-run pending with OR logic |
 
 ## Validation Analyses Attempted
 
@@ -148,9 +149,9 @@ If OR logic is justified:
 
 ## Conclusion
 
-The exposure definition discrepancy represents a **fundamental threat to study validity**. With a 721-fold difference in exposed population between implementations, the entire causal inference framework changes. This must be resolved before any further progress can be made.
+The exposure definition discrepancy represents a **fundamental threat to study validity**. With a 721-fold difference in exposed population between implementations, the entire causal inference framework changes. This issue was resolved on May 25, 2025; subsequent analyses will use OR logic.
 
-**Study Status**: ⛔ BLOCKED - Awaiting exposure definition resolution
+**Study Status**: ✅ Active - OR logic finalized May 25, 2025
 
 ---
 *Log compiled by: Ryhan Suny*  
