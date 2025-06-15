@@ -126,4 +126,4 @@ The script implements several validation checks:
 
 ## Contact
 
-For questions about this analysis, please contact [Your Name/Contact Info]. 
+For questions about this analysis, please contact the research team.
