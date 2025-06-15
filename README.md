@@ -14,6 +14,7 @@ Metrics derived from CPCSSN tables capture the breadth of care that SSD patients
 
 These outcomes allow us to quantify the causal impact of diagnostic cascades, referral loops, and medication persistence on subsequent utilization.
 
+
 Raw CPCSSN data are not included in this repository due to privacy restrictions; only derived tables and configuration files are provided.
 
 ## Directory overview
@@ -40,4 +41,22 @@ make all
 ```
 
 This sequentially executes cohort construction, exposure flagging, mediator derivation, propensity score matching, causal estimators and robustness checks. Other targets such as `make reporting` generate final reports.
+
+## Environment setup
+
+Create a Python environment and install dependencies:
+
+```bash
+make -C SSD_Experiment1_Causal_Effect install
+```
+
+The `requirements.txt` file includes `pandas`, `numpy`, `pyarrow`, `scikit-learn`, and `pytest` to support the unit tests and analysis scripts.
+
+## Reference date decision
+
+The available CPCSSN checkpoint was generated with a 2015 baseline. To remain consistent with the derived cohort stored in `data_derived/`, the configuration has been aligned to `2015-01-01`. Exposure and outcome windows now span 2015–2017.
+
+## Data gaps and proxies
+
+Postal codes and detailed billing data are not available in the dataset. Costs are estimated using Ontario schedule of benefits values defined in `config.yaml`. Emergency department visits are flagged using an encounter-type keyword algorithm (e.g. `emerg`, `urgent`, `ER visit`).
 

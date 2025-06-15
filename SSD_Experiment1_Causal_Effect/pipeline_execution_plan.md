@@ -4,12 +4,17 @@
 - Cohort already built with 250,025 patients (created May 16, 2025)
 - Note: Cohort uses 2015 reference date but config specifies 2018-01-01
 - Python environment needed to run scripts (requirements.txt exists)
+- Makefile available with targets for running the pipeline
+- Reference date reconciliation pending (2015 vs 2018)
+  - Follow-up required with team to finalize
 
 ## Phase 1 - Infrastructure (Remaining)
 1. **1.1 Cohort Builder Review** ✓
    - Cohort exists with 250,025 patients
    - Temporal discrepancy noted: uses 2015 vs config 2018
    - Decision needed: rebuild with 2018 dates or update config
+   - Pending resolution of reference date question
+   - Environment can be set up via `requirements.txt` and `make install`
 
 2. **1.2 Missing Data Engine** (07_missing_data.py)
    - Script exists

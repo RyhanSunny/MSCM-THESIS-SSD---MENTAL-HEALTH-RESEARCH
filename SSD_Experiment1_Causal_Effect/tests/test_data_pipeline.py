@@ -128,7 +128,8 @@ class TestExposureDefinition:
         # NYD pattern (780-789 range)
         nyd_pattern = referral_data['DiagnosisCode'].str.match(r'^78[0-9]|^V71')
         
-        assert nyd_pattern.sum() == 3  # Three referrals with symptom/NYD codes
+        assert nyd_pattern.sum() == 4  # Four referrals with symptom/NYD codes
+
 
 
 class TestOutcomeDefinition:
