@@ -1,8 +1,9 @@
 ## ✅ Pipeline Checklist (v 3.1 + metadata automation) - UPDATED WITH SURGICAL PROMPTS
 
 > **CRITICAL GAPS IDENTIFIED:**
-> - Temporal inconsistency: Code uses 2015 dates, blueprint specifies 2018-2020
-> - Missing infrastructure: No Makefile, no requirements.txt, no DVC setup
+- Temporal inconsistency: Code uses 2015 dates, blueprint specifies 2018-2020
+  - Reference date decision still pending; follow up with supervisor
+> - Infrastructure established: Makefile, requirements.txt, and DVC configuration present
 > - Incomplete implementations: Scripts 03-06 have placeholder code
 > - Missing causal inference pipeline: No PS matching, TMLE, or other estimators
 > - Configuration management: config.yaml exists but not integrated
