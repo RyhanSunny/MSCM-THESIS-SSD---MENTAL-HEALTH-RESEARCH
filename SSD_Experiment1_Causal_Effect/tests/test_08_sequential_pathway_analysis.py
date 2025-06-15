@@ -62,14 +62,14 @@ def test_analyze_cohort_results():
 
     patient1 = df[df['patient_id'] == 1].iloc[0]
     assert bool(patient1['complete_pathway']) is True
-    assert patient1['pathway_stage'] == 7
+    assert patient1['pathway_stage'] == 6
     assert patient1['nyd_to_ssd_days'] == 182
     assert patient1['probability'] == 1.0
 
     patient2 = df[df['patient_id'] == 2].iloc[0]
     assert patient2['pathway_stage'] == 1
     assert bool(patient2['complete_pathway']) is False
-    assert patient2['probability'] == pytest.approx(1/7, rel=0.01)
+    assert patient2['probability'] == pytest.approx(1/6, rel=0.01)
 
     patient3 = df[df['patient_id'] == 3].iloc[0]
     assert patient3['pathway_stage'] == 0

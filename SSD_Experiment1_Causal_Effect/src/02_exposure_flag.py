@@ -342,6 +342,7 @@ exposure["H2_referral_loop"] = exposure.crit2_sympt_ref
 exposure["H3_drug_persistence"] = exposure.crit3_drug_90d
 
 # Combined exposure flag - OR logic (any pattern qualifies)
+# Decision recorded in IMPLEMENTATION_STATUS_FINAL.md
 exposure["exposure_flag"] = (
     exposure.crit1_normal_labs |
     exposure.crit2_sympt_ref   |
