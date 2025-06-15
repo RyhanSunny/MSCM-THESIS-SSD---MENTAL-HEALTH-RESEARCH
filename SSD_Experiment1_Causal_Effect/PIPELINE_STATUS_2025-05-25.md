@@ -77,7 +77,8 @@ pip install -r requirements.txt
 ### 2. Resolve Temporal Discrepancy
 - Cohort uses 2015-01-01 as reference date
 - Config specifies 2018-01-01
-- Decision needed: rebuild cohort or update config
+ - Decision needed: rebuild cohort or update config
+ - Follow up with supervisor to finalize reference date
 
 ### 3. Execute Pipeline Scripts in Order
 Once environment is set up:
