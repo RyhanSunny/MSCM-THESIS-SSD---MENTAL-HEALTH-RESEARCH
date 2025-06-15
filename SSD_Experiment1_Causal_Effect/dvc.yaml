@@ -93,6 +93,17 @@ stages:
     outs:
       - data_derived/referral_sequences.parquet
 
+  sequential_pathways:
+    cmd: python src/08_sequential_pathway_analysis.py
+    deps:
+      - src/08_sequential_pathway_analysis.py
+      - data_derived/cohort.parquet
+      - data_derived/referral_sequences.parquet
+      - data_derived/lab_sensitivity.parquet
+      - data_derived/exposure.parquet
+    outs:
+      - data_derived/sequential_pathways.parquet
+
   misclassification_adjust:
     cmd: python src/07a_misclassification_adjust.py
     deps:

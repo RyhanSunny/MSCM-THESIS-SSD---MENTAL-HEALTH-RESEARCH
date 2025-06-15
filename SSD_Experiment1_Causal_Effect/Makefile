@@ -12,7 +12,7 @@ REPORTS_DIR = reports
 
 # Default target
 .PHONY: all
-all: cohort exposure mediator outcomes confounders lab referral missing master ps causal temporal evalue competing-risk death-rates robustness
+all: cohort exposure mediator outcomes confounders lab referral missing master sequential ps causal temporal evalue competing-risk death-rates robustness
 
 # Data pipeline targets
 .PHONY: cohort
@@ -52,8 +52,13 @@ missing: cohort
 
 .PHONY: master
 master: cohort exposure mediator outcomes confounders lab
-	@echo "Creating patient master table..."
-	$(PYTHON) $(SRC_DIR)/08_patient_master_table.py
+        @echo "Creating patient master table..."
+        $(PYTHON) $(SRC_DIR)/08_patient_master_table.py
+
+.PHONY: sequential
+sequential: master
+        @echo "Running sequential pathway analysis..."
+        $(PYTHON) $(SRC_DIR)/08_sequential_pathway_analysis.py
 
 # Causal analysis targets
 .PHONY: ps
