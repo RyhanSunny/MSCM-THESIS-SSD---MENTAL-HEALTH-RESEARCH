@@ -55,7 +55,7 @@ def load_data():
     cohort = pd.read_parquet(DATA_DIR / "cohort.parquet")
     
     # Merge to get demographics
-    data = exposure.merge(cohort[['Patient_ID', 'Sex', 'Age_at_2018', 'Charlson']], 
+    data = exposure.merge(cohort[['Patient_ID', 'Sex', 'Age_at_2015', 'Charlson']], 
                          on='Patient_ID', how='left')
     
     log.info(f"Loaded {len(data):,} patients with exposure data")
@@ -188,7 +188,7 @@ def create_demographic_stratification(data):
     
     # 2. By Age Groups
     ax = axes[0, 1]
-    data['Age_Group'] = pd.cut(data['Age_at_2018'], bins=[0, 40, 60, 80, 120], 
+    data['Age_Group'] = pd.cut(data['Age_at_2015'], bins=[0, 40, 60, 80, 120], 
                                labels=['<40', '40-59', '60-79', '≥80'])
     
     age_data = data.groupby('Age_Group').agg({

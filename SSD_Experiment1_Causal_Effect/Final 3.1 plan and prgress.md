@@ -56,7 +56,7 @@
   Rebuild dataset (`make 01_cohort_builder`).
   Run update\_study\_doc with `step='Cohort rebuild 250 025 rows'` (script auto pulls new row count)."_
   ✔ Reviewed cohort builder script - already produces 250,025 patients - 2025-05-25
-  ✔ Note: Temporal discrepancy - cohort uses 2015 reference date vs config 2018-01-01 - 2025-05-25
+  ✔ Reference date unified at 2015-01-01 - 2025-05-25
   ✔ Added Long-COVID and NYD flags to cohort - already implemented
 
 * [✔] **1.2 Missing-data engine** (All hypotheses)
@@ -166,7 +166,7 @@
   *"Run simulation notebook, update YAML (`sim_bias_tmle: …, sim_var_tmle: …`)."_
 
 * [ ] **7.1 ICES transport TMLE** (H6)
-  *"Track input `external_data/ices_margins_2018-21.csv` via DVC; YAML key `ices_margins_file`."
+  *"Track input `external_data/ices_margins_2015-17.csv` via DVC; YAML key `ices_margins_file`."
   *"Execute `14_external_transport.py`, update YAML (`transport_divergence: 7%`)."*
 
 * [ ] **7.2 Selection diagram** (QA/Utility)

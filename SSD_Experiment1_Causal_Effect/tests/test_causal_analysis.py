@@ -64,9 +64,12 @@ class TestPropensityScoring:
         mean_diff = np.mean(treated) - np.mean(control)
         pooled_std = np.sqrt((np.var(treated, ddof=1) + np.var(control, ddof=1)) / 2)
         smd = mean_diff / pooled_std
+        
+        expected_smd = -0.7071
 
         # Expected value based on population variance
         expected_smd = -1.0 / np.sqrt(2.0)  # -0.707
+
         assert abs(smd - expected_smd) < 0.01
 
 

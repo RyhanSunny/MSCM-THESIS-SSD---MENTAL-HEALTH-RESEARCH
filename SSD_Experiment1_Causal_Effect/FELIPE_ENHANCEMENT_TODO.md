@@ -337,20 +337,19 @@ def create_patient_table():
     nyd_enhanced = pd.read_parquet('data_derived/nyd_enhanced.parquet')
     psych_referrals = pd.read_parquet('data_derived/psychiatric_referrals.parquet')
     
-    # Build table
-    patient_table = pd.DataFrame()
-    patient_table['PID'] = cohort['Patient_ID']
-    patient_table['age'] = cohort['Age_at_2018']
-    patient_table['sex'] = cohort['Sex_clean']
-    patient_table['NYD_yn'] = nyd_enhanced['nyd_binary']
-    patient_table['body_part'] = nyd_enhanced['primary_body_part']
-    patient_table['referred_to_psy_yn'] = psych_referrals['psych_referral_flag']
-    patient_table['referred_to_other_yn'] = psych_referrals['medical_referral_flag']
-    patient_table['SSD_flag'] = exposure['exposure_flag']
-    patient_table['num_specialist_referrals'] = referral_sequences['sequence_length']
-
-    return patient_table
-```
+    # Build Felipe table
+    felipe_table = pd.DataFrame()
+    felipe_table['PID'] = cohort['Patient_ID']
+    felipe_table['age'] = cohort['Age_at_2015']
+    felipe_table['sex'] = cohort['Sex_clean']
+    felipe_table['NYD_yn'] = nyd_enhanced['nyd_binary']
+    felipe_table['body_part'] = nyd_enhanced['primary_body_part']
+    felipe_table['referred_to_psy_yn'] = psych_referrals['psych_referral_flag']
+    felipe_table['referred_to_other_yn'] = psych_referrals['medical_referral_flag']
+    felipe_table['SSD_flag'] = exposure['exposure_flag']
+    felipe_table['num_specialist_referrals'] = referral_sequences['sequence_length']
+    
+    return felipe_table
 
 **Step 2.2.2**: Clinical validation analysis
 - [ ] **Output**: `analysis/patient_table_analysis.py`

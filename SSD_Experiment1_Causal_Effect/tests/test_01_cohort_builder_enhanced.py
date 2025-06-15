@@ -160,9 +160,9 @@ class TestEnhancedCohortBuilder:
         """Test full integration of enhanced cohort building"""
         mock_base_cohort = pd.DataFrame({
             'Patient_ID': [1, 2, 3, 4],
-            'Age_at_2018': [45, 32, 67, 28],
+            'Age_at_2015': [45, 32, 67, 28],
             'NYD_count': [2, 0, 1, 0],
-            'IndexDate_lab': pd.to_datetime(['2018-01-01'] * 4)
+            'IndexDate_lab': pd.to_datetime(['2015-01-01'] * 4)
         })
         
         mock_nyd_records = pd.DataFrame({
@@ -234,7 +234,7 @@ class TestNYDPerformanceAndEdgeCases:
         large_cohort = pd.DataFrame({
             'Patient_ID': list(range(10000)),
             'NYD_count': np.random.randint(0, 5, 10000),
-            'Age_at_2018': np.random.randint(18, 80, 10000)
+            'Age_at_2015': np.random.randint(18, 80, 10000)
         })
         
         large_nyd = pd.DataFrame({

@@ -41,7 +41,7 @@ cohort['Sex_clean'] = cohort['Sex_clean'].map({
 cohort['Sex_clean'] = cohort['Sex_clean'].fillna('Unknown')
 
 # Merge data
-data = exposure.merge(cohort[['Patient_ID', 'Age_at_2018', 'Sex_clean']], on='Patient_ID')
+data = exposure.merge(cohort[['Patient_ID', 'Age_at_2015', 'Sex_clean']], on='Patient_ID')
 data = data.merge(outcomes[['Patient_ID', 'total_encounters', 'ed_visits', 'medical_costs']], on='Patient_ID')
 data = data.merge(confounders[['Patient_ID', 'Charlson']], on='Patient_ID')
 data = data.merge(autoencoder[['Patient_ID', 'SSD_severity_index']], on='Patient_ID')
@@ -169,7 +169,7 @@ summary_data = {
     'Metric': ['N', 'Age (mean)', 'Female (%)', 'Encounters (mean)', 'ED visits (%)', 'Cost (mean $)', 'CCI (mean)', 'Severity (mean)'],
     'OR Exposed': [
         f"{len(or_exposed):,}",
-        f"{or_exposed['Age_at_2018'].mean():.1f}",
+        f"{or_exposed['Age_at_2015'].mean():.1f}",
         f"{(or_exposed['Sex_clean'] == 'Female').mean() * 100:.1f}",
         f"{or_exposed['total_encounters'].mean():.1f}",
         f"{(or_exposed['ed_visits'] > 0).mean() * 100:.1f}",
@@ -179,7 +179,7 @@ summary_data = {
     ],
     'OR Unexposed': [
         f"{len(or_unexposed):,}",
-        f"{or_unexposed['Age_at_2018'].mean():.1f}",
+        f"{or_unexposed['Age_at_2015'].mean():.1f}",
         f"{(or_unexposed['Sex_clean'] == 'Female').mean() * 100:.1f}",
         f"{or_unexposed['total_encounters'].mean():.1f}",
         f"{(or_unexposed['ed_visits'] > 0).mean() * 100:.1f}",
@@ -189,7 +189,7 @@ summary_data = {
     ],
     'AND Exposed': [
         f"{len(and_exposed):,}",
-        f"{and_exposed['Age_at_2018'].mean():.1f}" if len(and_exposed) > 0 else "N/A",
+        f"{and_exposed['Age_at_2015'].mean():.1f}" if len(and_exposed) > 0 else "N/A",
         f"{(and_exposed['Sex_clean'] == 'Female').mean() * 100:.1f}" if len(and_exposed) > 0 else "N/A",
         f"{and_exposed['total_encounters'].mean():.1f}" if len(and_exposed) > 0 else "N/A",
         f"{(and_exposed['ed_visits'] > 0).mean() * 100:.1f}" if len(and_exposed) > 0 else "N/A",
@@ -199,7 +199,7 @@ summary_data = {
     ],
     'AND Unexposed': [
         f"{len(and_unexposed):,}",
-        f"{and_unexposed['Age_at_2018'].mean():.1f}",
+        f"{and_unexposed['Age_at_2015'].mean():.1f}",
         f"{(and_unexposed['Sex_clean'] == 'Female').mean() * 100:.1f}",
         f"{and_unexposed['total_encounters'].mean():.1f}",
         f"{(and_unexposed['ed_visits'] > 0).mean() * 100:.1f}",
@@ -308,7 +308,7 @@ summary = {
         'exposed': len(or_exposed),
         'unexposed': len(or_unexposed),
         'percent_exposed': round(len(or_exposed) / len(data) * 100, 2),
-        'mean_age_exposed': round(or_exposed['Age_at_2018'].mean(), 1),
+        'mean_age_exposed': round(or_exposed['Age_at_2015'].mean(), 1),
         'mean_encounters_exposed': round(or_exposed['total_encounters'].mean(), 1),
         'mean_cost_exposed': round(or_exposed['medical_costs'].mean(), 2),
         'mean_cci_exposed': round(or_exposed['Charlson'].mean(), 2),
@@ -320,7 +320,7 @@ summary = {
         'exposed': len(and_exposed),
         'unexposed': len(and_unexposed),
         'percent_exposed': round(len(and_exposed) / len(data) * 100, 2),
-        'mean_age_exposed': round(and_exposed['Age_at_2018'].mean(), 1) if len(and_exposed) > 0 else 0,
+        'mean_age_exposed': round(and_exposed['Age_at_2015'].mean(), 1) if len(and_exposed) > 0 else 0,
         'mean_encounters_exposed': round(and_exposed['total_encounters'].mean(), 1) if len(and_exposed) > 0 else 0,
         'mean_cost_exposed': round(and_exposed['medical_costs'].mean(), 2) if len(and_exposed) > 0 else 0,
         'mean_cci_exposed': round(and_exposed['Charlson'].mean(), 2) if len(and_exposed) > 0 else 0,

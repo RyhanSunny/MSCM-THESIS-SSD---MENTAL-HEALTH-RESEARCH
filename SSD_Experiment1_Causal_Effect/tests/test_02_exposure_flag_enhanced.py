@@ -114,13 +114,13 @@ class TestEnhancedMedicationData:
         mock_medication = pd.DataFrame({
             'Patient_ID': [1, 2, 3, 4, 5],
             'ATC_code': ['N06A1', 'N05B1', 'N03AX', 'Z01AA', 'N05A2'],  # Mix of enhanced and non-enhanced
-            'StartDate': pd.to_datetime(['2018-01-01'] * 5),
-            'StopDate': pd.to_datetime(['2018-06-01'] * 5)
+            'StartDate': pd.to_datetime(['2015-01-01'] * 5),
+            'StopDate': pd.to_datetime(['2015-06-01'] * 5)
         })
         
         mock_cohort = pd.DataFrame({
             'Patient_ID': [1, 2, 3, 4, 5],
-            'IndexDate_lab': pd.to_datetime(['2018-01-01'] * 5)
+            'IndexDate_lab': pd.to_datetime(['2015-01-01'] * 5)
         })
         
         with patch.object(enhanced_exposure_flag.pd, 'read_parquet') as mock_read:
@@ -156,13 +156,13 @@ class TestEnhancedDrugPersistence:
         mock_medication = pd.DataFrame({
             'Patient_ID': [1, 1, 2, 2],
             'drug_class': ['antidepressants_ssri', 'antidepressants_ssri', 'anxiolytics', 'anxiolytics'],
-            'StartDate': pd.to_datetime(['2018-01-01', '2018-07-01', '2018-01-01', '2018-04-01']),
-            'StopDate': pd.to_datetime(['2018-06-30', '2018-12-31', '2018-03-31', '2018-06-30'])  # ~180 days each, ~90 days each
+            'StartDate': pd.to_datetime(['2015-01-01', '2015-07-01', '2015-01-01', '2015-04-01']),
+            'StopDate': pd.to_datetime(['2015-06-30', '2015-12-31', '2015-03-31', '2015-06-30'])  # ~180 days each, ~90 days each
         })
         
         mock_cohort = pd.DataFrame({
             'Patient_ID': [1, 2],
-            'IndexDate_lab': pd.to_datetime(['2018-01-01', '2018-01-01'])
+            'IndexDate_lab': pd.to_datetime(['2015-01-01', '2015-01-01'])
         })
         
         h3_patients, drug_summary, persistent_df = calculate_enhanced_drug_persistence(mock_medication, mock_cohort)
@@ -185,12 +185,12 @@ class TestEnhancedDrugPersistence:
             'Patient_ID': [1],
             'drug_class': ['antidepressants_ssri'],
             'StartDate': pd.to_datetime(['2017-01-01']),  # Before exposure
-            'StopDate': pd.to_datetime(['2019-01-01'])    # After exposure
+            'StopDate': pd.to_datetime(['2016-01-01'])    # After exposure
         })
         
         mock_cohort = pd.DataFrame({
             'Patient_ID': [1],
-            'IndexDate_lab': pd.to_datetime(['2018-01-01'])  # Exposure: 2018-01-01 to 2019-01-01
+            'IndexDate_lab': pd.to_datetime(['2015-01-01'])  # Exposure: 2015-01-01 to 2016-01-01
         })
         
         h3_patients, drug_summary, persistent_df = calculate_enhanced_drug_persistence(mock_medication, mock_cohort)
@@ -209,13 +209,13 @@ class TestGenerateEnhancedExposureFlags:
         mock_medication = pd.DataFrame({
             'Patient_ID': [1, 2, 3],
             'ATC_code': ['N06A1', 'N03AX', 'N05A2'],
-            'StartDate': pd.to_datetime(['2018-01-01'] * 3),
-            'StopDate': pd.to_datetime(['2018-12-31'] * 3)
+            'StartDate': pd.to_datetime(['2015-01-01'] * 3),
+            'StopDate': pd.to_datetime(['2015-12-31'] * 3)
         })
         
         mock_cohort = pd.DataFrame({
             'Patient_ID': [1, 2, 3],
-            'IndexDate_lab': pd.to_datetime(['2018-01-01'] * 3)
+            'IndexDate_lab': pd.to_datetime(['2015-01-01'] * 3)
         })
         
         mock_existing_exposure = pd.DataFrame({
@@ -256,7 +256,7 @@ class TestEdgeCasesAndErrorHandling:
         empty_medication = pd.DataFrame(columns=['Patient_ID', 'ATC_code', 'StartDate', 'StopDate'])
         mock_cohort = pd.DataFrame({
             'Patient_ID': [1, 2, 3],
-            'IndexDate_lab': pd.to_datetime(['2018-01-01'] * 3)
+            'IndexDate_lab': pd.to_datetime(['2015-01-01'] * 3)
         })
         
         h3_patients, drug_summary, persistent_df = calculate_enhanced_drug_persistence(empty_medication, mock_cohort)
@@ -269,13 +269,13 @@ class TestEdgeCasesAndErrorHandling:
         invalid_medication = pd.DataFrame({
             'Patient_ID': [1, 2],
             'drug_class': ['antidepressants_ssri', 'anxiolytics'],
-            'StartDate': [pd.NaT, pd.to_datetime('2018-01-01')],
-            'StopDate': [pd.to_datetime('2018-06-01'), pd.NaT]
+            'StartDate': [pd.NaT, pd.to_datetime('2015-01-01')],
+            'StopDate': [pd.to_datetime('2015-06-01'), pd.NaT]
         })
         
         mock_cohort = pd.DataFrame({
             'Patient_ID': [1, 2],
-            'IndexDate_lab': pd.to_datetime(['2018-01-01', '2018-01-01'])
+            'IndexDate_lab': pd.to_datetime(['2015-01-01', '2015-01-01'])
         })
         
         # Should handle invalid dates gracefully without crashing
@@ -291,13 +291,13 @@ class TestEdgeCasesAndErrorHandling:
         large_medication = pd.DataFrame({
             'Patient_ID': list(range(10000)) * 2,  # 20,000 records
             'drug_class': ['antidepressants_ssri'] * 20000,
-            'StartDate': pd.to_datetime(['2018-01-01'] * 20000),
-            'StopDate': pd.to_datetime(['2018-12-31'] * 20000)
+            'StartDate': pd.to_datetime(['2015-01-01'] * 20000),
+            'StopDate': pd.to_datetime(['2015-12-31'] * 20000)
         })
         
         large_cohort = pd.DataFrame({
             'Patient_ID': list(range(10000)),
-            'IndexDate_lab': pd.to_datetime(['2018-01-01'] * 10000)
+            'IndexDate_lab': pd.to_datetime(['2015-01-01'] * 10000)
         })
         
         import time

@@ -70,7 +70,7 @@ print("\n3. COHORT CHARACTERISTICS")
 print("   - Total Eligible Patients: 256,746")
 print("   - Source Population: 352,161")
 print("   - Retention Rate: 72.9%")
-print("   - Reference Date: 2018-01-01")
+print("   - Reference Date: 2015-01-01")
 
 # 4. Expected Utilization Differences
 print("\n4. EXPECTED HEALTHCARE UTILIZATION PATTERNS")

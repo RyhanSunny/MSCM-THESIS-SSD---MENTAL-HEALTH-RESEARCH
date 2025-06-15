@@ -300,7 +300,7 @@ if __name__ == "__main__":
     sample_cohort = pd.DataFrame({
         'Patient_ID': [1, 2, 3],
         'NYD_count': [2, 0, 1],
-        'Age_at_2018': [45, 32, 67]
+        'Age_at_2015': [45, 32, 67]
     })
     
     sample_nyd = pd.DataFrame({

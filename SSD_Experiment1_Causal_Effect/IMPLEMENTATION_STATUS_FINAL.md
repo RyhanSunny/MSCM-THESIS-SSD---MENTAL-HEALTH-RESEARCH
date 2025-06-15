@@ -78,7 +78,7 @@
 - **Required**:
   ```python
   table['PID'] = cohort['Patient_ID']
-  table['age'] = cohort['Age_at_2018']
+  table['age'] = cohort['Age_at_2015']
   table['NYD_yn'] = enhanced_cohort['NYD_yn']  # NOW AVAILABLE!
   table['referred_to_psy_yn'] = enhanced_referrals['psychiatric_referral_yn']  # NOW AVAILABLE!
   ```

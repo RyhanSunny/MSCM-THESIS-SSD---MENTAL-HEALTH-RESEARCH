@@ -31,7 +31,7 @@ class TestDataValidation:
     def test_date_formats(self):
         """Test that date columns are properly formatted."""
         # Test date parsing
-        test_dates = ["2018-01-01", "2019-12-31", "2020-06-15"]
+        test_dates = ["2015-01-01", "2016-12-31", "2017-06-15"]
         for date_str in test_dates:
             parsed = pd.to_datetime(date_str)
             assert isinstance(parsed, pd.Timestamp)
@@ -40,10 +40,10 @@ class TestDataValidation:
         """Test age calculation logic."""
         # Mock data for age calculation
         birth_year = 1990
-        reference_year = 2018
+        reference_year = 2015
         expected_age = reference_year - birth_year
         
-        assert expected_age == 28
+        assert expected_age == 25
         assert expected_age >= 18  # Meets minimum age criteria
     
     def test_charlson_score_bounds(self):
@@ -72,8 +72,8 @@ class TestExposureDefinition:
             'TestResult_calc': [5.0, 7.5, 6.2, 8.9, 4.1],
             'LowerNormal': [4.0, 6.0, 5.0, 7.0, 3.0],
             'UpperNormal': [8.0, 9.0, 8.0, 10.0, 6.0],
-            'PerformedDate': pd.to_datetime(['2018-01-01', '2018-02-01', '2018-03-01', 
-                                           '2018-01-15', '2018-02-15'])
+            'PerformedDate': pd.to_datetime(['2015-01-01', '2015-02-01', '2015-03-01',
+                                           '2015-01-15', '2015-02-15'])
         })
         
         # Test normal range logic
@@ -99,8 +99,8 @@ class TestExposureDefinition:
         # Mock medication data
         med_data = pd.DataFrame({
             'Patient_ID': [1, 1, 2],
-            'StartDate': pd.to_datetime(['2018-01-01', '2018-04-01', '2018-01-01']),
-            'EndDate': pd.to_datetime(['2018-03-31', '2018-06-30', '2018-02-15']),
+            'StartDate': pd.to_datetime(['2015-01-01', '2015-04-01', '2015-01-01']),
+            'EndDate': pd.to_datetime(['2015-03-31', '2015-06-30', '2015-02-15']),
             'DrugName': ['GABAPENTIN', 'ZOPICLONE', 'IBUPROFEN']
         })
         
@@ -122,13 +122,13 @@ class TestExposureDefinition:
             'Patient_ID': [1, 1, 2, 2],
             'Name_calc': ['Cardiology', 'Neurology', 'Gastroenterology', 'Psychiatry'],
             'DiagnosisCode': ['786.50', '780.4', '787.91', 'V71.09'],  # Last is NYD
-            'CompletedDate': pd.to_datetime(['2018-01-15', '2018-02-15', '2018-01-20', '2018-03-01'])
+            'CompletedDate': pd.to_datetime(['2015-01-15', '2015-02-15', '2015-01-20', '2015-03-01'])
         })
         
         # NYD pattern (780-789 range)
         nyd_pattern = referral_data['DiagnosisCode'].str.match(r'^78[0-9]|^V71')
         
-        assert nyd_pattern.sum() == 4  # Four referrals with symptom/NYD codes
+        assert nyd_pattern.sum() == 4  # All referrals have symptom/NYD codes
 
 
 
@@ -140,8 +140,8 @@ class TestOutcomeDefinition:
         # Mock encounter data
         encounter_data = pd.DataFrame({
             'Patient_ID': [1, 1, 1, 2, 2],
-            'EncounterDate': pd.to_datetime(['2019-01-01', '2019-02-01', '2019-03-01',
-                                           '2019-01-15', '2019-02-15']),
+            'EncounterDate': pd.to_datetime(['2016-01-01', '2016-02-01', '2016-03-01',
+                                           '2016-01-15', '2016-02-15']),
             'EncounterType': ['Primary Care', 'Primary Care', 'Emergency', 
                             'Primary Care', 'Specialist']
         })
@@ -220,11 +220,11 @@ class TestPipelineIntegration:
         from datetime import datetime, timedelta
         
         # Define windows
-        ref_date = datetime(2018, 1, 1)
-        exposure_start = datetime(2018, 1, 1)
-        exposure_end = datetime(2019, 1, 1)
-        outcome_start = datetime(2019, 7, 1)
-        outcome_end = datetime(2020, 12, 31)
+        ref_date = datetime(2015, 1, 1)
+        exposure_start = datetime(2015, 1, 1)
+        exposure_end = datetime(2016, 1, 1)
+        outcome_start = datetime(2016, 7, 1)
+        outcome_end = datetime(2017, 12, 31)
         
         # Test window logic
         assert exposure_start >= ref_date
@@ -266,8 +266,8 @@ class TestQualityControl:
         # Create test data with duplicates
         test_data = pd.DataFrame({
             'Patient_ID': [1, 2, 3, 2, 4],  # Patient 2 appears twice
-            'EncounterDate': ['2018-01-01', '2018-01-02', '2018-01-03', 
-                            '2018-01-02', '2018-01-04']
+            'EncounterDate': ['2015-01-01', '2015-01-02', '2015-01-03',
+                            '2015-01-02', '2015-01-04']
         })
         
         # Check for duplicate Patient_IDs
@@ -284,7 +284,7 @@ class TestQualityControl:
         assert pd.api.types.is_numeric_dtype(numeric_data)
         
         # Test date columns
-        date_data = pd.to_datetime(['2018-01-01', '2018-01-02', '2018-01-03'])
+        date_data = pd.to_datetime(['2015-01-01', '2015-01-02', '2015-01-03'])
         assert pd.api.types.is_datetime64_any_dtype(date_data)
         
         # Test string columns

@@ -25,7 +25,7 @@ This review examines all validation scripts in the `/analysis` folder for mistak
 
 #### Recommendations:
 - Replace placeholder author name
-- Use study reference year (2018) for age calculations
+- Use study reference year (2015) for age calculations
 - Add ICD version validation
 
 ### 2. **exposure_validation.py**
