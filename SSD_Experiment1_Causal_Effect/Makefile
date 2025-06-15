@@ -193,6 +193,19 @@ docker-run:
 	@echo "Running pipeline in Docker..."
 	docker run -v $(PWD):/app ssd-pipeline:1.1 make all
 
+.PHONY: validate
+validate: master
+	@echo "Running comprehensive validation suite..."
+	$(PYTHON) scripts/run_all_validations.py
+	@echo "Compiling LaTeX reports..."
+	@cd analysis && find . -name "*.tex" -exec pdflatex {} \; 2>/dev/null || true
+	@echo "Validation complete. Check analysis/*/ for reports."
+
+.PHONY: validate-quick
+validate-quick: master
+	@echo "Running quick validation summary..."
+	$(PYTHON) analysis/quick_validation_summary.py
+
 .PHONY: help
 help:
 	@echo "SSD Causal Analysis Pipeline"
@@ -211,6 +224,8 @@ help:
 	@echo "  make test         - Run tests"
 	@echo "  make lint         - Run linters"
 	@echo "  make install      - Install dependencies"
+	@echo "  make validate     - Run validation suite"
+	@echo "  make validate-quick - Quick validation summary"
 	@echo ""
 	@echo "Release targets:"
 	@echo "  make release VERSION=X.Y.Z - Create a release"
