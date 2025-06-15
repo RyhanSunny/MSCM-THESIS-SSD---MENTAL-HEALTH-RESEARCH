@@ -2,7 +2,8 @@
 
 ## Executive Summary
 
-The SSD project has a partially automated validation system with several validation scripts and reports, but lacks a fully integrated automation pipeline. Critical findings include an exposure definition discrepancy that needs immediate resolution.
+The SSD project has a partially automated validation system with several validation scripts and reports, but lacks a fully integrated automation pipeline. Critical findings include an exposure definition discrepancy that was resolved on May 25, 2025 by adopting OR logic.
+**Decision Rationale**: Validation results showed that OR logic maintains statistical power and captures heterogeneous SSD patterns. The team finalized this definition on May 25, 2025.
 
 ## Current State of Validation Reports
 
@@ -48,12 +49,12 @@ Key output directories:
 
 ### 4. **Critical Findings**
 
-The validation scripts have identified a **critical exposure definition discrepancy**:
+The validation scripts have identified a **critical exposure definition discrepancy (resolved May 25, 2025)**:
 - **OR Logic (Current)**: 143,579 patients (55.9% of cohort)
 - **AND Logic (Blueprint)**: 199 patients (0.08% of cohort)
 - **Impact**: 721x difference in exposed population size
 
-This must be resolved before any causal analysis can proceed.
+This issue has been resolved; OR logic will be used moving forward.
 
 ## Recommendations for Full Automation
 
@@ -225,7 +226,7 @@ jobs:
 
 ## Next Steps
 
-1. **Immediate**: Resolve the exposure definition discrepancy (OR vs AND logic)
+1. **Completed**: Exposure definition discrepancy resolved May 25, 2025 (OR logic adopted)
 2. **Short-term**: 
    - Implement the master validation runner script
    - Add validation targets to Makefile
@@ -237,4 +238,5 @@ jobs:
 
 ## Conclusion
 
-The validation infrastructure exists but needs integration for full automation. The most critical issue is the exposure definition discrepancy that must be resolved before proceeding with any causal analysis. Once resolved, the proposed automation improvements will create a robust, reproducible validation pipeline.
+The validation infrastructure exists but needs integration for full automation. The earlier exposure definition discrepancy was resolved on May 25, 2025; OR logic will be used for all analyses. Once resolved, the proposed automation improvements will create a robust, reproducible validation pipeline.
+

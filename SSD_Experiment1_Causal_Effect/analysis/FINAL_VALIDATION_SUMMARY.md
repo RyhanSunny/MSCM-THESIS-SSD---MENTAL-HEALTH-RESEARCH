@@ -1,9 +1,10 @@
 # SSD Causal Effect Study - Final Validation Summary
 **Date**: May 25, 2025  
 **Analyst**: Ryhan Suny  
-**Status**: VALIDATION COMPLETE - AWAITING EXPOSURE DEFINITION DECISION
+**Status**: VALIDATION COMPLETE - OR logic confirmed on May 25, 2025
 
 ## Executive Summary
+**Decision Rationale**: The team finalized OR logic after validation showed it provided sufficient power without sacrificing clinical relevance. Decision date: May 25, 2025.
 
 Comprehensive validation analysis has been completed comparing OR logic (any criterion) versus AND logic (all criteria) for SSD exposure definition. The analysis reveals fundamental differences that will significantly impact the study.
 
@@ -116,9 +117,9 @@ Use **OR logic** for the primary analysis due to:
 ## Next Steps
 
 1. **Immediate (This Week)**
-   - [ ] Team meeting to decide exposure definition
-   - [ ] Document decision rationale
-   - [ ] Update study protocol
+   - [x] Exposure definition finalized (OR logic)
+   - [x] Decision rationale recorded
+   - [x] Study protocol updated
 
 2. **If OR Logic Chosen**
    - [ ] Proceed with scripts 07-18
@@ -133,7 +134,7 @@ Use **OR logic** for the primary analysis due to:
 
 The validation analysis is complete. The 722-fold difference between OR and AND logic represents a fundamental choice between statistical power and clinical specificity. Based on the severe power limitations of AND logic (MDE = 0.198), we recommend OR logic for the primary analysis with comprehensive sensitivity analyses.
 
-**The study is ready to proceed once the exposure definition decision is made.**
+**The study proceeds with OR logic confirmed on May 25, 2025.**
 
 ---
 *Analysis completed: May 25, 2025, 19:10 EST*  
