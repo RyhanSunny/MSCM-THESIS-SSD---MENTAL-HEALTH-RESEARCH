@@ -368,10 +368,10 @@ Below is a **single, unified "v2.0" Methods Blueprint** that merges your origina
 
 | Rule | Exact implementation |
 | ----- | ----- |
-| Inclusion | Patients ≥ 18 y as of 1 Jan 2018 and with ≥ 30 consecutive months of EHR data before 1 Jan 2018. |
-| Index date | First eligible lab between 2018-01-01 and 2018-06-30; follow-up starts the next calendar day to avoid immortal-time bias. |
+| Inclusion | Patients ≥ 18 y as of 1 Jan 2015 and with ≥ 30 consecutive months of EHR data before 1 Jan 2015. |
+| Index date | First eligible lab between 2015-01-01 and 2015-06-30; follow-up starts the next calendar day to avoid immortal-time bias. |
 | Exclusion | Palliative-care codes (V66.7, Z51.5), Charlson \> 5, CPCSSN "opt-out". |
-| **Temporal windows** | Baseline 2018-01-01→2018-06-30; Treatment 2018-07-01→2019-06-30; Outcome 2019-07-01→2020-12-31 |
+| **Temporal windows** | Baseline 2015-01-01→2015-06-30; Treatment 2015-07-01→2016-06-30; Outcome 2016-07-01→2017-12-31 |
 | Output | `cohort.parquet` (n = 256,746 - Updated May 25, 2025). |
 
 **Connection to RQ/Hypotheses:**
@@ -631,7 +631,7 @@ All original scripts retained; internal enhancements propagate automatically bec
 
 ## **External Validity Paragraph (manuscript)**
 
-"To test transportability, we will re-weight our cohort to the joint age-sex-Charlson distribution of Ontario's ICES registry (2018–2021) using inverse-odds of selection weights and re-compute the TMLE ATE. A selection diagram outlining required exchangeability conditions is provided in Supplementary Figure S4. Divergence ≥10 % from the in-sample ATE will be interpreted as evidence of limited generalizability."
+"To test transportability, we will re-weight our cohort to the joint age-sex-Charlson distribution of Ontario's ICES registry (2015–2017) using inverse-odds of selection weights and re-compute the TMLE ATE. A selection diagram outlining required exchangeability conditions is provided in Supplementary Figure S4. Divergence ≥10 % from the in-sample ATE will be interpreted as evidence of limited generalizability."
 
 ---
 
@@ -893,7 +893,7 @@ protocol:
 
   temporal\_windows:
 
-    treatment: 2018-07-01 to 2019-06-30
+    treatment: 2015-07-01 to 2016-06-30
 
   title: Causal Effect of Negative Lab Tests on Healthcare Utilization
 
@@ -953,7 +953,7 @@ After these edits, re-run make 09_qc_master 15_robustness 16_reporting to regene
 
 | #   | Action                                                                                                        | Status    |
 | --- | ------------------------------------------------------------------------------------------------------------- | --------- |
-| 1.1 | Change inclusion date to "≥18 y as of 1 Jan 2018 and ≥30 m EHR before 2018-01-01."                            | ✅ Implemented |
+| 1.1 | Change inclusion date to "≥18 y as of 1 Jan 2015 and ≥30 m EHR before 2015-01-01."                            | ✅ Implemented |
 | 1.2 | Extend outcome window to 31 Dec 2020 or restrict COVID segment to level-shift only.                           | ✅ Implemented |
 | 1.3 | Add rationale for post-2020 exclusion.                                                                        | ✅ Documented |
 | 2   | Remove placeholders and replace with exact study wording.                                                     | ✅ Complete (May 25) |

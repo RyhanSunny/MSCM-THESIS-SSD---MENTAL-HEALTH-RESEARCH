@@ -103,9 +103,9 @@ protocol:
   date: '2025-02-24'
   study_id: SSD-CPCSSN-2025-001
   temporal_windows:
-    baseline: 2018-01-01 to 2018-06-30
-    outcome: 2019-07-01 to 2020-06-30
-    treatment: 2018-07-01 to 2019-06-30
+    baseline: 2015-01-01 to 2015-06-30
+    outcome: 2016-07-01 to 2020-06-30
+    treatment: 2015-07-01 to 2016-06-30
   title: Causal Effect of Negative Lab Tests on Healthcare Utilization
   variables:
     mediator:
@@ -134,4 +134,4 @@ cohort_rows: 250025  # All hypotheses
 selection_diagram_pdf: figs/selection_diagram.pdf  # QA/Utility
 weight_diag_notebook: figs/weights.html  # QA/Utility
 death_rates_table: reports/death_rates_table.csv  # H1, H3
-ices_margins_file: external/ices_margins_2018_2021.csv  # H6
+ices_margins_file: external/ices_margins_2015_2017.csv  # H6

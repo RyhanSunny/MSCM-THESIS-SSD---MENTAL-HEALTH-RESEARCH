@@ -182,7 +182,7 @@ summary_stats = {
         "source_population": 352161,
         "eligible_cohort": 256746,
         "retention_rate": 72.9,
-        "reference_date": "2018-01-01"
+        "reference_date": "2015-01-01"
     }
 }
 

@@ -66,7 +66,7 @@ The analysis follows a structured pipeline with dependency management:
 
 - **Primary**: CPCSSN checkpoint `checkpoint_1_20250318_024427`
 - **Tables**: patient, encounter, health_condition, lab, medication, referral
-- **Study period**: 2018-01-01 to 2020-12-31
+- **Study period**: 2015-01-01 to 2017-12-31
 - **Sample size**: 250,025 eligible patients
 
 ## Repository Structure

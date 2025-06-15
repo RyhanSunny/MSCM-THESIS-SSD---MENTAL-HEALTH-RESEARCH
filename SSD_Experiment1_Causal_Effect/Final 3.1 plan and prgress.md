@@ -166,7 +166,7 @@
   *"Run simulation notebook, update YAML (`sim_bias_tmle: …, sim_var_tmle: …`)."_
 
 * [ ] **7.1 ICES transport TMLE** (H6)
-  *"Track input `external_data/ices_margins_2018-21.csv` via DVC; YAML key `ices_margins_file`."
+  *"Track input `external_data/ices_margins_2015-17.csv` via DVC; YAML key `ices_margins_file`."
   *"Execute `14_external_transport.py`, update YAML (`transport_divergence: 7%`)."*
 
 * [ ] **7.2 Selection diagram** (QA/Utility)

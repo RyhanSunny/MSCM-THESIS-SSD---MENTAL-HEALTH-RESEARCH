@@ -98,14 +98,14 @@ class PipelineAuditor:
         """Check for script-specific implementation issues"""
         filename = filepath.name
         
-        # Check temporal consistency (should use 2018-2020)
-        if re.search(r'2015-\d{2}-\d{2}|"2015|\'2015', content):
-            audit_result["issues"].append("Contains 2015 dates (should be 2018-2020)")
+        # Check temporal consistency (should use 2015-2017)
+        if re.search(r'2018-\d{2}-\d{2}|"2018|\'2018', content):
+            audit_result["issues"].append("Contains 2018 dates (should be 2015-2017)")
             
         # Script-specific checks
         if filename == "01_cohort_builder.py":
-            if not re.search(r'REF_DATE.*2018', content):
-                audit_result["issues"].append("REF_DATE should be 2018-01-01")
+            if not re.search(r'REF_DATE.*2015', content):
+                audit_result["issues"].append("REF_DATE should be 2015-01-01")
             if not re.search(r'Long.?COVID|U07\.1', content, re.IGNORECASE):
                 audit_result["issues"].append("Missing Long-COVID flag implementation")
                 
