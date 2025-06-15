@@ -1,0 +1,41 @@
+{
+  "exposure_definition": {
+    "or_logic": {
+      "exposed": 143579,
+      "unexposed": 113167,
+      "percent_exposed": 55.9,
+      "percent_unexposed": 44.1
+    },
+    "and_logic": {
+      "exposed": 199,
+      "unexposed": 256547,
+      "percent_exposed": 0.08,
+      "percent_unexposed": 99.92
+    },
+    "discrepancy_factor": 721
+  },
+  "criteria_counts": {
+    "h1_normal_labs": 85234,
+    "h2_referral_loops": 42356,
+    "h3_drug_persistence": 67123,
+    "all_three": 199
+  },
+  "autoencoder": {
+    "current_auroc": 0.588,
+    "target_auroc": 0.83,
+    "performance_gap": 0.242,
+    "gap_percentage": 29.2
+  },
+  "pipeline": {
+    "completed_scripts": 6,
+    "total_scripts": 18,
+    "completion_percentage": 33.3,
+    "blocked_by": "exposure_definition_discrepancy"
+  },
+  "cohort": {
+    "source_population": 352161,
+    "eligible_cohort": 256746,
+    "retention_rate": 72.9,
+    "reference_date": "2018-01-01"
+  }
+}

@@ -1,0 +1,17 @@
+
+EXPOSURE DEFINITION IMPACT ANALYSIS
+===================================
+
+Scenario Analysis:
+                     OR Logic    AND Logic    Difference
+─────────────────────────────────────────────────────────
+Exposed Patients     143,579     199          721x
+Unexposed Patients   113,167     256,547      2.3x
+Power for Analysis   HIGH        VERY LOW     Critical
+Heterogeneity        HIGH        LOW          Significant
+Clinical Validity    Questionable Specific    Important
+
+Implications for Causal Analysis:
+• OR Logic: Large heterogeneous group, high power, unclear clinical meaning
+• AND Logic: Small homogeneous group, low power, clear clinical meaning
+• Decision needed: Clinical validity vs. statistical power trade-off

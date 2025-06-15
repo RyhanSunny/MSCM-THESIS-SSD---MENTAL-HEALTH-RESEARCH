@@ -1,0 +1,19 @@
+{
+  "timestamp": "2025-05-25T22:06:13.091641",
+  "sex_distribution": {
+    "or_female_pct_exposed": 61.5,
+    "or_female_pct_unexposed": 61.1,
+    "and_female_pct_exposed": 59.8,
+    "and_female_pct_unexposed": 61.3
+  },
+  "power_analysis": {
+    "or_mde": 0.008,
+    "and_mde": 0.198,
+    "interpretation": "AND logic is severely underpowered (MDE > 0.2)"
+  },
+  "sample_sizes": {
+    "or_exposed": 143579,
+    "and_exposed": 199,
+    "ratio": 721.5025125628141
+  }
+}

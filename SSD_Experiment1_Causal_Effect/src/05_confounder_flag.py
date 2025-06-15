@@ -105,11 +105,50 @@ health_condition = load_table("health_condition")
 encounter = load_table("encounter", ["DateCreated"])
 medication = load_table("medication", ["StartDate", "StopDate"])
 
+# Load underutilized tables for comprehensive confounder adjustment
+try:
+    patient_demographic = load_table("patient_demographic")
+    log.info(f"Loaded patient_demographic: {len(patient_demographic):,} rows")
+except FileNotFoundError:
+    log.warning("patient_demographic table not found - skipping social determinants")
+    patient_demographic = None
+
+try:
+    family_history = load_table("family_history") 
+    log.info(f"Loaded family_history: {len(family_history):,} rows")
+except FileNotFoundError:
+    log.warning("family_history table not found - skipping genetic risk factors")
+    family_history = None
+
+try:
+    risk_factor = load_table("risk_factor", ["StartDate", "EndDate"])
+    log.info(f"Loaded risk_factor: {len(risk_factor):,} rows") 
+except FileNotFoundError:
+    log.warning("risk_factor table not found - skipping risk factor adjustment")
+    risk_factor = None
+
+try:
+    medical_procedure = load_table("medical_procedure", ["PerformedDate"])
+    log.info(f"Loaded medical_procedure: {len(medical_procedure):,} rows")
+except FileNotFoundError:
+    log.warning("medical_procedure table not found - skipping procedure history")
+    medical_procedure = None
+
 # Keep only cohort patients
 patient_ids = set(cohort.Patient_ID)
 health_condition = health_condition[health_condition.Patient_ID.isin(patient_ids)]
 encounter = encounter[encounter.Patient_ID.isin(patient_ids)]
 medication = medication[medication.Patient_ID.isin(patient_ids)]
+
+# Filter additional tables to cohort patients
+if patient_demographic is not None:
+    patient_demographic = patient_demographic[patient_demographic.Patient_ID.isin(patient_ids)]
+if family_history is not None:
+    family_history = family_history[family_history.Patient_ID.isin(patient_ids)]
+if risk_factor is not None:
+    risk_factor = risk_factor[risk_factor.Patient_ID.isin(patient_ids)]
+if medical_procedure is not None:
+    medical_procedure = medical_procedure[medical_procedure.Patient_ID.isin(patient_ids)]
 
 # Define baseline period (-12 to -6 months before index date)
 cohort["baseline_start"] = cohort.IndexDate_lab - pd.Timedelta(days=365)
@@ -120,8 +159,8 @@ log.info("Building confounder matrix...")
 confounders = cohort[['Patient_ID', 'Sex', 'BirthYear', 'Age_at_2018', 
                      'Charlson', 'LongCOVID_flag', 'NYD_count']].copy()
 
-# Convert Sex to binary (assuming M/F)
-confounders['male'] = (confounders['Sex'] == 'M').astype(int)
+# Convert Sex to binary (handling various formats)
+confounders['male'] = (confounders['Sex'].isin(['M', 'Male', 'MALE'])).astype(int)
 confounders.drop('Sex', axis=1, inplace=True)
 
 # Age categories
@@ -251,7 +290,118 @@ confounders['baseline_opioid'] = confounders.Patient_ID.isin(opioid_users).astyp
 # For now, use encounter frequency as proxy
 confounders['low_access'] = (confounders["baseline_encounters"] < 2).astype(int)
 
-# 6. Create interaction terms for key variables
+# 6. Social Determinants of Health (from patient_demographic if available)
+if patient_demographic is not None:
+    log.info("Adding social determinants of health...")
+    
+    # Merge demographic data
+    demo_subset = patient_demographic[['Patient_ID', 'Occupation', 'HighestEducation', 
+                                     'HousingStatus', 'Language', 'Ethnicity']].copy()
+    confounders = confounders.merge(demo_subset, on='Patient_ID', how='left')
+    
+    # Education level
+    confounders['high_education'] = (confounders['HighestEducation'].str.contains(
+        'university|college|bachelor|master|phd', case=False, na=False)).astype(int)
+    
+    # Housing stability
+    confounders['housing_unstable'] = (confounders['HousingStatus'].str.contains(
+        'homeless|shelter|temp', case=False, na=False)).astype(int)
+    
+    # Language barrier
+    confounders['language_barrier'] = (~confounders['Language'].str.contains(
+        'english|français|french', case=False, na=False)).astype(int)
+    
+    # Drop raw categorical columns
+    confounders.drop(['Occupation', 'HighestEducation', 'HousingStatus', 'Language', 'Ethnicity'], 
+                    axis=1, inplace=True)
+
+# 7. Family History Risk Factors (if available)
+if family_history is not None:
+    log.info("Adding family history risk factors...")
+    
+    # Mental health family history - use text field since code is empty
+    mh_fhx_keywords = ['depression', 'anxiety', 'mental', 'psychiatric', 'bipolar', 'schizophrenia']
+    mh_fhx_pattern = '|'.join(mh_fhx_keywords)
+    if 'DiagnosisText_calc' in family_history.columns and family_history['DiagnosisText_calc'].dtype == 'object':
+        mh_fhx_patients = family_history[
+            family_history.DiagnosisText_calc.str.contains(mh_fhx_pattern, case=False, na=False)
+        ]['Patient_ID'].unique()
+    else:
+        mh_fhx_patients = []
+    confounders['family_mental_health'] = confounders.Patient_ID.isin(mh_fhx_patients).astype(int)
+    
+    # Cancer family history - use text field
+    cancer_fhx_keywords = ['cancer', 'carcinoma', 'tumor', 'malignant', 'lymphoma', 'leukemia']
+    cancer_fhx_pattern = '|'.join(cancer_fhx_keywords)
+    if 'DiagnosisText_calc' in family_history.columns and family_history['DiagnosisText_calc'].dtype == 'object':
+        cancer_fhx_patients = family_history[
+            family_history.DiagnosisText_calc.str.contains(cancer_fhx_pattern, case=False, na=False)
+        ]['Patient_ID'].unique()
+    else:
+        cancer_fhx_patients = []
+    confounders['family_cancer'] = confounders.Patient_ID.isin(cancer_fhx_patients).astype(int)
+
+# 8. Risk Factors (smoking, obesity, etc. if available)
+if risk_factor is not None:
+    log.info("Adding risk factor indicators...")
+    
+    # Merge baseline timeline for risk factors
+    risk_factor = risk_factor.merge(cohort[["Patient_ID", "baseline_start", "baseline_end"]], 
+                                  on="Patient_ID", how="inner")
+    
+    # Filter to baseline period
+    baseline_risks = risk_factor[
+        ((risk_factor.StartDate <= risk_factor.baseline_end) & 
+         (risk_factor.EndDate.isna() | (risk_factor.EndDate >= risk_factor.baseline_start))) |
+        (risk_factor.StartDate.isna() & risk_factor.EndDate.isna())
+    ]
+    
+    # Smoking
+    smoking_patients = baseline_risks[
+        baseline_risks.Name_calc.str.contains('smok', case=False, na=False)
+    ]['Patient_ID'].unique()
+    confounders['smoking'] = confounders.Patient_ID.isin(smoking_patients).astype(int)
+    
+    # Alcohol use
+    alcohol_patients = baseline_risks[
+        baseline_risks.Name_calc.str.contains('alcohol', case=False, na=False)
+    ]['Patient_ID'].unique()
+    confounders['alcohol_use'] = confounders.Patient_ID.isin(alcohol_patients).astype(int)
+    
+    # Obesity/BMI
+    obesity_patients = baseline_risks[
+        baseline_risks.Name_calc.str.contains('obese|obesity|bmi', case=False, na=False)
+    ]['Patient_ID'].unique()
+    confounders['obesity'] = confounders.Patient_ID.isin(obesity_patients).astype(int)
+
+# 9. Procedure History (if available)
+if medical_procedure is not None:
+    log.info("Adding procedure history indicators...")
+    
+    # Merge baseline timeline
+    medical_procedure = medical_procedure.merge(cohort[["Patient_ID", "baseline_start", "baseline_end"]], 
+                                              on="Patient_ID", how="inner")
+    
+    # Baseline procedures
+    baseline_procedures = medical_procedure[
+        (medical_procedure.PerformedDate >= medical_procedure.baseline_start) & 
+        (medical_procedure.PerformedDate <= medical_procedure.baseline_end)
+    ]
+    
+    # Count procedures
+    proc_counts = baseline_procedures.groupby("Patient_ID").size()
+    proc_counts.name = "baseline_procedures"
+    confounders = confounders.merge(proc_counts.to_frame(), 
+                                  left_on="Patient_ID", right_index=True, how="left")
+    confounders["baseline_procedures"] = confounders["baseline_procedures"].fillna(0)
+    
+    # High procedure use (top quartile)
+    high_proc_threshold = confounders["baseline_procedures"].quantile(0.75)
+    confounders["high_procedure_use"] = (
+        confounders["baseline_procedures"] >= high_proc_threshold
+    ).astype(int)
+
+# 10. Create interaction terms for key variables
 confounders['age_male_interaction'] = confounders['Age_at_2018'] * confounders['male']
 confounders['charlson_age_interaction'] = confounders['Charlson'] * confounders['Age_at_2018']
 

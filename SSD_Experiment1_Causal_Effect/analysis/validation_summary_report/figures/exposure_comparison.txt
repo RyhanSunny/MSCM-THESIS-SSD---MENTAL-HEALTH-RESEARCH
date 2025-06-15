@@ -1,0 +1,15 @@
+
+EXPOSURE DEFINITION COMPARISON
+==============================
+
+OR Logic (Current Implementation):
+|████████████████████████████████████████████████████████| 143,579 (55.9%)
+|                                                         | 113,167 (44.1%)
+                                                           
+AND Logic (Blueprint Specification):  
+|·| 199 (0.08%)
+|█████████████████████████████████████████████████████████| 256,547 (99.92%)
+
+Legend: █ = Exposed, · = Exposed (AND), Space = Unexposed
+
+Scale: Each character ≈ 2,500 patients

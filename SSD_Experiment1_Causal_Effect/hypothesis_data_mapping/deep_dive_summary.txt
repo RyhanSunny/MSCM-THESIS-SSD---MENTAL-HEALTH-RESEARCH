@@ -1,0 +1,35 @@
+
+DEEP DIVE ANALYSIS SUMMARY
+=========================
+
+1. MENTAL HEALTH DATA:
+   - ICD-9 MH codes (290-319): 91,409 patients
+   - Anxiety disorders: 35,425 patients  
+   - Depression: 36,807 patients
+   - Status: AVAILABLE
+
+2. EMERGENCY VISITS:
+   - Direct ED type: Not found in EncounterType
+   - ED keywords in reasons: 5279
+   - Status: REQUIRES DERIVATION
+
+3. SOCIOECONOMIC DATA:
+   - Postal codes: 0% complete (CRITICAL GAP)
+   - Education: 1.4% complete
+   - Occupation: 7.6% complete  
+   - Housing: 0.0% complete
+   - Status: PARTIAL - Can use education/occupation/housing
+
+4. PROVIDER CHANGES:
+   - Multi-provider patients: 198,945 (56.5%)
+   - Average providers/patient: 2.50
+   - Status: AVAILABLE
+
+5. NYD CODES:
+   - Patients with NYD: 0
+   - Status: NOT AVAILABLE
+
+6. TEMPORAL DATA:
+   - Coverage: 1800-02-01 to 2016-03-24
+   - Span: 216.1 years
+   - Status: EXCELLENT

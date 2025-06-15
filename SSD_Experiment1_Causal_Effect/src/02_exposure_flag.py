@@ -327,30 +327,53 @@ log.info(f"Patients with ≥{MIN_DRUG_DAYS} d qualifying Rx: {crit3.sum():,}")
 # ------------------------------------------------------------------ #
 exposure = cohort[["Patient_ID"]].copy()
 exposure = (exposure
-            .merge(norm_count,              how="left")
-            .merge(ref_count,               how="left")
-            .merge(drug_days,               how="left")
+            .merge(norm_count,              left_on="Patient_ID", right_index=True, how="left")
+            .merge(ref_count,               left_on="Patient_ID", right_index=True, how="left")
+            .merge(drug_days,               left_on="Patient_ID", right_index=True, how="left")
             .fillna(0))
 
 exposure["crit1_normal_labs"]   = exposure.normal_lab_count   >= MIN_NORMAL_LABS
 exposure["crit2_sympt_ref"]     = exposure.symptom_referral_n >= MIN_SYMPTOM_REFERRALS
 exposure["crit3_drug_90d"]      = exposure.drug_days_in_window >= MIN_DRUG_DAYS
 
+# Create separate exposure flags for each hypothesis
+exposure["H1_normal_labs"] = exposure.crit1_normal_labs
+exposure["H2_referral_loop"] = exposure.crit2_sympt_ref  
+exposure["H3_drug_persistence"] = exposure.crit3_drug_90d
+
+# Combined exposure flag - OR logic (any pattern qualifies)
 exposure["exposure_flag"] = (
+    exposure.crit1_normal_labs |
+    exposure.crit2_sympt_ref   |
+    exposure.crit3_drug_90d
+)
+
+# Also create AND version for comparison
+exposure["exposure_flag_strict"] = (
     exposure.crit1_normal_labs &
     exposure.crit2_sympt_ref   &
     exposure.crit3_drug_90d
 )
 
-log.info(f"Final exposure-positive patients: {exposure.exposure_flag.sum():,}"
-         f" / {len(exposure):,}  "
-         f"({exposure.exposure_flag.mean():.2%})")
+log.info(f"Individual criteria summary:")
+log.info(f"  H1 (≥{MIN_NORMAL_LABS} normal labs): {exposure.H1_normal_labs.sum():,} patients ({exposure.H1_normal_labs.mean():.1%})")
+log.info(f"  H2 (≥{MIN_SYMPTOM_REFERRALS} symptom referrals): {exposure.H2_referral_loop.sum():,} patients ({exposure.H2_referral_loop.mean():.1%})")
+log.info(f"  H3 (≥{MIN_DRUG_DAYS} drug days): {exposure.H3_drug_persistence.sum():,} patients ({exposure.H3_drug_persistence.mean():.1%})")
+
+log.info(f"Combined exposure (OR logic): {exposure.exposure_flag.sum():,}"
+         f" / {len(exposure):,} ({exposure.exposure_flag.mean():.1%})")
+log.info(f"Strict exposure (AND logic): {exposure.exposure_flag_strict.sum():,}"
+         f" / {len(exposure):,} ({exposure.exposure_flag_strict.mean():.1%})")
 
 # ------------------------------------------------------------------ #
 #  7  Save
 # ------------------------------------------------------------------ #
 cols_keep = ["Patient_ID",
              "exposure_flag",
+             "exposure_flag_strict", 
+             "H1_normal_labs",
+             "H2_referral_loop",
+             "H3_drug_persistence",
              "normal_lab_count",
              "symptom_referral_n",
              "drug_days_in_window"]

@@ -242,6 +242,14 @@ log.info(f"  90th percentile (12m): {lab_flags['lab_count_12m'].quantile(0.9):.0
 # Drop IndexDate_lab before saving (redundant with cohort)
 lab_flags = lab_flags.drop("IndexDate_lab", axis=1)
 
+# Ensure proper data types for parquet
+for col in lab_flags.columns:
+    if col != 'Patient_ID':
+        if 'count' in col or 'gte_' in col or 'high_lab' in col:
+            lab_flags[col] = lab_flags[col].astype('int32')
+        elif 'ratio' in col:
+            lab_flags[col] = lab_flags[col].astype('float32')
+
 # Save output
 log.info(f"\nSaving lab sensitivity data to {OUT_PATH}")
 lab_flags.to_parquet(OUT_PATH, index=False)

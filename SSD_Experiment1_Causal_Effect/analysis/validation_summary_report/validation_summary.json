@@ -1,0 +1,13 @@
+{
+  "timestamp": "2025-05-25T18:31:52.078531",
+  "critical_issue": "Exposure definition discrepancy",
+  "or_logic_exposed": 143579,
+  "or_logic_percent": 55.9,
+  "and_logic_exposed": 199,
+  "and_logic_percent": 0.08,
+  "discrepancy_factor": 721,
+  "autoencoder_auroc": 0.588,
+  "autoencoder_target": 0.83,
+  "cohort_size": 256746,
+  "recommendation": "RESOLVE EXPOSURE DEFINITION IMMEDIATELY"
+}

@@ -1,0 +1,125 @@
+{
+  "H1": {
+    "description": "Patients with SSD patterns (normal labs, referral loops, medication persistence) have higher healthcare utilization",
+    "data_required": [
+      "Lab results with normal ranges",
+      "Referral data with specialty types",
+      "Medication data with duration",
+      "Encounter data for utilization metrics",
+      "ED visit identification"
+    ],
+    "data_available": {
+      "Lab results": "PARTIAL - CSV file exists but normal range detection needs verification",
+      "Referrals": "YES - 1.1M referrals with specialty info",
+      "Medications": "YES - 7.7M prescriptions with ATC codes and duration",
+      "Encounters": "YES - 11.6M encounters with types",
+      "ED visits": "NEEDS CHECK - EncounterType has categories but ED not explicit"
+    }
+  },
+  "H2": {
+    "description": "Healthcare costs increase with SSD symptom severity",
+    "data_required": [
+      "Healthcare cost data",
+      "Billing/claims data",
+      "Resource utilization data",
+      "Severity index (autoencoder)"
+    ],
+    "data_available": {
+      "Cost data": "NO - No cost/billing columns found",
+      "Claims": "NO - No claims table found",
+      "Utilization": "YES - Can derive from encounters/procedures",
+      "Severity index": "YES - Autoencoder model exists"
+    }
+  },
+  "H3": {
+    "description": "SSD patients have more frequent provider changes",
+    "data_required": [
+      "Provider IDs in encounters",
+      "Temporal sequence of visits",
+      "Provider specialty information"
+    ],
+    "data_available": {
+      "Provider IDs": "YES - Provider_ID in encounters",
+      "Visit dates": "YES - EncounterDate available",
+      "Provider specialty": "NO - Provider table not found"
+    }
+  },
+  "H4": {
+    "description": "Psychological factors mediate the relationship",
+    "data_required": [
+      "Mental health diagnoses",
+      "Anxiety/depression codes",
+      "Psychological assessment data"
+    ],
+    "data_available": {
+      "MH diagnoses": "NO - Zero F-codes found in data",
+      "Anxiety/depression": "NEEDS CHECK - May use ICD-9 codes",
+      "Assessments": "NO - No psychological assessment data"
+    }
+  },
+  "H5": {
+    "description": "Health anxiety mediates SSD outcomes",
+    "data_required": [
+      "Health anxiety indicators",
+      "Frequent health concerns",
+      "Hypochondriasis codes"
+    ],
+    "data_available": {
+      "Direct measures": "NO - No health anxiety scales",
+      "Proxy measures": "PARTIAL - Could use visit frequency",
+      "Diagnosis codes": "NEEDS CHECK - ICD codes for hypochondriasis"
+    }
+  },
+  "H6": {
+    "description": "Physician diagnostic uncertainty affects outcomes",
+    "data_required": [
+      "NYD (Not Yet Diagnosed) codes",
+      "Diagnostic changes over time",
+      "Provider notes/uncertainty markers"
+    ],
+    "data_available": {
+      "NYD codes": "YES - Defined in config",
+      "Diagnostic changes": "YES - Can track via encounters",
+      "Provider notes": "NO - No text/note fields"
+    }
+  },
+  "H7": {
+    "description": "Socioeconomic deprivation moderates effects",
+    "data_required": [
+      "Postal codes for deprivation index",
+      "Income/education data",
+      "Pampalon deprivation index"
+    ],
+    "data_available": {
+      "Postal codes": "NO - ResidencePostalCode 0% complete",
+      "SES indicators": "PARTIAL - Education/Occupation/Housing exist but completeness unknown",
+      "Deprivation index": "NO - Cannot calculate without postal codes"
+    }
+  },
+  "H8": {
+    "description": "Multimorbidity patterns differ in SSD",
+    "data_required": [
+      "Charlson comorbidity data",
+      "Chronic condition diagnoses",
+      "Disease clustering analysis"
+    ],
+    "data_available": {
+      "Charlson": "YES - Can calculate from diagnoses",
+      "Chronic conditions": "YES - 2.6M health conditions",
+      "Clustering": "YES - Sufficient diagnosis data"
+    }
+  },
+  "H9": {
+    "description": "Temporal patterns of utilization change",
+    "data_required": [
+      "Longitudinal encounter data",
+      "Pre/post exposure periods",
+      "Time series of utilization"
+    ],
+    "data_available": {
+      "Longitudinal data": "YES - Encounters from 2010-2022",
+      "Time periods": "YES - Can define windows",
+      "Time series": "YES - Can construct from encounters"
+    }
+  }
+}

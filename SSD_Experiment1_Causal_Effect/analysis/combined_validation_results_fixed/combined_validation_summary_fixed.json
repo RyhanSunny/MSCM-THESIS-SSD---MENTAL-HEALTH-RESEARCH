@@ -1,0 +1,37 @@
+{
+  "timestamp": "2025-05-25T22:28:33.471504",
+  "total_patients": 256787,
+  "or_logic": {
+    "exposed": 143610,
+    "unexposed": 113177,
+    "percent_exposed": 55.93,
+    "mean_age_exposed": 60.4,
+    "mean_encounters_exposed": 6.3,
+    "mean_cost_exposed": 565.28,
+    "mean_cci_exposed": 0.43,
+    "mean_severity_exposed": 1.0420000553131104,
+    "female_pct_exposed": 61.5
+  },
+  "and_logic": {
+    "exposed": 199,
+    "unexposed": 256588,
+    "percent_exposed": 0.08,
+    "mean_age_exposed": 69.8,
+    "mean_encounters_exposed": 12.3,
+    "mean_cost_exposed": 1145.73,
+    "mean_cci_exposed": 0.58,
+    "mean_severity_exposed": 7.914999961853027,
+    "female_pct_exposed": 59.8
+  },
+  "criteria_combinations": {
+    "H1 only": 91182,
+    "H2 only": 442,
+    "H3 only": 30873,
+    "H1+H2": 762,
+    "H1+H3": 20019,
+    "H2+H3": 133,
+    "All 3": 199,
+    "None": 113177
+  },
+  "discrepancy_factor": 721.7
+}

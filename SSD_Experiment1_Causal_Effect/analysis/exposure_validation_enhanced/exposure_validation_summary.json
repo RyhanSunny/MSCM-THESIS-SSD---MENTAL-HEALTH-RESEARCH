@@ -1,0 +1,45 @@
+{
+  "timestamp": "2025-05-25T22:22:03.459411",
+  "total_patients": 256746,
+  "or_logic": {
+    "exposed": 143579,
+    "unexposed": 113167,
+    "percent_exposed": 55.92,
+    "mean_age_exposed": 60.4,
+    "mean_age_unexposed": 46.2,
+    "female_pct_exposed": 61.5,
+    "female_pct_unexposed": 61.1,
+    "minimum_detectable_effect": 0.008
+  },
+  "and_logic": {
+    "exposed": 199,
+    "unexposed": 256547,
+    "percent_exposed": 0.08,
+    "mean_age_exposed": 69.8,
+    "mean_age_unexposed": 54.1,
+    "female_pct_exposed": 59.8,
+    "female_pct_unexposed": 61.3,
+    "minimum_detectable_effect": 0.198
+  },
+  "discrepancy_factor": 721.5,
+  "criteria_overlap": {
+    "h1_only": 91157,
+    "h2_only": 442,
+    "h3_only": 30870,
+    "h1_h2_only": 762,
+    "h1_h3_only": 20016,
+    "h2_h3_only": 133,
+    "all_three": 199,
+    "any_criterion": 143579
+  },
+  "individual_criteria": {
+    "h1_normal_labs": 112134,
+    "h2_referral_loops": 1536,
+    "h3_drug_persistence": 51218
+  },
+  "recommendations": {
+    "power_consideration": "Both approaches have adequate power",
+    "clinical_validity": "AND logic provides more specific phenotype but limited sample",
+    "suggested_approach": "Either approach viable depending on clinical priorities"
+  }
+}

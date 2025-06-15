@@ -1,0 +1,19 @@
+
+PIPELINE EXECUTION STATUS
+=========================
+
+Script                    Status    Records     Notes
+─────────────────────────────────────────────────────────────────
+01_cohort_builder         ✓ DONE    256,746    72.9% retention
+02_exposure_flag          ✓ DONE    256,746    ⚠ OR vs AND issue
+03_mediator_autoencoder   ✓ DONE    256,746    AUROC 0.588
+04_outcome_flag           ✓ DONE    256,746    All outcomes defined
+05_confounder_flag        ✓ DONE    256,746    Confounders extracted
+06_lab_flag               ✓ DONE    256,746    Sensitivity measures
+
+07_referral_sequence      ⏸ BLOCKED           Awaiting exposure fix
+08_patient_master_table   ⏸ BLOCKED           Awaiting exposure fix
+09-18 (Remaining)         ⏸ BLOCKED           Awaiting exposure fix
+─────────────────────────────────────────────────────────────────
+
+Legend: ✓ = Complete, ⏸ = Blocked, ⚠ = Issue identified

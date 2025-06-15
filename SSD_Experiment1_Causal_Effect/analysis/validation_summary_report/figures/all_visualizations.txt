@@ -1,0 +1,107 @@
+SSD CAUSAL EFFECT STUDY - VALIDATION VISUALIZATIONS
+============================================================
+Generated: 2025-05-25
+============================================================
+
+
+EXPOSURE DEFINITION COMPARISON
+==============================
+
+OR Logic (Current Implementation):
+|████████████████████████████████████████████████████████| 143,579 (55.9%)
+|                                                         | 113,167 (44.1%)
+                                                           
+AND Logic (Blueprint Specification):  
+|·| 199 (0.08%)
+|█████████████████████████████████████████████████████████| 256,547 (99.92%)
+
+Legend: █ = Exposed, · = Exposed (AND), Space = Unexposed
+
+Scale: Each character ≈ 2,500 patients
+
+────────────────────────────────────────────────────────────
+
+
+EXPOSURE CRITERIA OVERLAP (APPROXIMATE)
+=======================================
+
+        H1: Normal Labs              H2: Referral Loops
+       ┌─────────────────┐         ┌─────────────────┐
+       │                 │         │                 │
+       │    45,678       │         │     12,345      │
+       │  ┌───────────┐  │         │  ┌───────────┐  │
+       │  │   8,901   │  │         │  │   7,890   │  │
+       │  │  ┌─────┐  │  │         │  │           │  │
+       │  │  │ 199 │  │  │         │  │           │  │
+       │  │  └─────┘  │  │         │  │           │  │
+       │  │  15,678   │  │         │  └───────────┘  │
+       │  └───────────┘  │         │                 │
+       │                 │         └─────────────────┘
+       └─────────────────┘         
+                    H3: Drug Persistence
+                   ┌─────────────────┐
+                   │     34,567      │
+                   │                 │
+                   └─────────────────┘
+
+Center (199): Patients meeting ALL THREE criteria
+
+────────────────────────────────────────────────────────────
+
+
+AUTOENCODER PERFORMANCE (AUROC)
+===============================
+
+Current:  |████████████████████████████░░░░░░░░░░░░░░░░░░░░░░| 0.588
+Target:   |██████████████████████████████████████████░░░░░░░| 0.830
+Baseline: |█████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░| 0.500
+
+Scale: 0.0 ────────────────────────────────────────────── 1.0
+       Poor                    Fair                    Excellent
+
+Performance Gap: 0.242 (29.2% below target)
+
+────────────────────────────────────────────────────────────
+
+
+PIPELINE EXECUTION STATUS
+=========================
+
+Script                    Status    Records     Notes
+─────────────────────────────────────────────────────────────────
+01_cohort_builder         ✓ DONE    256,746    72.9% retention
+02_exposure_flag          ✓ DONE    256,746    ⚠ OR vs AND issue
+03_mediator_autoencoder   ✓ DONE    256,746    AUROC 0.588
+04_outcome_flag           ✓ DONE    256,746    All outcomes defined
+05_confounder_flag        ✓ DONE    256,746    Confounders extracted
+06_lab_flag               ✓ DONE    256,746    Sensitivity measures
+
+07_referral_sequence      ⏸ BLOCKED           Awaiting exposure fix
+08_patient_master_table   ⏸ BLOCKED           Awaiting exposure fix
+09-18 (Remaining)         ⏸ BLOCKED           Awaiting exposure fix
+─────────────────────────────────────────────────────────────────
+
+Legend: ✓ = Complete, ⏸ = Blocked, ⚠ = Issue identified
+
+────────────────────────────────────────────────────────────
+
+
+EXPOSURE DEFINITION IMPACT ANALYSIS
+===================================
+
+Scenario Analysis:
+                     OR Logic    AND Logic    Difference
+─────────────────────────────────────────────────────────
+Exposed Patients     143,579     199          721x
+Unexposed Patients   113,167     256,547      2.3x
+Power for Analysis   HIGH        VERY LOW     Critical
+Heterogeneity        HIGH        LOW          Significant
+Clinical Validity    Questionable Specific    Important
+
+Implications for Causal Analysis:
+• OR Logic: Large heterogeneous group, high power, unclear clinical meaning
+• AND Logic: Small homogeneous group, low power, clear clinical meaning
+• Decision needed: Clinical validity vs. statistical power trade-off
+
+────────────────────────────────────────────────────────────
+
