@@ -14,7 +14,7 @@ for i, col in enumerate(sorted(covariate_cols), 1):
 
 print(f'\nSample statistics:')
 numeric_cols = conf.select_dtypes(include=['int16', 'int32', 'int64', 'float64']).columns
-for col in ['Age_at_2018', 'Charlson', 'baseline_encounters', 'baseline_med_count']:
+for col in ['Age_at_2015', 'Charlson', 'baseline_encounters', 'baseline_med_count']:
     if col in numeric_cols:
         mean_val = conf[col].mean()
         std_val = conf[col].std()

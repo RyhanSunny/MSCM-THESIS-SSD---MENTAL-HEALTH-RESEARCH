@@ -60,7 +60,7 @@ def load_data():
     # Merge all data
     data = mediator.merge(outcomes, on='Patient_ID', how='left')
     data = data.merge(exposure[['Patient_ID', 'exposure_flag']], on='Patient_ID', how='left')
-    data = data.merge(cohort[['Patient_ID', 'Sex', 'Age_at_2018', 'Charlson']], 
+    data = data.merge(cohort[['Patient_ID', 'Sex', 'Age_at_2015', 'Charlson']], 
                      on='Patient_ID', how='left')
     
     log.info(f"Loaded {len(data):,} patients with complete data")
@@ -214,16 +214,16 @@ def create_clinical_validation_plot(data):
     
     # 1. Severity vs Age
     ax = axes[0, 0]
-    scatter = ax.scatter(data['Age_at_2018'], data['ssd_severity'], 
+    scatter = ax.scatter(data['Age_at_2015'], data['ssd_severity'], 
                         c=data['exposure_flag'], alpha=0.5, s=20, cmap='viridis')
     ax.set_xlabel('Age')
     ax.set_ylabel('SSD Severity Index')
     ax.set_title('Severity Index by Age', fontsize=14, fontweight='bold')
     
     # Add regression line
-    z = np.polyfit(data['Age_at_2018'], data['ssd_severity'], 1)
+    z = np.polyfit(data['Age_at_2015'], data['ssd_severity'], 1)
     p = np.poly1d(z)
-    ax.plot(data['Age_at_2018'].sort_values(), p(data['Age_at_2018'].sort_values()), 
+    ax.plot(data['Age_at_2015'].sort_values(), p(data['Age_at_2015'].sort_values()), 
             "r--", alpha=0.8, label=f'Trend: y={z[0]:.3f}x+{z[1]:.1f}')
     ax.legend()
     

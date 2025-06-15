@@ -16,7 +16,7 @@ The processed datasets demonstrate good data quality with clinically reasonable 
 
 **Demographics:**
 - Total patients: 256,746
-- Age at 2018: 18-118 years (mean not calculated due to missing baseline year)
+- Age at 2015: 18-118 years (mean not calculated due to missing baseline year)
 - Sex distribution:
   - Female: 157,399 (61.3%) - includes Female + FEMALE variants
   - Male: 99,342 (38.7%) - includes Male + MALE variants  

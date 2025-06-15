@@ -34,13 +34,13 @@ class TestConfigLoader:
         # Check specific values
         assert config["study"]["name"] == "SSD Causal Effect Analysis"
         assert config["cohort"]["min_age"] == 18
-        assert config["temporal"]["reference_date"] == "2018-01-01"
+        assert config["temporal"]["reference_date"] == "2015-01-01"
     
     def test_get_config_nested_keys(self):
         """Test getting nested configuration values."""
         # Test existing nested key
         ref_date = get_config("temporal.reference_date")
-        assert ref_date == "2018-01-01"
+        assert ref_date == "2015-01-01"
         
         # Test with default value
         non_existent = get_config("nonexistent.key", "default_value")

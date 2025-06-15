@@ -48,7 +48,7 @@ log.info(f"Loaded cohort: {len(cohort):,} patients")
 # ------------------------------------------------------------------ #
 #  2  Window boundaries
 # ------------------------------------------------------------------ #
-# Use exposure window from config (2018-01-01 to 2019-01-01)
+# Use exposure window from config (2015-01-01 to 2016-01-01)
 exp_window_start = pd.Timestamp(get_config("temporal.exposure_window_start"))
 exp_window_end = pd.Timestamp(get_config("temporal.exposure_window_end"))
 

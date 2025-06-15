@@ -58,7 +58,7 @@ def load_data():
     data = outcomes.merge(exposure[['Patient_ID', 'exposure_flag', 'H1_normal_labs', 
                                    'H2_referral_loop', 'H3_drug_persistence']], 
                          on='Patient_ID', how='left')
-    data = data.merge(cohort[['Patient_ID', 'Sex', 'Age_at_2018', 'Charlson']], 
+    data = data.merge(cohort[['Patient_ID', 'Sex', 'Age_at_2015', 'Charlson']],
                      on='Patient_ID', how='left')
     
     log.info(f"Loaded {len(data):,} patients with utilization data")
@@ -269,7 +269,7 @@ def create_demographic_analysis(data):
     
     # 1. By age groups
     ax = axes[0, 0]
-    data['Age_Group'] = pd.cut(data['Age_at_2018'], bins=[0, 40, 60, 80, 120], 
+    data['Age_Group'] = pd.cut(data['Age_at_2015'], bins=[0, 40, 60, 80, 120],
                                labels=['<40', '40-59', '60-79', '≥80'])
     
     age_util = data.groupby('Age_Group')[['total_encounters', 'total_cost']].mean()

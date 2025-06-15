@@ -49,7 +49,7 @@ def load_data():
     cohort['Sex_clean'] = cohort['Sex_clean'].fillna('Unknown')
     
     # Merge to get demographics
-    data = exposure.merge(cohort[['Patient_ID', 'Age_at_2018', 'Sex_clean']], on='Patient_ID')
+    data = exposure.merge(cohort[['Patient_ID', 'Age_at_2015', 'Sex_clean']], on='Patient_ID')
     
     logger.info(f"Loaded {len(data):,} patients")
     return data
@@ -310,25 +310,25 @@ def create_demographic_comparison(data, output_dir):
     and_unexposed = data[~data['exposure_flag_strict']]
     
     # 1. Age distribution - OR Logic (density plot for better comparison)
-    ax1.hist([or_unexposed['Age_at_2018'], or_exposed['Age_at_2018']], 
+    ax1.hist([or_unexposed['Age_at_2015'], or_exposed['Age_at_2015']], 
              bins=30, density=True, label=['Unexposed', 'Exposed'], 
              color=['#4ECDC4', '#FF6B6B'], alpha=0.7)
     ax1.set_xlabel('Age')
     ax1.set_ylabel('Density')
     ax1.set_title(f'Age Distribution - OR Logic\\n(Exposed: {len(or_exposed):,}, Unexposed: {len(or_unexposed):,})')
     ax1.legend()
-    ax1.axvline(or_exposed['Age_at_2018'].mean(), color='red', linestyle='--', 
-                label=f'Exposed mean: {or_exposed["Age_at_2018"].mean():.1f}')
-    ax1.axvline(or_unexposed['Age_at_2018'].mean(), color='teal', linestyle='--',
-                label=f'Unexposed mean: {or_unexposed["Age_at_2018"].mean():.1f}')
+    ax1.axvline(or_exposed['Age_at_2015'].mean(), color='red', linestyle='--', 
+                label=f'Exposed mean: {or_exposed["Age_at_2015"].mean():.1f}')
+    ax1.axvline(or_unexposed['Age_at_2015'].mean(), color='teal', linestyle='--',
+                label=f'Unexposed mean: {or_unexposed["Age_at_2015"].mean():.1f}')
     
     # 2. Age distribution - AND Logic
     if len(and_exposed) > 5:  # Only plot if enough data
-        ax2.hist([and_unexposed['Age_at_2018'], and_exposed['Age_at_2018']], 
+        ax2.hist([and_unexposed['Age_at_2015'], and_exposed['Age_at_2015']], 
                  bins=30, density=True, label=['Unexposed', 'Exposed'], 
                  color=['#4ECDC4', '#FF6B6B'], alpha=0.7)
-        ax2.axvline(and_exposed['Age_at_2018'].mean(), color='red', linestyle='--')
-        ax2.axvline(and_unexposed['Age_at_2018'].mean(), color='teal', linestyle='--')
+        ax2.axvline(and_exposed['Age_at_2015'].mean(), color='red', linestyle='--')
+        ax2.axvline(and_unexposed['Age_at_2015'].mean(), color='teal', linestyle='--')
     else:
         ax2.text(0.5, 0.5, f'AND Logic exposed group too small (n={len(and_exposed)})', 
                  ha='center', va='center', transform=ax2.transAxes)
@@ -392,10 +392,10 @@ def create_demographic_comparison(data, output_dir):
     logger.info("Created demographic comparison")
     
     return {
-        'or_mean_age_exposed': or_exposed['Age_at_2018'].mean(),
-        'or_mean_age_unexposed': or_unexposed['Age_at_2018'].mean(),
-        'and_mean_age_exposed': and_exposed['Age_at_2018'].mean() if len(and_exposed) > 0 else 0,
-        'and_mean_age_unexposed': and_unexposed['Age_at_2018'].mean(),
+        'or_mean_age_exposed': or_exposed['Age_at_2015'].mean(),
+        'or_mean_age_unexposed': or_unexposed['Age_at_2015'].mean(),
+        'and_mean_age_exposed': and_exposed['Age_at_2015'].mean() if len(and_exposed) > 0 else 0,
+        'and_mean_age_unexposed': and_unexposed['Age_at_2015'].mean(),
         'or_female_pct_exposed': (or_exposed['Sex_clean'] == 'Female').mean() * 100,
         'or_female_pct_unexposed': (or_unexposed['Sex_clean'] == 'Female').mean() * 100,
         'and_female_pct_exposed': (and_exposed['Sex_clean'] == 'Female').mean() * 100 if len(and_exposed) > 0 else 0,

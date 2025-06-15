@@ -156,7 +156,7 @@ cohort["baseline_end"] = cohort.IndexDate_lab - pd.Timedelta(days=180)
 
 # Initialize confounder dataframe with existing cohort variables
 log.info("Building confounder matrix...")
-confounders = cohort[['Patient_ID', 'Sex', 'BirthYear', 'Age_at_2018', 
+confounders = cohort[['Patient_ID', 'Sex', 'BirthYear', 'Age_at_2015', 
                      'Charlson', 'LongCOVID_flag', 'NYD_count']].copy()
 
 # Convert Sex to binary (handling various formats)
@@ -164,13 +164,13 @@ confounders['male'] = (confounders['Sex'].isin(['M', 'Male', 'MALE'])).astype(in
 confounders.drop('Sex', axis=1, inplace=True)
 
 # Age categories
-confounders['age_18_34'] = ((confounders['Age_at_2018'] >= 18) & 
-                            (confounders['Age_at_2018'] < 35)).astype(int)
-confounders['age_35_49'] = ((confounders['Age_at_2018'] >= 35) & 
-                            (confounders['Age_at_2018'] < 50)).astype(int)
-confounders['age_50_64'] = ((confounders['Age_at_2018'] >= 50) & 
-                            (confounders['Age_at_2018'] < 65)).astype(int)
-confounders['age_65_plus'] = (confounders['Age_at_2018'] >= 65).astype(int)
+confounders['age_18_34'] = ((confounders['Age_at_2015'] >= 18) & 
+                            (confounders['Age_at_2015'] < 35)).astype(int)
+confounders['age_35_49'] = ((confounders['Age_at_2015'] >= 35) & 
+                            (confounders['Age_at_2015'] < 50)).astype(int)
+confounders['age_50_64'] = ((confounders['Age_at_2015'] >= 50) & 
+                            (confounders['Age_at_2015'] < 65)).astype(int)
+confounders['age_65_plus'] = (confounders['Age_at_2015'] >= 65).astype(int)
 
 # 1. Baseline Healthcare Utilization
 log.info("Calculating baseline healthcare utilization...")
@@ -402,8 +402,8 @@ if medical_procedure is not None:
     ).astype(int)
 
 # 10. Create interaction terms for key variables
-confounders['age_male_interaction'] = confounders['Age_at_2018'] * confounders['male']
-confounders['charlson_age_interaction'] = confounders['Charlson'] * confounders['Age_at_2018']
+confounders['age_male_interaction'] = confounders['Age_at_2015'] * confounders['male']
+confounders['charlson_age_interaction'] = confounders['Charlson'] * confounders['Age_at_2015']
 
 # Summary of confounders
 log.info("\nConfounder summary:")
@@ -419,7 +419,7 @@ try:
     log.info("\nPre-matching standardized mean differences:")
     smds = []
     for var in confounder_vars:
-        if var in ['Age_at_2018', 'Charlson', 'baseline_encounters', 'baseline_med_count']:
+        if var in ['Age_at_2015', 'Charlson', 'baseline_encounters', 'baseline_med_count']:
             # Continuous variables
             exposed_mean = confounders_exp[confounders_exp.exposure_flag == 1][var].mean()
             unexposed_mean = confounders_exp[confounders_exp.exposure_flag == 0][var].mean()

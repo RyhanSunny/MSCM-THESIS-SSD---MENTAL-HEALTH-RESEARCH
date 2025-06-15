@@ -55,7 +55,7 @@ OUT_PATH = DERIVED / 'patient_master.parquet'
 
 # Define expected files and their key columns
 EXPECTED_FILES = {
-    'cohort.parquet': ['Patient_ID', 'Sex', 'BirthYear', 'Age_at_2018', 'SpanMonths', 
+    'cohort.parquet': ['Patient_ID', 'Sex', 'BirthYear', 'Age_at_2015', 'SpanMonths', 
                       'IndexDate_lab', 'Charlson', 'LongCOVID_flag', 'NYD_count'],
     'exposure.parquet': ['Patient_ID', 'exposure_flag', 'normal_lab_count', 
                         'symptom_referral_n', 'drug_days_in_window'],
@@ -169,7 +169,7 @@ for dtype, count in dtype_counts.items():
     log.info(f"  {dtype}: {count} columns")
 
 # Check for any remaining nulls in key columns
-key_cols = ['Patient_ID', 'exposure_flag', 'Age_at_2018', 'Sex']
+key_cols = ['Patient_ID', 'exposure_flag', 'Age_at_2015', 'Sex']
 null_check = master[key_cols].isnull().sum()
 if null_check.any():
     log.warning("\nNull values in key columns:")

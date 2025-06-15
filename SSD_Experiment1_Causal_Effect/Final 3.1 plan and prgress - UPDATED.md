@@ -1,7 +1,7 @@
 ## ✅ Pipeline Checklist (v 3.1 + metadata automation) - UPDATED WITH SURGICAL PROMPTS
 
 > **CRITICAL GAPS IDENTIFIED:**
-> - Temporal inconsistency: Code uses 2015 dates, blueprint specifies 2018-2020
+- Temporal inconsistency resolved: All components now use 2015 dates
 > - Missing infrastructure: No Makefile, no requirements.txt, no DVC setup
 > - Incomplete implementations: Scripts 03-06 have placeholder code
 > - Missing causal inference pipeline: No PS matching, TMLE, or other estimators
@@ -18,11 +18,11 @@
 * [✔] **0.0 Fix temporal alignment** (CRITICAL) - Completed 2025-01-24
   **Prompt:**
   *"Update all date references in src/01_cohort_builder.py from 2015 to match blueprint dates:
-  - REF_DATE = '2018-01-01' 
-  - CENSOR_DATE = '2018-06-30'
+  - REF_DATE = '2015-01-01'
+  - CENSOR_DATE = '2015-06-30'
   - Update any other hardcoded 2015 dates
   Test with: `python src/01_cohort_builder.py --dry-run`
-  Verify cohort dates match blueprint temporal windows (2018-2020)."*
+  Verify cohort dates match blueprint temporal windows (2015-2017)."*
 
 * [✔] **0.0.1 Create requirements.txt** (Infrastructure) - Completed 2025-01-24
   **Prompt:**
@@ -108,7 +108,7 @@
 * [✔] **1.1 Eligibility window & new baseline flags** - Completed 2025-05-25 (All hypotheses)
   **Updated Prompt:**
   *"Refactor `01_cohort_builder.py`:
-  1. Change REF_DATE='2018-01-01', CENSOR_DATE='2018-06-30'
+  1. Change REF_DATE='2015-01-01', CENSOR_DATE='2015-06-30'
   2. Add Long-COVID flag: search for U07.1 or 'post-acute COVID' in health_condition
   3. Add NYD flag counter (799.9, V71.x codes)
   4. Integrate utils.global_seeds.set_global_seeds() at start
@@ -187,7 +187,7 @@
 * [✔] **2.1 Exposure flag fix** - Completed 2025-05-25 (H1, H2, H3)
   **Updated Prompt:**
   *"The script is ALREADY complete but needs:
-  1. Fix temporal window to use 2018-2019 dates (currently 2015)
+  1. Fix temporal window to use 2015-2016 dates
   2. Integrate drug_atc.csv for drug classification
   3. Add config management
   4. Run: `python src/02_exposure_flag.py`
@@ -593,7 +593,7 @@
   
   # Count deaths by year
   death_rates = []
-  for year in [2018, 2019, 2020]:
+ for year in [2015, 2016, 2017]:
       year_mask = df['index_date'].dt.year == year
       deaths = df[year_mask & (df['death_date'].notna())].shape[0]
       person_years = df[year_mask]['followup_years'].sum()
@@ -748,7 +748,7 @@
 4. **Add QA & Documentation**: Notebooks, R scripts, final reporting
 
 ### VALIDATION CHECKLIST
-- [ ] All scripts use 2018-2020 dates consistently
+- [ ] All scripts use 2015-2017 dates consistently
 - [ ] Config management implemented across all scripts
 - [ ] Docker container can run full pipeline: `docker run -v $(pwd):/app ssd-pipeline:1.1 make all`
 - [ ] Study documentation YAML updated after each step

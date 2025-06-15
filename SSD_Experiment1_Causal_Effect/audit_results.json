@@ -64,7 +64,7 @@
           "has_error_handling": true,
           "has_documentation": true,
           "issues": [
-            "REF_DATE should be 2018-01-01"
+            "REF_DATE should be 2015-01-01"
           ]
         },
         "02_exposure_flag.py": {

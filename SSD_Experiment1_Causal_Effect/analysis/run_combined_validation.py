@@ -29,7 +29,7 @@ confounders = pd.read_parquet('data_derived/confounders.parquet')
 autoencoder = pd.read_parquet('data_derived/mediator_autoencoder.parquet')
 
 # Merge data
-data = exposure.merge(cohort[['Patient_ID', 'Age_at_2018', 'Sex']], on='Patient_ID')
+data = exposure.merge(cohort[['Patient_ID', 'Age_at_2015', 'Sex']], on='Patient_ID')
 data = data.merge(outcomes[['Patient_ID', 'total_encounters', 'ed_visits', 'medical_costs']], on='Patient_ID')
 data = data.merge(confounders[['Patient_ID', 'Charlson']], on='Patient_ID')
 data = data.merge(autoencoder[['Patient_ID', 'SSD_severity_index']], on='Patient_ID')
@@ -205,7 +205,7 @@ summary = {
         'exposed': len(or_exposed),
         'unexposed': len(or_unexposed),
         'percent_exposed': round(len(or_exposed) / len(data) * 100, 2),
-        'mean_age_exposed': round(or_exposed['Age_at_2018'].mean(), 1),
+        'mean_age_exposed': round(or_exposed['Age_at_2015'].mean(), 1),
         'mean_encounters_exposed': round(or_exposed['total_encounters'].mean(), 1),
         'mean_cost_exposed': round(or_exposed['medical_costs'].mean(), 2),
         'mean_cci_exposed': round(or_exposed['Charlson'].mean(), 2),
@@ -216,7 +216,7 @@ summary = {
         'exposed': len(and_exposed),
         'unexposed': len(and_unexposed),
         'percent_exposed': round(len(and_exposed) / len(data) * 100, 2),
-        'mean_age_exposed': round(and_exposed['Age_at_2018'].mean(), 1) if len(and_exposed) > 0 else 0,
+        'mean_age_exposed': round(and_exposed['Age_at_2015'].mean(), 1) if len(and_exposed) > 0 else 0,
         'mean_encounters_exposed': round(and_exposed['total_encounters'].mean(), 1) if len(and_exposed) > 0 else 0,
         'mean_cost_exposed': round(and_exposed['medical_costs'].mean(), 2) if len(and_exposed) > 0 else 0,
         'mean_cci_exposed': round(and_exposed['Charlson'].mean(), 2) if len(and_exposed) > 0 else 0,

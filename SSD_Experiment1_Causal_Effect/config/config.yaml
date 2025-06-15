@@ -13,12 +13,12 @@ study:
 
 # Temporal settings
 temporal:
-  reference_date: "2018-01-01"
-  censor_date: "2018-06-30"
-  exposure_window_start: "2018-01-01"
-  exposure_window_end: "2019-01-01"
-  outcome_window_start: "2019-07-01"
-  outcome_window_end: "2020-12-31"
+  reference_date: "2015-01-01"
+  censor_date: "2015-06-30"
+  exposure_window_start: "2015-01-01"
+  exposure_window_end: "2016-01-01"
+  outcome_window_start: "2016-07-01"
+  outcome_window_end: "2017-12-31"
   covid_cutoff_date: "2020-03-01"
 
 # Cohort criteria

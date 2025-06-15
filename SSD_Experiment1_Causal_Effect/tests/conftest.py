@@ -29,12 +29,12 @@ def mock_config():
             "version": "1.1.0"
         },
         "temporal": {
-            "reference_date": "2018-01-01",
-            "censor_date": "2018-06-30",
-            "exposure_window_start": "2018-01-01",
-            "exposure_window_end": "2019-01-01",
-            "outcome_window_start": "2019-07-01",
-            "outcome_window_end": "2020-12-31"
+            "reference_date": "2015-01-01",
+            "censor_date": "2015-06-30",
+            "exposure_window_start": "2015-01-01",
+            "exposure_window_end": "2016-01-01",
+            "outcome_window_start": "2016-07-01",
+            "outcome_window_end": "2017-12-31"
         },
         "cohort": {
             "min_age": 18,
@@ -59,10 +59,10 @@ def mock_patient_data():
         'Patient_ID': range(1, n_patients + 1),
         'Sex': np.random.choice(['M', 'F'], n_patients),
         'BirthYear': np.random.randint(1940, 2000, n_patients),
-        'Age_at_2018': np.random.randint(18, 78, n_patients),
+        'Age_at_2015': np.random.randint(18, 78, n_patients),
         'Charlson': np.random.poisson(1, n_patients),
         'SpanMonths': np.random.uniform(30, 60, n_patients),
-        'IndexDate_lab': pd.date_range('2018-01-01', periods=n_patients, freq='H')[:n_patients],
+        'IndexDate_lab': pd.date_range('2015-01-01', periods=n_patients, freq='H')[:n_patients],
         'LongCOVID_flag': np.random.binomial(1, 0.05, n_patients),
         'NYD_count': np.random.poisson(0.5, n_patients)
     })
@@ -78,7 +78,7 @@ def mock_encounter_data():
     return pd.DataFrame({
         'Encounter_ID': range(1, n_encounters + 1),
         'Patient_ID': np.random.randint(1, n_patients + 1, n_encounters),
-        'EncounterDate': pd.date_range('2018-01-01', '2020-12-31', periods=n_encounters),
+        'EncounterDate': pd.date_range('2015-01-01', '2017-12-31', periods=n_encounters),
         'EncounterType': np.random.choice(['Primary Care', 'Emergency', 'Specialist'], n_encounters),
         'Provider_ID': np.random.randint(1, 100, n_encounters)
     })
@@ -94,7 +94,7 @@ def mock_lab_data():
     lab_data = pd.DataFrame({
         'Lab_ID': range(1, n_labs + 1),
         'Patient_ID': np.random.randint(1, n_patients + 1, n_labs),
-        'PerformedDate': pd.date_range('2018-01-01', '2020-12-31', periods=n_labs),
+        'PerformedDate': pd.date_range('2015-01-01', '2017-12-31', periods=n_labs),
         'TestResult_calc': np.random.normal(5.0, 2.0, n_labs),
         'LowerNormal': np.random.normal(3.0, 0.5, n_labs),
         'UpperNormal': np.random.normal(7.0, 0.5, n_labs),
@@ -120,8 +120,8 @@ def mock_medication_data():
     return pd.DataFrame({
         'Medication_ID': range(1, n_meds + 1),
         'Patient_ID': np.random.randint(1, n_patients + 1, n_meds),
-        'StartDate': pd.date_range('2018-01-01', '2020-06-30', periods=n_meds),
-        'EndDate': pd.date_range('2018-02-01', '2020-12-31', periods=n_meds),
+        'StartDate': pd.date_range('2015-01-01', '2017-06-30', periods=n_meds),
+        'EndDate': pd.date_range('2015-02-01', '2017-12-31', periods=n_meds),
         'DrugName': np.random.choice(['GABAPENTIN', 'ZOPICLONE', 'IBUPROFEN', 'ACETAMINOPHEN'], n_meds),
         'ATC_Code': np.random.choice(['N05B', 'N05C', 'N02B', 'N02A'], n_meds)
     })
@@ -137,8 +137,8 @@ def mock_referral_data():
     return pd.DataFrame({
         'Referral_ID': range(1, n_referrals + 1),
         'Patient_ID': np.random.randint(1, n_patients + 1, n_referrals),
-        'ReferralDate': pd.date_range('2018-01-01', '2020-06-30', periods=n_referrals),
-        'CompletedDate': pd.date_range('2018-02-01', '2020-12-31', periods=n_referrals),
+        'ReferralDate': pd.date_range('2015-01-01', '2017-06-30', periods=n_referrals),
+        'CompletedDate': pd.date_range('2015-02-01', '2017-12-31', periods=n_referrals),
         'Name_calc': np.random.choice(['Cardiology', 'Neurology', 'Gastroenterology'], n_referrals),
         'DiagnosisCode': np.random.choice(['786.50', '780.4', '787.91', 'V71.09'], n_referrals)
     })
@@ -191,7 +191,7 @@ def mock_confounder_data():
         'baseline_encounters_6m': np.random.poisson(4, n_patients),
         'deprivation_quintile': np.random.randint(1, 6, n_patients),
         'site_id': np.random.randint(1, 20, n_patients),
-        'calendar_year': np.random.choice([2018, 2019], n_patients)
+        'calendar_year': np.random.choice([2015, 2016], n_patients)
     })
 
 

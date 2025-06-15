@@ -13,7 +13,7 @@ Significant progress has been made on the SSD pipeline implementation. All place
 
 ### Phase 1 - Infrastructure
 - ✅ **Cohort Builder (01_cohort_builder.py)**: Reviewed, produces 250,025 patients
-  - Note: Uses 2015 reference date vs config's 2018-01-01 (needs reconciliation)
+  - Note: Reference date unified at 2015-01-01
 - ✅ **Missing Data Engine (07_missing_data.py)**: Script exists with miceforest
 - ✅ **Lab Normal Helper**: helpers/lab_utils.py created and integrated
 - ✅ **Drug Code Manifest**: code_lists/drug_atc.csv exists with proper ATC codes
@@ -75,9 +75,8 @@ pip install -r requirements.txt
 ```
 
 ### 2. Resolve Temporal Discrepancy
-- Cohort uses 2015-01-01 as reference date
-- Config specifies 2018-01-01
-- Decision needed: rebuild cohort or update config
+- Cohort and config now both use **2015-01-01** as the reference date
+- Temporal alignment issue resolved; no rebuild required
 
 ### 3. Execute Pipeline Scripts in Order
 Once environment is set up:

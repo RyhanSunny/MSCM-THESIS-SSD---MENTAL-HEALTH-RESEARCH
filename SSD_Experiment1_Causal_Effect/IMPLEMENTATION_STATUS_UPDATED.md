@@ -76,7 +76,7 @@
 - **Required**:
   ```python
   table['PID'] = cohort['Patient_ID']
-  table['age'] = cohort['Age_at_2018']
+  table['age'] = cohort['Age_at_2015']
   table['NYD_yn'] = (cohort['NYD_count'] > 0).astype(int)
   table['referred_to_psy_yn'] = get_psych_referral_flags(referrals)
   ```

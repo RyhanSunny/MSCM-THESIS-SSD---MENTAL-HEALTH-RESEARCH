@@ -56,7 +56,7 @@
   Rebuild dataset (`make 01_cohort_builder`).
   Run update\_study\_doc with `step='Cohort rebuild 250 025 rows'` (script auto pulls new row count)."_
   ✔ Reviewed cohort builder script - already produces 250,025 patients - 2025-05-25
-  ✔ Note: Temporal discrepancy - cohort uses 2015 reference date vs config 2018-01-01 - 2025-05-25
+  ✔ Reference date unified at 2015-01-01 - 2025-05-25
   ✔ Added Long-COVID and NYD flags to cohort - already implemented
 
 * [✔] **1.2 Missing-data engine** (All hypotheses)

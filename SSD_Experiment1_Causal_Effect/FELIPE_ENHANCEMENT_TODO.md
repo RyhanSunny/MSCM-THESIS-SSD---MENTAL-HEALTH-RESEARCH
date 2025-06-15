@@ -340,7 +340,7 @@ def create_felipe_patient_table():
     # Build Felipe table
     felipe_table = pd.DataFrame()
     felipe_table['PID'] = cohort['Patient_ID']
-    felipe_table['age'] = cohort['Age_at_2018']
+    felipe_table['age'] = cohort['Age_at_2015']
     felipe_table['sex'] = cohort['Sex_clean']
     felipe_table['NYD_yn'] = nyd_enhanced['nyd_binary']
     felipe_table['body_part'] = nyd_enhanced['primary_body_part']

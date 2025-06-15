@@ -244,13 +244,13 @@ class TestReferralSequenceIntegration:
         # Mock cohort data
         test_cohort = pd.DataFrame({
             'Patient_ID': [1, 2, 3, 4, 5],
-            'Age_at_2018': [45, 55, 35, 65, 25],
+            'Age_at_2015': [45, 55, 35, 65, 25],
             'Sex_clean': ['Female', 'Male', 'Female', 'Male', 'Female']
         })
         
         # Expected enhanced columns after processing
         expected_columns = [
-            'Patient_ID', 'Age_at_2018', 'Sex_clean',
+            'Patient_ID', 'Age_at_2015', 'Sex_clean',
             'H2_referral_loop_enhanced', 'dual_pathway',
             'has_psychiatric_referral', 'has_medical_specialist',
             'total_specialist_referrals'

@@ -42,7 +42,7 @@ print("Sex distribution after cleaning:")
 print(cohort['Sex_clean'].value_counts())
 
 # Merge data
-data = exposure.merge(cohort[['Patient_ID', 'Age_at_2018', 'Sex_clean']], on='Patient_ID')
+data = exposure.merge(cohort[['Patient_ID', 'Age_at_2015', 'Sex_clean']], on='Patient_ID')
 
 # Calculate sex percentages correctly
 or_exposed = data[data['exposure_flag']]
@@ -143,14 +143,14 @@ print("\nCreated fixed power analysis visualization")
 fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(14, 10))
 
 # Age distributions (these were correct)
-ax1.hist([or_unexposed['Age_at_2018'], or_exposed['Age_at_2018']], 
+ax1.hist([or_unexposed['Age_at_2015'], or_exposed['Age_at_2015']],
          bins=20, label=['Unexposed', 'Exposed'], color=['#4ECDC4', '#FF6B6B'], alpha=0.7)
 ax1.set_xlabel('Age')
 ax1.set_ylabel('Count')
 ax1.set_title('Age Distribution - OR Logic')
 ax1.legend()
 
-ax2.hist([and_unexposed['Age_at_2018'], and_exposed['Age_at_2018']], 
+ax2.hist([and_unexposed['Age_at_2015'], and_exposed['Age_at_2015']],
          bins=20, label=['Unexposed', 'Exposed'], color=['#4ECDC4', '#FF6B6B'], alpha=0.7)
 ax2.set_xlabel('Age')
 ax2.set_ylabel('Count')
