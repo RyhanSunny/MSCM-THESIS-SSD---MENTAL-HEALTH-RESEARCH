@@ -73,7 +73,7 @@
 - **Status**: ✅ IMPLEMENTED
 
 ### 7. **Felipe Patient Characteristics Table** - NOT STARTED ❌
-- **File**: `src/09_felipe_patient_table.py` ❌ NOT CREATED  
+- **File**: `src/09_patient_table.py` ❌ NOT CREATED
 - **Missing**: Specific patient table format Dr. Felipe requested
 - **Required**:
   ```python
