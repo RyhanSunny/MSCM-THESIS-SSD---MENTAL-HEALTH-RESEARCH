@@ -30,3 +30,22 @@ make all
 
 This sequentially executes cohort construction, exposure flagging, mediator derivation, propensity score matching, causal estimators and robustness checks. Other targets such as `make reporting` generate final reports.
 
+
+## Environment setup
+
+Create a Python environment and install dependencies:
+
+```bash
+make -C SSD_Experiment1_Causal_Effect install
+```
+
+The `requirements.txt` file includes `pandas`, `numpy`, `pyarrow`, `scikit-learn`, and `pytest` to support the unit tests and analysis scripts.
+
+## Reference date decision
+
+The available CPCSSN checkpoint was generated with a 2015 baseline. To remain consistent with the derived cohort stored in `data_derived/`, the configuration has been aligned to `2015-01-01`. Exposure and outcome windows now span 2015–2017.
+
+## Data gaps and proxies
+
+Postal codes and detailed billing data are not available in the dataset. Costs are estimated using Ontario schedule of benefits values defined in `config.yaml`. Emergency department visits are flagged using an encounter-type keyword algorithm (e.g. `emerg`, `urgent`, `ER visit`).
+

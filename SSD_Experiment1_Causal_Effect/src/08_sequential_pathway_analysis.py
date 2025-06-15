@@ -3,7 +3,7 @@
 Sequential Pathway Analysis for Somatic Symptom Disorder (SSD)
 
 Implements Dr. Felipe's sequential causal chain:
-NYD → Normal Labs → Specialist → No Diagnosis → Anxiety → Psychiatrist → SSD
+NYD → Labs → Specialist → Anxiety → Psychiatrist → SSD
 """
 
 from __future__ import annotations
@@ -35,11 +35,11 @@ class SSDSequentialAnalyzer:
         self.lab_window = 12      # normal labs after NYD
         self.referral_window = 18 # specialist referrals
 
+        # NYD → Labs → Specialist → Anxiety → Psychiatrist → SSD
         self.stages = [
             "nyd",
             "normal_labs",
             "specialist",
-            "no_diagnosis",
             "anxiety",
             "psychiatrist",
             "ssd",
@@ -78,11 +78,6 @@ class SSDSequentialAnalyzer:
     def get_medical_specialist_referrals(self, patient_id: int, timeline: dict[str, pd.DataFrame]):
         """Return dates of medical specialist referrals."""
         return timeline["referrals"][timeline["referrals"]["Type"] == "medical"]["Date"].tolist()
-
-    def assess_inconclusive_workup(self, patient_id: int, med_referrals, timeline: dict[str, pd.DataFrame]):
-        """Return True if no definitive diagnosis after medical referrals."""
-        diagnoses = timeline["conditions"][timeline["conditions"]["Condition"] == "Diagnosis"]["Date"]
-        return len(diagnoses) == 0
 
     def detect_anxiety_after_workup(self, patient_id: int, timeline: dict[str, pd.DataFrame]):
         """Return anxiety diagnosis dates after the workup period."""
@@ -162,26 +157,21 @@ class SSDSequentialAnalyzer:
             return self.create_pathway_result(patient_id, stage=2, stage_dates=stage_dates)
         stage_dates["specialist"] = med_refs[0]
 
-        # Step 4: Inconclusive workup
-        if not self.assess_inconclusive_workup(patient_id, med_refs, timeline):
-            return self.create_pathway_result(patient_id, stage=3, stage_dates=stage_dates)
-        stage_dates["no_diagnosis"] = med_refs[-1] if med_refs else None
-
-        # Step 5: Anxiety/depression emergence
+        # Step 4: Anxiety/depression emergence
         anxiety_dates = self.detect_anxiety_after_workup(patient_id, timeline)
         if not anxiety_dates:
-            return self.create_pathway_result(patient_id, stage=4, stage_dates=stage_dates)
+            return self.create_pathway_result(patient_id, stage=3, stage_dates=stage_dates)
         stage_dates["anxiety"] = anxiety_dates[0]
 
-        # Step 6: Psychiatrist referral
+        # Step 5: Psychiatrist referral
         psych_ref = self.get_psychiatrist_referral(patient_id, timeline)
         if not psych_ref:
-            return self.create_pathway_result(patient_id, stage=5, stage_dates=stage_dates)
+            return self.create_pathway_result(patient_id, stage=4, stage_dates=stage_dates)
         stage_dates["psychiatrist"] = psych_ref[0]
 
-        # Step 7: SSD diagnosis
+        # Step 6: SSD diagnosis
         if not self.assess_ssd_outcome(patient_id):
-            return self.create_pathway_result(patient_id, stage=6, stage_dates=stage_dates)
+            return self.create_pathway_result(patient_id, stage=5, stage_dates=stage_dates)
 
         ssd_date = self.exposure[self.exposure["Patient_ID"] == patient_id]["Date"].iloc[0]
         nyd_to_ssd_days = (ssd_date - nyd_dates[0]).days
@@ -189,10 +179,10 @@ class SSDSequentialAnalyzer:
 
         return self.create_pathway_result(
             patient_id,
-            stage=7,
+            stage=6,
             complete_pathway=True,
             nyd_to_ssd_days=nyd_to_ssd_days,
-            stages_completed=list(range(7)),
+            stages_completed=list(range(6)),
             stage_dates=stage_dates,
         )
 
