@@ -3,6 +3,18 @@
 This repository contains code for a graduate thesis investigating how repeated diagnostics, unresolved referrals, and medication persistence impact healthcare utilization in patients with suspected Somatic Symptom Disorder (SSD), and whether a severity index mediates these effects.
 
 The project uses electronic medical records from the Canadian Primary Care Sentinel Surveillance Network (CPCSSN) to build patient cohorts, derive exposures, and estimate causal effects of repeated diagnostic tests, referrals, and medication patterns.
+
+## Healthcare utilization outcomes
+
+Metrics derived from CPCSSN tables capture the breadth of care that SSD patients receive:
+
+- primary-care encounters and laboratory investigations
+- emergency department visits
+- overall cost estimates aggregated from available billing data
+
+These outcomes allow us to quantify the causal impact of diagnostic cascades, referral loops, and medication persistence on subsequent utilization.
+
+
 Raw CPCSSN data are not included in this repository due to privacy restrictions; only derived tables and configuration files are provided.
 
 ## Directory overview
@@ -29,7 +41,6 @@ make all
 ```
 
 This sequentially executes cohort construction, exposure flagging, mediator derivation, propensity score matching, causal estimators and robustness checks. Other targets such as `make reporting` generate final reports.
-
 
 ## Environment setup
 
