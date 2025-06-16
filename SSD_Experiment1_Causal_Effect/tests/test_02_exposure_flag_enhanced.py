@@ -28,7 +28,7 @@ sys.path.append(str(Path(__file__).parent.parent / 'src'))
 import importlib.util
 spec = importlib.util.spec_from_file_location(
     "enhanced_exposure_flag", 
-    Path(__file__).parent.parent / 'src' / '02_exposure_flag_enhanced.py'
+    Path(__file__).parent.parent / 'src' / 'experimental' / '02_exposure_flag_enhanced.py'
 )
 enhanced_exposure_flag = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(enhanced_exposure_flag)

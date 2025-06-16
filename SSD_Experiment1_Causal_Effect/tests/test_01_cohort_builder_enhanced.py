@@ -35,7 +35,7 @@ class TestNYDBodyPartMapping:
         try:
             spec = importlib.util.spec_from_file_location(
                 "cohort_builder_enhanced",
-                Path(__file__).parent.parent / 'src' / '01_cohort_builder_enhanced.py'
+                Path(__file__).parent.parent / 'src' / 'experimental' / '01_cohort_builder_enhanced.py'
             )
             cohort_enhanced = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(cohort_enhanced)
@@ -61,7 +61,7 @@ class TestNYDBodyPartMapping:
         try:
             spec = importlib.util.spec_from_file_location(
                 "cohort_builder_enhanced",
-                Path(__file__).parent.parent / 'src' / '01_cohort_builder_enhanced.py'
+                Path(__file__).parent.parent / 'src' / 'experimental' / '01_cohort_builder_enhanced.py'
             )
             cohort_enhanced = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(cohort_enhanced)
@@ -105,7 +105,7 @@ class TestNYDBinaryFlags:
         try:
             spec = importlib.util.spec_from_file_location(
                 "cohort_builder_enhanced",
-                Path(__file__).parent.parent / 'src' / '01_cohort_builder_enhanced.py'
+                Path(__file__).parent.parent / 'src' / 'experimental' / '01_cohort_builder_enhanced.py'
             )
             cohort_enhanced = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(cohort_enhanced)
@@ -139,7 +139,7 @@ class TestNYDBinaryFlags:
         try:
             spec = importlib.util.spec_from_file_location(
                 "cohort_builder_enhanced",
-                Path(__file__).parent.parent / 'src' / '01_cohort_builder_enhanced.py'
+                Path(__file__).parent.parent / 'src' / 'experimental' / '01_cohort_builder_enhanced.py'
             )
             cohort_enhanced = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(cohort_enhanced)
@@ -174,7 +174,7 @@ class TestEnhancedCohortBuilder:
         try:
             spec = importlib.util.spec_from_file_location(
                 "cohort_builder_enhanced",
-                Path(__file__).parent.parent / 'src' / '01_cohort_builder_enhanced.py'
+                Path(__file__).parent.parent / 'src' / 'experimental' / '01_cohort_builder_enhanced.py'
             )
             cohort_enhanced = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(cohort_enhanced)
@@ -209,7 +209,7 @@ class TestNYDValidationReporting:
         try:
             spec = importlib.util.spec_from_file_location(
                 "cohort_builder_enhanced",
-                Path(__file__).parent.parent / 'src' / '01_cohort_builder_enhanced.py'
+                Path(__file__).parent.parent / 'src' / 'experimental' / '01_cohort_builder_enhanced.py'
             )
             cohort_enhanced = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(cohort_enhanced)
@@ -246,7 +246,7 @@ class TestNYDPerformanceAndEdgeCases:
         try:
             spec = importlib.util.spec_from_file_location(
                 "cohort_builder_enhanced",
-                Path(__file__).parent.parent / 'src' / '01_cohort_builder_enhanced.py'
+                Path(__file__).parent.parent / 'src' / 'experimental' / '01_cohort_builder_enhanced.py'
             )
             cohort_enhanced = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(cohort_enhanced)
@@ -279,7 +279,7 @@ class TestNYDPerformanceAndEdgeCases:
         try:
             spec = importlib.util.spec_from_file_location(
                 "cohort_builder_enhanced",
-                Path(__file__).parent.parent / 'src' / '01_cohort_builder_enhanced.py'
+                Path(__file__).parent.parent / 'src' / 'experimental' / '01_cohort_builder_enhanced.py'
             )
             cohort_enhanced = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(cohort_enhanced)

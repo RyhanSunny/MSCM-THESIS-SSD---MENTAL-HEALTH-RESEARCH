@@ -21,7 +21,7 @@ sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
 try:
     import importlib.util
-    module_path = Path(__file__).parent.parent / 'src' / '07_referral_sequence_enhanced.py'
+    module_path = Path(__file__).parent.parent / 'src' / 'experimental' / '07_referral_sequence_enhanced.py'
     spec = importlib.util.spec_from_file_location("referral_enhanced", module_path)
     referral_enhanced = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(referral_enhanced)
