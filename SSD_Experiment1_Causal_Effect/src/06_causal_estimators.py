@@ -11,8 +11,7 @@ Hypothesis Support:
 - H1: Healthcare utilization - Causal effect estimation
 - H2: Healthcare costs - Robust cost impact assessment
 - H3: Medication use - Treatment effect on inappropriate prescribing
-- H5: Health anxiety - Heterogeneous effects by anxiety level
-- H6: Physician mediation - Effect modification analysis
+- H5: Physician mediation - Effect modification analysis
 
 Output:
 - results/ate_estimates.json: Average treatment effect estimates

@@ -7,7 +7,7 @@ PYTHON = python
 SRC_DIR = src
 DATA_DIR = data_derived
 RESULTS_DIR = results
-NOTEBOOKS_DIR = notebooks
+NOTEBOOKS_DIR = Notebooks
 REPORTS_DIR = reports
 
 # Default target
@@ -45,20 +45,25 @@ lab: cohort
 	@echo "Generating lab flags..."
 	$(PYTHON) $(SRC_DIR)/06_lab_flag.py
 
+.PHONY: referral
+referral: cohort
+	@echo "Generating referral sequences..."
+	$(PYTHON) $(SRC_DIR)/07_referral_sequence.py
+
 .PHONY: missing
 missing: cohort
 	@echo "Handling missing data..."
 	$(PYTHON) $(SRC_DIR)/07_missing_data.py
 
 .PHONY: master
-master: cohort exposure mediator outcomes confounders lab
-        @echo "Creating patient master table..."
-        $(PYTHON) $(SRC_DIR)/08_patient_master_table.py
+master: cohort exposure mediator outcomes confounders lab referral
+	@echo "Creating patient master table..."
+	$(PYTHON) $(SRC_DIR)/08_patient_master_table.py
 
 .PHONY: sequential
 sequential: master
-        @echo "Running sequential pathway analysis..."
-        $(PYTHON) $(SRC_DIR)/08_sequential_pathway_analysis.py
+	@echo "Running sequential pathway analysis..."
+	$(PYTHON) $(SRC_DIR)/08_sequential_pathway_analysis.py
 
 # Causal analysis targets
 .PHONY: ps

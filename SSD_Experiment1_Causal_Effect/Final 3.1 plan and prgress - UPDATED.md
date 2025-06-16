@@ -194,7 +194,7 @@
   5. Count exposed patients: `pd.read_parquet('data_derived/exposure.parquet')['ssd_flag'].sum()`
   6. Update YAML: `--step 'Exposure flag regenerated' --kv exposed_n=<count>`"*
 
-* [✔] **2.2 Sparse auto-encoder mediator** - Completed 2025-05-25 (H4, H5)
+* [✔] **2.2 Sparse auto-encoder mediator** - Completed 2025-05-25 (H4)
   **Updated Prompt:**
   *"Implement `03_mediator_autoencoder.py` replacing TODO with:
   ```python
@@ -354,7 +354,7 @@
   Verify row count = 250025.
   Update YAML: `--kv patient_master_rows=250025`"*
 
-* [✔] **4.1 GPU XGBoost PS + matching** - Completed 2025-05-25 (H1, H2, H3, H5)
+* [✔] **4.1 GPU XGBoost PS + matching** - Completed 2025-05-25 (H1, H2, H3)
   **Updated Prompt:**
   *"Create `src/05_ps_match.py`:
   ```python
@@ -433,7 +433,7 @@
   ```
   Update YAML: `--kv ess=<value> max_post_weight_smd=<value> love_plot_path=figures/love_plot.pdf`"*
 
-* [✔] **4.2 Segmented regression & MSM** - Completed 2025-05-25 (H1, H5; MSM optional/future work)
+* [✔] **4.2 Segmented regression & MSM** - Completed 2025-05-25 (H1; MSM optional/future work)
   **Updated Prompt:**
   *"Create `src/12_temporal_adjust.py`:
   ```python

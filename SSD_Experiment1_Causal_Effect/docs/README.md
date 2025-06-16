@@ -11,7 +11,7 @@ This directory contains documentation for the Somatic Symptom Disorder (SSD) cau
 
 ## Project Overview
 
-This project investigates the causal relationship between patterns of healthcare utilization (repeated normal diagnostic tests, unresolved specialist referrals, and persistent medication use) and subsequent healthcare encounters using data from the Canadian Primary Care Sentinel Surveillance Network (CPCSSN).
+This project investigates the causal relationship between patterns of healthcare utilization (repeated normal diagnostic tests, unresolved specialist referrals, and persistent medication use) and subsequent healthcare encounters among mental health patients using data from the Canadian Primary Care Sentinel Surveillance Network (CPCSSN).
 
 ### Key Features
 
@@ -27,8 +27,7 @@ This project investigates the causal relationship between patterns of healthcare
 2. **H2**: ≥2 unresolved referrals predict new psychotropic prescriptions (OR ≈ 1.40–1.60)
 3. **H3**: >90 days medication predicts ED visits (aOR ≈ 1.30 anxiolytic, 1.20 analgesic)
 4. **H4**: SSD Severity Index mediates ≥50% of total causal effect
-5. **H5**: Effects strengthen in younger females, high deprivation, prior anxiety
-6. **H6**: High-SSDSI patients: intervention reduces utilization ≥20%
+5. **H5**: High-SSDSI patients: intervention reduces utilization ≥20%
 
 ## Quick Start
 
@@ -64,10 +63,11 @@ The analysis follows a structured pipeline with dependency management:
 
 ## Data Sources
 
-- **Primary**: CPCSSN checkpoint `checkpoint_1_20250318_024427`
+- **Primary**: CPCSSN checkpoint `checkpoint_1_20250318_024427` (mental health patients)
 - **Tables**: patient, encounter, health_condition, lab, medication, referral
 - **Study period**: 2015-01-01 to 2017-12-31
-- **Sample size**: 250,025 eligible patients
+- **Sample size**: 256,746 eligible mental health patients
+- **Extraction**: Based on ICD-9 codes 290-319, 327, 331-333, 347, 625, 698, 780, 786-788, 799, 995
 
 ## Repository Structure
 

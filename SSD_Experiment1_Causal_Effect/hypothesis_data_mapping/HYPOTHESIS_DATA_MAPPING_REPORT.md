@@ -11,7 +11,7 @@ This report provides a comprehensive analysis of data availability for testing t
 ### Key Findings:
 - **2 hypotheses (H8, H9)** have 100% data availability
 - **3 hypotheses (H1, H3, H6)** have 66-70% data availability  
-- **4 hypotheses (H2, H4, H5, H7)** have <50% data availability due to critical missing data
+- **3 hypotheses (H2, H4, H7)** have <50% data availability due to critical missing data
 
 ## Data Inventory Summary
 

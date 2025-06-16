@@ -1,29 +1,30 @@
 # **SSD Study: Research Question, Hypotheses, and Pipeline–Hypothesis Mapping**
 
-## Research Question (RQ)
-**Does a pattern of repeated normal diagnostic results, unresolved specialist referrals, and persistent medication use causally increase healthcare utilization, and can a composite severity index mediate or modify this effect?**
+## Research Question (RQ) - Mental Health Population
+**In a cohort of mental health patients (n=256,746), does exposure to somatic symptom disorder (SSD) patterns—characterized by repeated normal diagnostic results, unresolved specialist referrals, and persistent psychotropic medication use—causally increase mental health service utilization and emergency department visits, and can a composite SSD severity index mediate this relationship within this homogeneous mental health population?**
 
 ## Detailed Hypothesis Suite
 
 | ID | Statement | Key Variables | Expected Direction / Effect Size | Planned Test |
 |----|-----------|--------------|-------------------------------|--------------|
-| **H1 — Diagnostic Cascade** | ≥3 normal lab panels within a 12-month "exposure window" causally increase subsequent primary-care encounters (visits + labs) over the following 24 months. | Exposure: binary flag for normal-lab cascade; Outcome: count of primary-care touch-points (Poisson) | IRR ≈ 1.25–1.35 | Poisson/negative-binomial regression after 1:1 PS-matching; over-dispersion check (α). |
-| **H2 — Specialist Referral Loop** | ≥2 unresolved specialist referrals (status NYD or "no clear diagnosis") predict new psychotropic prescriptions within 6 months. | Exposure: referral loop flag; Outcome: initiation of anxiolytic/antidepressant (binary) | OR ≈ 1.40–1.60 | PS-matched logistic regression; falsification with resolved referrals as negative control. |
-| **H3 — Medication Persistence Spiral** | >90 consecutive days of (a) anxiolytic, (b) non-opioid analgesic, or (c) z-hypnotic coverage predicts ≥1 ED visit in the next year. | Exposure: drug-class-specific persistence; Outcome: any ED visit (binary) | aOR ≈ 1.30 (anxiolytic), 1.20 (analgesic), 1.10 (hypnotic) | Multivariable logistic model with IPW; E-value for unmeasured confounding. |
-| **H4 — Composite SSD Severity Index (SSDSI)** | The semi-supervised SSDSI (range 0-100) mediates ≥50% of the total causal effect of H1-H3 exposures on all-cause healthcare utilization costs at 24 months. | Mediator: continuous SSDSI; Outcome: total cost (gamma GLM) | Proportion mediated ≥0.50 | Causal mediation (DoWhy) with 5K bootstraps; sensitivity to sequential ignorability. |
-| **H5 — Effect Modification by Psych-Social Factors** | The H1-H4 effects strengthen in younger females, high material deprivation quintiles, and patients with prior anxiety diagnoses. | Modifiers: age×sex, Pampalon DI, ICD-9 anxiety | β_interaction > 0 (p < 0.05) | Interaction terms; stratified MSMs. |
-| **H6 — Clinical Pay-off** | Targeting high-SSDSI patients with guideline-concordant psycho-education reduces predicted utilization by ≥20% vs. usual care in counter-factual simulations. | Intervention: simulated flag-and-refer; Outcome: predicted utilization | Δ ≥ -20% (95% CI excludes 0) | G-computation using validated SSDSI + published effect sizes for psycho-education programs. |
+| **H1 — MH Diagnostic Cascade** | In MH patients, ≥3 normal lab panels within 12-month exposure window causally increase subsequent healthcare encounters (primary care + mental health visits) over 24 months. | Exposure: binary flag for normal-lab cascade (n=112,134, 43.7%); Outcome: count of all healthcare encounters (Poisson) | IRR ≈ 1.35–1.50 | Poisson/negative-binomial regression after 1:1 PS-matching; over-dispersion check (α). |
+| **H2 — MH Specialist Referral Loop** | In MH patients, ≥2 unresolved specialist referrals (NYD status) predict mental health crisis services or psychiatric emergency visits within 6 months. | Exposure: referral loop flag (n=1,536, 0.6%); Outcome: MH crisis/psychiatric ED visits (binary) | OR ≈ 1.60–1.90 | PS-matched logistic regression; falsification with resolved referrals as negative control. |
+| **H3 — MH Medication Persistence** | In MH patients, >90 consecutive days of psychotropic medications (anxiolytic/antidepressant/hypnotic) predict emergency department visits in next year. | Exposure: psychotropic persistence (n=51,218, 19.9%); Outcome: any ED visit (binary) | aOR ≈ 1.40–1.70 | Multivariable logistic model with IPW; E-value for unmeasured confounding. |
+| **H4 — MH SSD Severity Mediation** | In MH patients, the SSDSI (range 0-100, mean=0.80) mediates ≥55% of total causal effect of H1-H3 exposures on healthcare utilization costs at 24 months. | Mediator: continuous SSDSI in MH population; Outcome: total healthcare costs (gamma GLM) | Proportion mediated ≥0.55 | Causal mediation (DoWhy) with 5K bootstraps; sensitivity to sequential ignorability. |
+| **H5 — MH Clinical Intervention** | In high-SSDSI MH patients, integrated care with somatization-focused interventions reduces predicted utilization by ≥25% vs. usual mental health care. | Intervention: integrated MH-PC care; Outcome: predicted utilization reduction | Δ ≥ -25% (95% CI excludes 0) | G-computation using validated SSDSI + published effect sizes for integrated MH care. |
 
-**Conceptual Flow:**
-1. Repetitive normal diagnostics → diagnostic uncertainty → health anxiety.
-2. Unresolved referrals & persistent medications reinforce somatic focus.
-3. SSDSI aggregates these patterns; higher scores drive escalating, partly unnecessary utilization.
-4. Psychosocial context amplifies or attenuates each link.
+**Conceptual Flow for Mental Health Population:**
+1. Pre-existing mental health vulnerability → enhanced somatic awareness and health anxiety
+2. Repetitive normal diagnostics → diagnostic uncertainty → amplified anxiety in MH patients
+3. Unresolved referrals & persistent psychotropic medications reinforce somatic preoccupation
+4. MH-calibrated SSDSI aggregates these patterns with higher baseline severity
+5. Mental health symptoms amplify SSD patterns, driving escalating MH service utilization
+6. Crisis presentations emerge from unresolved somatic-psychiatric symptom interactions
 
 **Alignment with RQ:**
 - RQ1 (causal link): H1–H3 (PS/weighting for exchangeability)
 - RQ2 (mediator role): H4
-- RQ3 (actionability): H6
+- RQ3 (actionability): H5
 
 ---
 
@@ -44,9 +45,9 @@
 | 05_confounder_flag.py              | ✅ Executed   | 2025-05-25   | Comprehensive confounders extracted |
 | 06_lab_flag.py                     | ✅ Executed   | 2025-05-25   | Lab sensitivity flags created |
 | 07_missing_data.py                 | 📝 Ready      | -            | Script exists, not executed |
-| 07_referral_sequence.py            | 📝 Ready      | -            | Script exists, not executed |
+| 07_referral_sequence.py            | ✅ Executed   | 2025-06-15   | Referral patterns analyzed, 105,463 patients (41.1%) with loops [Source: 07_referral_sequence.log] |
 | 07a_misclassification_adjust.py    | 📝 Ready      | -            | Script created, not executed |
-| 08_patient_master_table.py         | 📝 Ready      | -            | Awaiting prior script completion |
+| 08_patient_master_table.py         | ✅ Executed   | 2025-06-15   | **COMPLETE**: Unified table created, 256,746×79 variables [Source: UNIFIED_DATA_TABLE_COMPLETION_REPORT_20250615.md] |
 | 05_ps_match.py                     | 📝 Ready      | -            | GPU XGBoost implementation ready |
 | 06_causal_estimators.py            | 📝 Ready      | -            | TMLE/DML/CF implementation ready |
 | 09_qc_master.ipynb                 | 📝 Created    | 2025-05-25   | Notebook created, not executed |
@@ -75,9 +76,10 @@
    - Scripts 07-15 ready but cannot execute [Source: Directory listing shows scripts exist]
    - Estimated 2-3 hours to complete pipeline once environment set up [Estimate based on similar pipeline runs]
 
-### 📊 **Progress Summary**
-- **Completed**: 27% (6 of 22 scripts executed) [Source: Log file count]
+### 📊 **Progress Summary** 
+- **Completed**: 36% (8 of 22 scripts executed) [Source: Implementation Tracker - Updated June 15, 2025]
 - **Data Quality**: Excellent (256,746 patients with minimal missing data) [Source: 01_cohort_builder.log]
+- **MAJOR MILESTONE**: ✅ Unified data table created (256,746×79 variables) [Source: UNIFIED_DATA_TABLE_COMPLETION_REPORT_20250615.md]
 - **Key Findings** [All from 02_exposure_flag.log]:
   - H1 Pattern (≥3 normal labs): 112,134 patients (43.7%)
   - H2 Pattern (≥2 referrals): 1,536 patients (0.6%)

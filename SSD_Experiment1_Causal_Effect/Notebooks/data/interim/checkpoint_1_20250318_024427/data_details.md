@@ -1,6 +1,8 @@
 Canadian Primary Care Sentinel Surveillance Network (CPCSSN) Database Schema
 Overview
 The CPCSSN database contains de-identified electronic medical record (EMR) data collected from primary care practices across Canada. This comprehensive healthcare database follows a relational model with tables representing different aspects of patient care, connected through primary and foreign keys. The data is collected in cycles (indicated by Cycle_ID fields), allowing for temporal analysis of healthcare trends.
+
+**IMPORTANT STUDY NOTE**: While CPCSSN encompasses general primary care data, this specific checkpoint contains a subset of patients specifically extracted based on mental health and related diagnostic criteria (ICD-9 codes 290-319, 327, 331-333, 347, 625, 698, 780, 786-788, 799, 995). See SQL query file "00 Mental Health ICD9 Codes Queried from Encounter Diagnosis for Care4Mind Patient Population.sql" for extraction criteria. All patients in this checkpoint have mental health or related somatic symptom presentations.
 A notable feature of this database is the standardization process, where many fields have both original values (marked with "_orig" suffix) directly from source EMRs and calculated/standardized values (marked with "_calc" suffix) that have been processed for consistency across different sites and EMR systems.
 Primary Tables and Relationships
 Patient (Core Entity)

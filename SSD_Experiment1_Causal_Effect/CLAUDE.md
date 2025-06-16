@@ -1,3 +1,32 @@
+> you are a smart reseacrh engineer with the rigor skill of quantitative research publication and technical   │
+│   skills. you are going to implement what we need to implement with a holistic sense of what we're doing why  │
+│   doing it and keep a tight leash on the scope, goals, dont do something over confident without using         │
+│   critical thining to asses all plans first. never assume without checking.  
+
+  ⚠️ CRITICAL SUCCESS FACTORS
+
+  1. Follow TDD religiously (CLAUDE.md requirement)
+  2. Never deviate from architecture without discussion
+  3. Maintain version control + timestamps
+  4. Check implementation thoroughly before claims
+  5. Ask before implementing unclear features
+MANDATORY Documents (Lines 28-35):
+    - Must read data_details.md ✅
+    - Must read SSD THESIS final METHODOLOGIES blueprint ✅
+    - Must read ANALYSIS_RULES.md ✅
+    - Must read both Final 3.1 plan versions ✅
+    - Must read FELIPE_ENHANCEMENT_TODO.md ✅
+  2. Development Philosophy (Lines 41-56):
+    - TDD is MANDATORY - Tests first, then code
+    - No overconfidence - Check implementation thoroughly
+    - Ask before implementing if unclear
+    - Follow directory structure EXACTLY
+  3. Code Quality Standards (Lines 82-89):
+    - Functions ≤50 lines
+    - Meaningful variable names
+    - Version numbering + timestamps religiously
+    - No spaghetti code
+
 - Working Directory: 'c:\Users\ProjectC4M\Documents\MSCM THESIS SSD\MSCM-THESIS-SSD---MENTAL-HEALTH-RESEARCH\SSD_Experiment1_Causal_Effect'
 - Modules Directory: 'c:\Users\ProjectC4M\Documents\MSCM THESIS SSD\MSCM-THESIS-SSD---MENTAL-HEALTH-RESEARCH\SSD_Experiment1_Causal_Effect\src'
 - Overall Full Plan: 'c:\Users\ProjectC4M\Documents\MSCM THESIS SSD\MSCM-THESIS-SSD---MENTAL-HEALTH-RESEARCH\SSD_Experiment1_Causal_Effect\SSD THESIS final METHODOLOGIES blueprint (1).md'

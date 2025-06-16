@@ -1,0 +1,94 @@
+Patient Master Table Summary
+==================================================
+
+Total patients: 250,025
+Total columns: 79
+
+Merge Statistics:
+  exposure.parquet: 8 columns, 0.0% null
+  mediator_autoencoder.parquet: 1 columns, 0.0% null
+  outcomes.parquet: 7 columns, 0.0% null
+  confounders.parquet: 30 columns, 0.0% null
+  lab_sensitivity.parquet: 19 columns, 0.0% null
+  referral_sequences.parquet: 5 columns, 0.0% null
+
+Column List:
+  Age_at_2015: float64, 0 nulls
+  BirthYear: float64, 0 nulls
+  Charlson: int16, 0 nulls
+  H1_normal_labs: bool, 0 nulls
+  H2_referral_loop: bool, 0 nulls
+  H3_drug_persistence: bool, 0 nulls
+  IndexDate_lab: datetime64[ns], 70755 nulls
+  LongCOVID_flag: int64, 0 nulls
+  NYD_count: int64, 0 nulls
+  Patient_ID: int64, 0 nulls
+  SSD_severity_index: float32, 0 nulls
+  Sex: object, 2 nulls
+  SpanMonths: float64, 0 nulls
+  age_18_34: int64, 0 nulls
+  age_35_49: int64, 0 nulls
+  age_50_64: int64, 0 nulls
+  age_65_plus: int64, 0 nulls
+  age_male_interaction: float64, 0 nulls
+  alcohol_use: int64, 0 nulls
+  anxiety_dx: int64, 0 nulls
+  baseline_antidepressant: int64, 0 nulls
+  baseline_encounters: float64, 0 nulls
+  baseline_high_utilizer: int64, 0 nulls
+  baseline_med_count: float64, 0 nulls
+  baseline_opioid: int64, 0 nulls
+  baseline_polypharmacy: int64, 0 nulls
+  baseline_procedures: float64, 0 nulls
+  charlson_age_interaction: float64, 0 nulls
+  depression_dx: int64, 0 nulls
+  diabetes: int64, 0 nulls
+  drug_days_in_window: float64, 0 nulls
+  ed_visits: float64, 0 nulls
+  exposure_flag: bool, 0 nulls
+  exposure_flag_strict: bool, 0 nulls
+  family_cancer: int64, 0 nulls
+  family_mental_health: int64, 0 nulls
+  has_circular_pattern: bool, 0 nulls
+  high_education: int64, 0 nulls
+  high_lab_use_12m: int32, 0 nulls
+  high_lab_use_24m: int32, 0 nulls
+  high_lab_use_6m: int32, 0 nulls
+  high_procedure_use: int64, 0 nulls
+  high_utilization: int32, 0 nulls
+  housing_unstable: int64, 0 nulls
+  hypertension: int64, 0 nulls
+  inappropriate_meds: float64, 0 nulls
+  lab_count_12m: int32, 0 nulls
+  lab_count_18m: int32, 0 nulls
+  lab_count_24m: int32, 0 nulls
+  lab_count_6m: int32, 0 nulls
+  language_barrier: int64, 0 nulls
+  loop_count: float64, 0 nulls
+  low_access: int64, 0 nulls
+  male: int64, 0 nulls
+  mean_referral_interval_days: float64, 0 nulls
+  medical_costs: float64, 0 nulls
+  mental_health_dx: int64, 0 nulls
+  normal_count_12m: int32, 0 nulls
+  normal_count_18m: int32, 0 nulls
+  normal_count_24m: int32, 0 nulls
+  normal_count_6m: int32, 0 nulls
+  normal_lab_count: float64, 0 nulls
+  normal_labs_gte_2_12m: int32, 0 nulls
+  normal_labs_gte_3_12m: int32, 0 nulls
+  normal_labs_gte_4_12m: int32, 0 nulls
+  normal_labs_gte_5_12m: int32, 0 nulls
+  normal_ratio_12m: float32, 0 nulls
+  normal_ratio_18m: float32, 0 nulls
+  normal_ratio_24m: float32, 0 nulls
+  normal_ratio_6m: float32, 0 nulls
+  obesity: int64, 0 nulls
+  polypharmacy: float64, 0 nulls
+  referral_loop: bool, 0 nulls
+  respiratory_disease: int64, 0 nulls
+  sequence_length: float64, 0 nulls
+  smoking: int64, 0 nulls
+  specialist_referrals: float64, 0 nulls
+  symptom_referral_n: float64, 0 nulls
+  total_encounters: float64, 0 nulls
