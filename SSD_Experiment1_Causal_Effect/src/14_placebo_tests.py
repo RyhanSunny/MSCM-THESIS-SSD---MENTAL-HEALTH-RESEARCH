@@ -35,7 +35,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def pre_treatment_outcome_test(df, config):
+def pre_treatment_outcome_test(df, config, treatment_col='ssd_flag'):
     """
     Test 1: Pre-treatment outcome test
     Check if treatment affects outcomes before it could have occurred
@@ -48,7 +48,6 @@ def pre_treatment_outcome_test(df, config):
         return None
     
     # Run same analysis but with pre-treatment outcome
-    treatment_col = 'ssd_flag'
     outcome_col = 'baseline_encounters'  # This is PRE-treatment
     
     # Get covariates (excluding post-treatment variables)
@@ -88,14 +87,13 @@ def pre_treatment_outcome_test(df, config):
     
     return test_result
 
-def randomized_placebo_test(df, n_iterations=100):
+def randomized_placebo_test(df, treatment_col='ssd_flag', n_iterations=100):
     """
     Test 2: Randomized placebo treatment
     Randomly shuffle treatment and check if we still find effects
     """
     logger.info(f"Running randomized placebo test with {n_iterations} iterations")
     
-    treatment_col = 'ssd_flag'
     outcome_col = 'total_encounters'
     
     if outcome_col not in df.columns:
@@ -171,7 +169,7 @@ def randomized_placebo_test(df, n_iterations=100):
     
     return test_result
 
-def negative_control_outcome_test(df):
+def negative_control_outcome_test(df, treatment_col='ssd_flag'):
     """
     Test 3: Negative control outcome
     Test effect on outcome that should not be affected by treatment
@@ -185,7 +183,6 @@ def negative_control_outcome_test(df):
     rng = get_random_state()
     df['negative_control_outcome'] = rng.normal(0, 1, size=len(df))
     
-    treatment_col = 'ssd_flag'
     outcome_col = 'negative_control_outcome'
     
     # Get covariates
@@ -231,6 +228,7 @@ def main():
                        help='Run without saving outputs')
     parser.add_argument('--n-iterations', type=int, default=100,
                        help='Number of iterations for randomized placebo test')
+    parser.add_argument('--treatment-col', default='ssd_flag', help='Treatment column name')
     args = parser.parse_args()
     
     # Set random seeds
@@ -256,17 +254,18 @@ def main():
     test_results = []
     
     # Test 1: Pre-treatment outcome
-    result1 = pre_treatment_outcome_test(df, config)
+    treatment_col = args.treatment_col
+    result1 = pre_treatment_outcome_test(df, config, treatment_col)
     if result1:
         test_results.append(result1)
     
     # Test 2: Randomized placebo
-    result2 = randomized_placebo_test(df, args.n_iterations)
+    result2 = randomized_placebo_test(df, treatment_col, args.n_iterations)
     if result2:
         test_results.append(result2)
     
     # Test 3: Negative control
-    result3 = negative_control_outcome_test(df)
+    result3 = negative_control_outcome_test(df, treatment_col)
     if result3:
         test_results.append(result3)
     

@@ -7,7 +7,7 @@ COVID-19 impact on SSD outcomes. Optionally supports Marginal Structural Models.
 
 Hypothesis Support:
 - H1: Healthcare utilization - Adjust for temporal trends
-- H5: Health anxiety mediation - Control for COVID-era anxiety increases
+- H5-MH: Effect modification in MH subgroups - Control for temporal confounding
 
 Output:
 - results/segmented_regression.pkl: Model results
@@ -212,6 +212,7 @@ def main():
                        help='Run without saving outputs')
     parser.add_argument('--outcome', default='total_encounters',
                        help='Outcome variable to analyze')
+    parser.add_argument('--treatment-col', default='ssd_flag', help='Treatment column name (default: ssd_flag)')
     args = parser.parse_args()
     
     # Set random seeds
@@ -237,8 +238,9 @@ def main():
     df = prepare_temporal_data(df, config)
     
     # Run segmented regression
+    treatment_col = args.treatment_col
     results, params, conf_int = run_segmented_regression(
-        df, args.outcome, use_weights=True
+        df, args.outcome, treatment_col=treatment_col, use_weights=True
     )
     
     # Extract key results
@@ -257,8 +259,8 @@ def main():
     if not args.dry_run:
         figures_dir = Path("figures")
         figures_dir.mkdir(exist_ok=True)
-        plot_path = figures_dir / "temporal_trends.pdf"
-        create_temporal_plot(df, args.outcome, output_path=plot_path)
+        plot_path = figures_dir / f"temporal_trends_{args.outcome}.png"
+        create_temporal_plot(df, args.outcome, treatment_col=treatment_col, output_path=plot_path)
     
     # Save results
     if not args.dry_run:

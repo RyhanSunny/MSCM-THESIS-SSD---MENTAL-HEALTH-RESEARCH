@@ -402,6 +402,7 @@ def main():
     )
     parser.add_argument('--outcome', default='total_encounters',
                        help='Outcome variable to analyze')
+    parser.add_argument('--treatment-col', default='ssd_flag', help='Treatment column name (default: ssd_flag)')
     parser.add_argument('--dry-run', action='store_true',
                        help='Run without saving outputs')
     args = parser.parse_args()
@@ -427,7 +428,7 @@ def main():
     
     # Define variables
     outcome_col = args.outcome
-    treatment_col = 'ssd_flag'
+    TREATMENT_COL = args.treatment_col
     
     # Define covariates
     covariate_cols = [col for col in df.columns if col.endswith('_conf') or 
@@ -442,21 +443,21 @@ def main():
     
     # 1. TMLE
     try:
-        tmle_results = run_tmle(df, outcome_col, treatment_col, covariate_cols)
+        tmle_results = run_tmle(df, outcome_col, TREATMENT_COL, covariate_cols)
         ate_estimates.append(tmle_results)
     except Exception as e:
         logger.error(f"TMLE failed: {e}")
     
     # 2. Double ML
     try:
-        dml_results = run_double_ml(df, outcome_col, treatment_col, covariate_cols)
+        dml_results = run_double_ml(df, outcome_col, TREATMENT_COL, covariate_cols)
         ate_estimates.append(dml_results)
     except Exception as e:
         logger.error(f"Double ML failed: {e}")
     
     # 3. Causal Forest
     try:
-        cf_results = run_causal_forest(df, outcome_col, treatment_col, covariate_cols)
+        cf_results = run_causal_forest(df, outcome_col, TREATMENT_COL, covariate_cols)
         ate_estimates.append(cf_results)
         
         # Analyze heterogeneity

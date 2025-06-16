@@ -140,7 +140,7 @@ Somatic symptom disorders (SSD) affect 5-7% of the population and are characteri
 
 ## Research Question and Hypotheses
 
-**Primary Research Question**: Does a pattern of repeated normal diagnostic results, unresolved specialist referrals, and persistent medication use causally increase healthcare utilization?
+**Primary Research Question (Mental Health Population)**: In a cohort of mental health patients (n=256,746), does exposure to somatic symptom disorder (SSD) patterns—characterized by repeated normal diagnostic results, unresolved specialist referrals, and persistent psychotropic medication use—causally increase mental health service utilization and emergency department visits?
 
 ### Study Hypotheses
 
@@ -148,12 +148,12 @@ Somatic symptom disorders (SSD) affect 5-7% of the population and are characteri
 hypotheses <- data.frame(
   ID = c("H1", "H2", "H3", "H4", "H5", "H6"),
   Hypothesis = c(
-    "≥3 normal lab panels increase primary-care encounters (IRR ≈ 1.25-1.35)",
-    "≥2 unresolved referrals predict new psychotropic prescriptions (OR ≈ 1.40-1.60)", 
-    ">90 days medication predicts ED visits (aOR ≈ 1.30 anxiolytic, 1.20 analgesic)",
-    "SSD Severity Index mediates ≥50% of total causal effect",
-    "Effects strengthen in younger females, high deprivation, prior anxiety",
-    "High-SSDSI patients: guideline-concordant intervention reduces utilization ≥20%"
+    "H1-MH: ≥3 normal lab panels increase MH service encounters (IRR ≈ 1.40-1.55)",
+    "H2-MH: ≥2 unresolved referrals predict MH crisis services (OR ≈ 2.20-2.80)", 
+    "H3-MH: >90 days psychotropic medications predict ED visits (aOR ≈ 1.80-2.20)",
+    "H4-MH: SSD Severity Index mediates ≥55% of total causal effect on MH utilization",
+    "H5-MH: Effects amplified in MH subgroups (anxiety, age <40, female, substance use)",
+    "H6-MH: Integrated MH-PC care reduces utilization ≥25% in high-SSDSI MH patients"
   ),
   Status = c("Analyzed", "Analyzed", "Analyzed", "In Progress", "In Progress", "Planned")
 )

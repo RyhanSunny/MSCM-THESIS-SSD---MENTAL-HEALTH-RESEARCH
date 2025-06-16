@@ -6,10 +6,12 @@ Implements propensity score estimation and matching for causal inference.
 Uses GPU-accelerated XGBoost for high-dimensional covariate adjustment.
 
 Hypothesis Support:
-- H1: Healthcare utilization - PS adjustment for confounding
-- H2: Healthcare costs - Balanced comparison groups
-- H3: Medication use - Unbiased treatment effect estimation
-- H5: Health anxiety mediation - Covariate balance for mediation analysis
+- H1-MH: Normal laboratory cascade → MH service utilization (PS adjustment for confounding)
+- H2-MH: Specialist referral loops → MH crisis services (balanced comparison groups)
+- H3-MH: Psychotropic medication persistence → ED visits (unbiased treatment effect estimation)
+- H4-MH: SSD severity index mediation (covariate balance crucial for mediation analysis)
+- H5-MH: Effect modification in MH subgroups (covariate balance for interaction analysis)
+- H6-MH: Integrated care intervention analysis (matched groups for policy simulation)
 
 Output:
 - data_derived/ps_weighted.parquet: Data with propensity scores and weights
@@ -246,6 +248,7 @@ def main():
                        help='Run without saving outputs')
     parser.add_argument('--matching-only', action='store_true',
                        help='Only perform matching (skip weighting)')
+    parser.add_argument('--treatment-col', default='ssd_flag', help='Name of treatment column (default: ssd_flag)')
     args = parser.parse_args()
     
     # Set random seeds
@@ -269,7 +272,7 @@ def main():
     initial_rows = len(df)
     
     # Define treatment
-    treatment_col = 'ssd_flag'
+    treatment_col = args.treatment_col
     y = df[treatment_col].values
     
     # Define covariates (all confounder columns)

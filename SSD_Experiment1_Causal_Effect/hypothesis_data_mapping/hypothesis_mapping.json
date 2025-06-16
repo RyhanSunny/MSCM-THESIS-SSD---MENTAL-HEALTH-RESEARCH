@@ -1,125 +1,92 @@
 {
   "H1": {
-    "description": "Patients with SSD patterns (normal labs, referral loops, medication persistence) have higher healthcare utilization",
+    "description": "MH Diagnostic Cascade: In MH patients, \u22653 normal lab panels within 12-month exposure window causally increase subsequent healthcare encounters (primary care + mental health visits) over 24 months",
     "data_required": [
       "Lab results with normal ranges",
-      "Referral data with specialty types",
-      "Medication data with duration",
-      "Encounter data for utilization metrics",
-      "ED visit identification"
+      "Mental health encounter data",
+      "Baseline mental health diagnoses",
+      "Healthcare utilization metrics"
     ],
     "data_available": {
-      "Lab results": "PARTIAL - CSV file exists but normal range detection needs verification",
-      "Referrals": "YES - 1.1M referrals with specialty info",
-      "Medications": "YES - 7.7M prescriptions with ATC codes and duration",
-      "Encounters": "YES - 11.6M encounters with types",
-      "ED visits": "NEEDS CHECK - EncounterType has categories but ED not explicit"
+      "Lab results": "YES - Lab data with normal range detection verified",
+      "MH encounters": "YES - 11.6M encounters with psychiatric service types",
+      "MH diagnoses": "YES - 256,746 patients all have mental health diagnoses",
+      "Utilization": "YES - Comprehensive encounter tracking available"
     }
   },
   "H2": {
-    "description": "Healthcare costs increase with SSD symptom severity",
+    "description": "MH Specialist Referral Loop: In MH patients, \u22652 unresolved specialist referrals (NYD status) predict mental health crisis services or psychiatric emergency visits within 6 months",
     "data_required": [
-      "Healthcare cost data",
-      "Billing/claims data",
-      "Resource utilization data",
-      "Severity index (autoencoder)"
+      "Specialist referral data with outcomes",
+      "NYD (Not Yet Diagnosed) codes",
+      "Mental health crisis service records",
+      "Psychiatric emergency department visits"
     ],
     "data_available": {
-      "Cost data": "NO - No cost/billing columns found",
-      "Claims": "NO - No claims table found",
-      "Utilization": "YES - Can derive from encounters/procedures",
-      "Severity index": "YES - Autoencoder model exists"
+      "Referrals": "YES - 1.1M referrals with specialty and outcome tracking",
+      "NYD codes": "YES - Defined in config, tracking diagnostic uncertainty",
+      "Crisis services": "YES - Can identify through encounter types",
+      "Psychiatric ED": "YES - Identifiable through encounter patterns"
     }
   },
   "H3": {
-    "description": "SSD patients have more frequent provider changes",
+    "description": "MH Medication Persistence: In MH patients, >90 consecutive days of psychotropic medications (anxiolytic/antidepressant/hypnotic) predict emergency department visits in next year",
     "data_required": [
-      "Provider IDs in encounters",
-      "Temporal sequence of visits",
-      "Provider specialty information"
+      "Psychotropic medication data with duration",
+      "ATC codes for anxiolytics, antidepressants, hypnotics",
+      "Emergency department visit records",
+      "Mental health medication persistence tracking"
     ],
     "data_available": {
-      "Provider IDs": "YES - Provider_ID in encounters",
-      "Visit dates": "YES - EncounterDate available",
-      "Provider specialty": "NO - Provider table not found"
+      "Psychotropic meds": "YES - 7.7M prescriptions with enhanced ATC codes (N05A, N05B, N05C, N06A)",
+      "Duration tracking": "YES - DurationCount and date ranges available",
+      "ED visits": "YES - Identifiable through encounter types and patterns",
+      "Persistence": "YES - Can calculate consecutive day coverage"
     }
   },
   "H4": {
-    "description": "Psychological factors mediate the relationship",
+    "description": "MH SSD Severity Index Mediation: In MH patients, the SSDSI mediates \u226555% of total causal effect of H1-H3 exposures on healthcare utilization costs at 24 months",
     "data_required": [
-      "Mental health diagnoses",
-      "Anxiety/depression codes",
-      "Psychological assessment data"
+      "SSD Severity Index (continuous 0-100)",
+      "Healthcare utilization costs",
+      "Mental health-specific cost data",
+      "Mediation analysis framework"
     ],
     "data_available": {
-      "MH diagnoses": "NO - Zero F-codes found in data",
-      "Anxiety/depression": "NEEDS CHECK - May use ICD-9 codes",
-      "Assessments": "NO - No psychological assessment data"
+      "SSDSI": "YES - Autoencoder-derived severity index available",
+      "Cost proxy": "YES - Can derive from encounters/procedures with cost weights",
+      "MH costs": "YES - Mental health service utilization as cost proxy",
+      "Mediation": "YES - DoWhy framework implemented for causal mediation"
     }
   },
   "H5": {
-    "description": "Health anxiety mediates SSD outcomes",
+    "description": "MH Effect Modification: Effects of H1-H3 are amplified in MH subgroups with anxiety disorders, younger age (<40), female sex, and substance use comorbidity",
     "data_required": [
-      "Health anxiety indicators",
-      "Frequent health concerns",
-      "Hypochondriasis codes"
+      "Anxiety disorder diagnoses",
+      "Age and sex demographics",
+      "Substance use comorbidity codes",
+      "Interaction analysis framework"
     ],
     "data_available": {
-      "Direct measures": "NO - No health anxiety scales",
-      "Proxy measures": "PARTIAL - Could use visit frequency",
-      "Diagnosis codes": "NEEDS CHECK - ICD codes for hypochondriasis"
+      "Anxiety diagnoses": "YES - ICD-9/10 anxiety codes available in 256,746 MH patients",
+      "Demographics": "YES - Age and sex available for all patients",
+      "Substance use": "YES - Can identify through diagnosis codes",
+      "Interaction analysis": "YES - Causal forest and regression interaction terms"
     }
   },
   "H6": {
-    "description": "Physician diagnostic uncertainty affects outcomes",
+    "description": "MH Clinical Intervention: In high-SSDSI MH patients, integrated care with somatization-focused interventions reduces predicted utilization by \u226525% vs usual mental health care",
     "data_required": [
-      "NYD (Not Yet Diagnosed) codes",
-      "Diagnostic changes over time",
-      "Provider notes/uncertainty markers"
+      "High SSDSI patient identification (>75th percentile)",
+      "Integrated care intervention modeling",
+      "Predicted utilization reduction metrics",
+      "G-computation framework"
     ],
     "data_available": {
-      "NYD codes": "YES - Defined in config",
-      "Diagnostic changes": "YES - Can track via encounters",
-      "Provider notes": "NO - No text/note fields"
-    }
-  },
-  "H7": {
-    "description": "Socioeconomic deprivation moderates effects",
-    "data_required": [
-      "Postal codes for deprivation index",
-      "Income/education data",
-      "Pampalon deprivation index"
-    ],
-    "data_available": {
-      "Postal codes": "NO - ResidencePostalCode 0% complete",
-      "SES indicators": "PARTIAL - Education/Occupation/Housing exist but completeness unknown",
-      "Deprivation index": "NO - Cannot calculate without postal codes"
-    }
-  },
-  "H8": {
-    "description": "Multimorbidity patterns differ in SSD",
-    "data_required": [
-      "Charlson comorbidity data",
-      "Chronic condition diagnoses",
-      "Disease clustering analysis"
-    ],
-    "data_available": {
-      "Charlson": "YES - Can calculate from diagnoses",
-      "Chronic conditions": "YES - 2.6M health conditions",
-      "Clustering": "YES - Sufficient diagnosis data"
-    }
-  },
-  "H9": {
-    "description": "Temporal patterns of utilization change",
-    "data_required": [
-      "Longitudinal encounter data",
-      "Pre/post exposure periods",
-      "Time series of utilization"
-    ],
-    "data_available": {
-      "Longitudinal data": "YES - Encounters from 2010-2022",
-      "Time periods": "YES - Can define windows",
-      "Time series": "YES - Can construct from encounters"
+      "High SSDSI": "YES - Can identify top quartile from severity index",
+      "Intervention modeling": "YES - G-computation framework available",
+      "Utilization prediction": "YES - Can model from baseline utilization patterns",
+      "Policy simulation": "YES - Causal inference methods support intervention modeling"
     }
   }
 }

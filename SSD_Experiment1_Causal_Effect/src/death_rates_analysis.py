@@ -230,6 +230,7 @@ def main():
     )
     parser.add_argument('--dry-run', action='store_true',
                        help='Run without saving outputs')
+    parser.add_argument('--treatment-col', default='ssd_flag', help='Treatment column name (default: ssd_flag)')
     args = parser.parse_args()
     
     # Load configuration
@@ -249,10 +250,11 @@ def main():
     df = pd.read_parquet(data_path)
     
     # Calculate death rates
-    rates_df = calculate_death_rates(df)
+    treatment_col = args.treatment_col
+    rates_df = calculate_death_rates(df, treatment_col=treatment_col)
     
     # Check for immortal time bias
-    immortal_time_results = check_immortal_time_bias(df)
+    immortal_time_results = check_immortal_time_bias(df, treatment_col=treatment_col)
     
     # Save results
     if not args.dry_run:

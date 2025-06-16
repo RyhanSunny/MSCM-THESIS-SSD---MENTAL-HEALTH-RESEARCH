@@ -121,7 +121,7 @@ def mc_simex(y, X, z_observed, sensitivity, specificity, B=100, lambdas=None):
     
     return corrected_coef, se_reduction
 
-def apply_bias_correction(cohort_df, config):
+def apply_bias_correction(cohort_df, config, treatment_col='ssd_flag'):
     """
     Apply MC-SIMEX bias correction to SSD flag
     """
@@ -141,7 +141,7 @@ def apply_bias_correction(cohort_df, config):
     X = cohort_df[confounder_cols].values
     
     # Observed SSD flag
-    z_observed = cohort_df['ssd_flag'].values
+    z_observed = cohort_df[treatment_col].values
     
     # Run MC-SIMEX
     corrected_coef, se_reduction = mc_simex(y, X, z_observed, sensitivity, specificity, B)
@@ -156,7 +156,7 @@ def apply_bias_correction(cohort_df, config):
     logger.info(f"Adjustment factor: {adjustment_factor:.3f}")
     
     # Add bias correction indicators
-    cohort_df['ssd_flag_naive'] = cohort_df['ssd_flag']
+    cohort_df[f'{treatment_col}_naive'] = cohort_df[treatment_col]
     cohort_df['bias_correction_applied'] = True
     cohort_df['simex_adjustment_factor'] = adjustment_factor
     
@@ -179,6 +179,7 @@ def main():
     )
     parser.add_argument('--dry-run', action='store_true', 
                        help='Run without saving outputs')
+    parser.add_argument('--treatment-col', default='ssd_flag', help='Treatment column name (default: ssd_flag)')
     args = parser.parse_args()
     
     # Set random seeds
@@ -201,8 +202,9 @@ def main():
     cohort_df = pd.read_parquet(cohort_path)
     initial_rows = len(cohort_df)
     
+    treatment_col = args.treatment_col
     # Apply bias correction
-    cohort_corrected, simex_results = apply_bias_correction(cohort_df, config)
+    cohort_corrected, simex_results = apply_bias_correction(cohort_df, config, treatment_col)
     
     # Validate
     assert len(cohort_corrected) == initial_rows, "Row count changed during correction"

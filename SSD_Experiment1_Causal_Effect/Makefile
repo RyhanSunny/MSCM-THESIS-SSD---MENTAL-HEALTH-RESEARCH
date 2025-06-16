@@ -3,16 +3,18 @@
 # Date: 2025-05-24
 
 # Variables
-PYTHON = python
+PYTHON = python3
 SRC_DIR = src
 DATA_DIR = data_derived
 RESULTS_DIR = results
 NOTEBOOKS_DIR = Notebooks
 REPORTS_DIR = reports
+# Column name for treatment; override at make runtime e.g. `make causal TREATMENT_COL=ssd_flag_strict`
+TREATMENT_COL ?= ssd_flag
 
 # Default target
 .PHONY: all
-all: cohort exposure mediator outcomes confounders lab referral missing master sequential ps causal temporal evalue competing-risk death-rates robustness
+all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness
 
 # Data pipeline targets
 .PHONY: cohort
@@ -20,10 +22,22 @@ cohort:
 	@echo "Building cohort..."
 	$(PYTHON) $(SRC_DIR)/01_cohort_builder.py
 
+# ------------------------------------------------------------------ #
+#  Exposure Logic Targets
+# ------------------------------------------------------------------ #
+.PHONY: exposure_or
+exposure_or: cohort
+	@echo "Generating exposure flags (OR logic)..."
+	$(PYTHON) $(SRC_DIR)/02_exposure_flag.py --logic or
+
+.PHONY: exposure_and
+exposure_and: cohort
+	@echo "Generating exposure flags (AND logic)..."
+	$(PYTHON) $(SRC_DIR)/02_exposure_flag.py --logic and
+
+# Backwards-compat default
 .PHONY: exposure
-exposure: cohort
-	@echo "Generating exposure flags..."
-	$(PYTHON) $(SRC_DIR)/02_exposure_flag.py
+exposure: exposure_or
 
 .PHONY: mediator
 mediator: cohort
@@ -55,10 +69,29 @@ missing: cohort
 	@echo "Handling missing data..."
 	$(PYTHON) $(SRC_DIR)/07_missing_data.py
 
+.PHONY: misclassification
+misclassification: exposure
+	@echo "Adjusting for misclassification..."
+	$(PYTHON) $(SRC_DIR)/07a_misclassification_adjust.py --treatment-col $(TREATMENT_COL)
+
+# ------------------------------------------------------------------ #
+#  Master Table Targets (OR vs AND)
+# ------------------------------------------------------------------ #
+.PHONY: master_or
+master_or: cohort exposure_or mediator outcomes confounders lab referral missing misclassification
+	@echo "Creating patient master table (OR logic)..."
+	$(PYTHON) $(SRC_DIR)/08_patient_master_table.py --exposure_file exposure_or.parquet --output_file patient_master_or.parquet
+	@# maintain legacy filename
+	@cp data_derived/patient_master_or.parquet data_derived/patient_master.parquet
+
+.PHONY: master_and
+master_and: cohort exposure_and mediator outcomes confounders lab referral missing misclassification
+	@echo "Creating patient master table (AND logic)..."
+	$(PYTHON) $(SRC_DIR)/08_patient_master_table.py --exposure_file exposure_and.parquet --output_file patient_master_and.parquet
+
+# Backwards-compat default
 .PHONY: master
-master: cohort exposure mediator outcomes confounders lab referral
-	@echo "Creating patient master table..."
-	$(PYTHON) $(SRC_DIR)/08_patient_master_table.py
+master: master_or
 
 .PHONY: sequential
 sequential: master
@@ -69,45 +102,50 @@ sequential: master
 .PHONY: ps
 ps: master
 	@echo "Running propensity score matching..."
-	$(PYTHON) $(SRC_DIR)/05_ps_match.py
+	$(PYTHON) $(SRC_DIR)/05_ps_match.py --treatment-col $(TREATMENT_COL)
 
 .PHONY: causal
 causal: ps
 	@echo "Running causal estimators..."
-	$(PYTHON) $(SRC_DIR)/06_causal_estimators.py
+	$(PYTHON) $(SRC_DIR)/06_causal_estimators.py --treatment-col $(TREATMENT_COL)
+
+.PHONY: mediation
+mediation: master
+	@echo "Running mediation analysis..."
+	$(PYTHON) $(SRC_DIR)/14_mediation_analysis.py --treatment-col $(TREATMENT_COL)
 
 # Additional analysis targets
 .PHONY: temporal
 temporal: ps
 	@echo "Running temporal adjustment..."
-	$(PYTHON) $(SRC_DIR)/12_temporal_adjust.py
+	$(PYTHON) $(SRC_DIR)/12_temporal_adjust.py --treatment-col $(TREATMENT_COL)
 
 .PHONY: evalue
 evalue: causal
 	@echo "Calculating E-values..."
-	$(PYTHON) $(SRC_DIR)/13_evalue_calc.py
+	$(PYTHON) $(SRC_DIR)/13_evalue_calc.py --treatment-col $(TREATMENT_COL)
 
 .PHONY: competing-risk
 competing-risk: master
 	@echo "Running competing risk analysis..."
-	$(PYTHON) $(SRC_DIR)/finegray_competing.py
+	$(PYTHON) $(SRC_DIR)/finegray_competing.py --treatment-col $(TREATMENT_COL)
 
 .PHONY: death-rates
 death-rates: master
 	@echo "Analyzing death rates..."
-	$(PYTHON) $(SRC_DIR)/death_rates_analysis.py
+	$(PYTHON) $(SRC_DIR)/death_rates_analysis.py --treatment-col $(TREATMENT_COL)
 
 # QA and robustness targets
 .PHONY: placebo
 placebo: master
 	@echo "Running placebo tests..."
-	$(PYTHON) $(SRC_DIR)/14_placebo_tests.py
+	$(PYTHON) $(SRC_DIR)/14_placebo_tests.py --treatment-col $(TREATMENT_COL)
 
 .PHONY: robustness
 robustness: master
 	@echo "Running robustness checks..."
-	$(PYTHON) $(SRC_DIR)/14_placebo_tests.py
-	$(PYTHON) $(SRC_DIR)/15_robustness.py
+	$(PYTHON) $(SRC_DIR)/14_placebo_tests.py --treatment-col $(TREATMENT_COL)
+	$(PYTHON) $(SRC_DIR)/15_robustness.py --treatment-col $(TREATMENT_COL)
 
 # Reporting targets
 .PHONY: qc
@@ -234,3 +272,11 @@ help:
 	@echo ""
 	@echo "Release targets:"
 	@echo "  make release VERSION=X.Y.Z - Create a release"
+
+# ------------------------------------------------------------------ #
+#  Logic Comparison Report
+# ------------------------------------------------------------------ #
+.PHONY: compare_logic
+compare_logic: exposure_or exposure_and
+	@echo "Comparing OR vs AND exposure cohorts..."
+	$(PYTHON) scripts/compare_exposure_logic.py data_derived/exposure_or.parquet data_derived/exposure_and.parquet

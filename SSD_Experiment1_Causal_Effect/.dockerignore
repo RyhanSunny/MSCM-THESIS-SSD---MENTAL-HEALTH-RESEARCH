@@ -1,0 +1,58 @@
+# Python virtual environment
+venv/
+env/
+.venv/
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Pytest cache
+.pytest_cache/
+
+# Data files (potentially large)
+data_derived/
+results/
+models/
+logs/
+figures/
+
+# Log files
+*.log
+
+# Git and other version control
+.git/
+.gitignore
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Jupyter notebooks
+*.ipynb
+
+# Config files that might contain sensitive data
+config-orphaned/
+.claude/
+
+# Large data directories
+Notebooks/
+
+# PDF files
+*.pdf
+
+# Large documentation files (but keep essential ones)
+audit_results.json
+*REPORT*.md
+*STATUS*.md
+*TODO*.md 

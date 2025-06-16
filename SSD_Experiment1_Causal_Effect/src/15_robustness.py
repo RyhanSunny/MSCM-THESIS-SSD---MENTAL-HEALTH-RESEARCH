@@ -337,6 +337,7 @@ def main():
                        help='Run without saving outputs')
     parser.add_argument('--outcome', default='total_encounters',
                        help='Outcome variable to analyze')
+    parser.add_argument('--treatment-col', default='ssd_flag', help='Treatment column name (default: ssd_flag)')
     args = parser.parse_args()
     
     # Set random seeds
@@ -360,7 +361,7 @@ def main():
     
     # Define variables
     outcome_col = args.outcome
-    treatment_col = 'ssd_flag'
+    treatment_col = args.treatment_col
     
     # Get covariates
     covariate_cols = [col for col in df.columns if col.endswith('_conf') or 

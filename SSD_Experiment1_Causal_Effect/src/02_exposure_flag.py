@@ -25,7 +25,7 @@ This script directly supports:
 """
 
 from __future__ import annotations
-import sys, logging, re
+import sys, logging, re, argparse
 from pathlib import Path
 from datetime import timedelta
 import locale
@@ -109,6 +109,14 @@ try:
 except Exception as e:
     log.error(f"Failed to find checkpoint directory: {e}")
     sys.exit(1)
+
+# ------------------------------------------------------------------ #
+#  CLI ARGUMENTS
+# ------------------------------------------------------------------ #
+parser = argparse.ArgumentParser(description="Generate SSD exposure flag with configurable logic")
+parser.add_argument("--logic", choices=["or", "and", "both"], default="or",
+                    help="Which exposure logic to save: 'or' (any pattern), 'and' (all patterns), or 'both'.")
+ARGS = parser.parse_args()
 
 # ------------------------------------------------------------------ #
 #  Helper – robust loader
@@ -379,8 +387,25 @@ cols_keep = ["Patient_ID",
              "symptom_referral_n",
              "drug_days_in_window"]
 
-exposure[cols_keep].to_parquet(OUT_PATH, index=False, compression="snappy")
-log.info(f"Wrote {OUT_PATH}")
+if ARGS.logic in {"or", "both"}:
+    out_or = DERIVED / "exposure_or.parquet"
+    exposure_to_save = exposure.copy()
+    exposure_to_save["exposure_flag"] = exposure_to_save["exposure_flag"]  # ensure correct column
+    exposure_to_save.to_parquet(out_or, index=False, compression="snappy")
+    log.info(f"Wrote {out_or}")
+    # Maintain backward-compat alias if OR is primary
+    if ARGS.logic == "or":
+        exposure_to_save.to_parquet(OUT_PATH, index=False, compression="snappy")
+
+if ARGS.logic in {"and", "both"}:
+    out_and = DERIVED / "exposure_and.parquet"
+    exposure_and = exposure.copy()
+    exposure_and["exposure_flag"] = exposure_and["exposure_flag_strict"]
+    exposure_and.to_parquet(out_and, index=False, compression="snappy")
+    log.info(f"Wrote {out_and}")
+
+    if ARGS.logic == "and":
+        exposure_and.to_parquet(OUT_PATH, index=False, compression="snappy")
 
 # ------------------------------------------------------------------ #
 #  8  Update study documentation

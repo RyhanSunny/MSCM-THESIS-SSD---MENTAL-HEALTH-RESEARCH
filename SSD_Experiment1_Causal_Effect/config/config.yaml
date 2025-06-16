@@ -34,13 +34,16 @@ cohort:
 exposure:
   min_normal_labs: 3
   min_symptom_referrals: 2
-  min_drug_days: 90
+  min_drug_days: 180  # Enhanced from 90 to 180 days per Felipe's recommendation
   symptom_code_regex: "^(78[0-9]|799)"
   drug_atc_codes:
     anxiolytic: ["N05B", "N05C"]
     analgesic: ["N02B"]
     hypnotic: ["N05CH"]
-  drug_name_patterns: ["ZOPICLONE", "ZOLPIDEM", "BUSPIRONE", "BENZODIAZEPINE", "GABAPENTIN"]
+    antidepressant: ["N06A"]  # Felipe enhancement - antidepressants
+    anticonvulsant: ["N03A"]  # Felipe enhancement - anticonvulsants (gabapentin/pregabalin)
+    antipsychotic: ["N05A"]   # Felipe enhancement - antipsychotics for off-label use
+  drug_name_patterns: ["ZOPICLONE", "ZOLPIDEM", "BUSPIRONE", "BENZODIAZEPINE", "GABAPENTIN", "PREGABALIN"]
 
 # NYD (Not Yet Diagnosed) codes
 nyd:

@@ -173,6 +173,7 @@ def main():
     )
     parser.add_argument('--dry-run', action='store_true',
                        help='Run without saving outputs')
+    parser.add_argument('--treatment-col', default='ssd_flag', help='Treatment column name (default: ssd_flag)')
     args = parser.parse_args()
     
     # Load configuration
@@ -199,7 +200,8 @@ def main():
         
         # Get baseline outcome rate
         outcome_col = ate_results.get('outcome', 'total_encounters')
-        baseline_rate = df[df['ssd_flag'] == 0][outcome_col].mean()
+        treatment_col = args.treatment_col
+        baseline_rate = df[df[treatment_col] == 0][outcome_col].mean()
         logger.info(f"Baseline {outcome_col} rate: {baseline_rate:.2f}")
     else:
         df = None
@@ -248,7 +250,7 @@ def main():
         covariate_cols = [col for col in covariate_cols if col in df.columns][:10]
         
         observed_evalues = calculate_observed_covariate_evalues(
-            df, outcome_col, 'ssd_flag', covariate_cols
+            df, outcome_col, treatment_col, covariate_cols
         )
         
         evalue_results['observed_covariate_evalues'] = observed_evalues

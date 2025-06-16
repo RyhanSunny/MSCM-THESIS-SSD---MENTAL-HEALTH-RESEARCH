@@ -11,7 +11,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import logging
-import sys
+import sys, argparse
 
 # Add src and utils to path
 SRC = (Path(__file__).resolve().parents[1] / "src").as_posix()
@@ -48,16 +48,26 @@ except Exception as e:
     log.error(f"Could not load configuration: {e}")
     raise
 
+# ------------------------------------------------------------------ #
+#  CLI ARGUMENTS
+# ------------------------------------------------------------------ #
+parser = argparse.ArgumentParser(description="Build patient master table")
+parser.add_argument("--exposure_file", default="exposure.parquet",
+                    help="Filename in data_derived/ to use for exposure data (default: exposure.parquet)")
+parser.add_argument("--output_file", default="patient_master.parquet",
+                    help="Output filename in data_derived/ (default: patient_master.parquet)")
+ARGS = parser.parse_args()
+
 # Paths
 ROOT = Path(__file__).resolve().parents[1]
 DERIVED = ROOT / 'data_derived'
-OUT_PATH = DERIVED / 'patient_master.parquet'
+OUT_PATH = DERIVED / ARGS.output_file
 
 # Define expected files and their key columns
 EXPECTED_FILES = {
     'cohort.parquet': ['Patient_ID', 'Sex', 'BirthYear', 'Age_at_2015', 'SpanMonths', 
                       'IndexDate_lab', 'Charlson', 'LongCOVID_flag', 'NYD_count'],
-    'exposure.parquet': ['Patient_ID', 'exposure_flag', 'normal_lab_count', 
+    ARGS.exposure_file: ['Patient_ID', 'exposure_flag', 'normal_lab_count', 
                         'symptom_referral_n', 'drug_days_in_window'],
     'mediator_autoencoder.parquet': ['Patient_ID', 'SSD_severity_index'],
     'outcomes.parquet': ['Patient_ID', 'total_encounters', 'ed_visits', 
@@ -99,7 +109,7 @@ for filename, expected_cols in EXPECTED_FILES.items():
             log.info(f"  Optional file not found: {filename}")
 
 # Check if we have minimum required files
-required_files = ['cohort.parquet', 'exposure.parquet']
+required_files = ['cohort.parquet', ARGS.exposure_file]
 missing_required = [f for f in missing_files if f in required_files]
 if missing_required:
     raise FileNotFoundError(f"Missing required files: {missing_required}")
@@ -196,6 +206,19 @@ if 'total_encounters' in master.columns:
 if 'medical_costs' in master.columns:
     log.info(f"  Mean medical costs: ${master['medical_costs'].mean():.2f}")
 
+# Harmonise column aliases for downstream analysis scripts
+master['ssd_flag'] = master['exposure_flag'].astype(int)
+if 'exposure_flag_strict' in master.columns:
+    master['ssd_flag_strict'] = master['exposure_flag_strict'].astype(int)
+
+# Create additional aliases expected by downstream analysis scripts
+if 'Age_at_2015' in master.columns and 'age' not in master.columns:
+    master['age'] = master['Age_at_2015']
+if 'Sex' in master.columns and 'sex_M' not in master.columns:
+    master['sex_M'] = (master['Sex'] == 'M').astype(int)
+if 'Charlson' in master.columns and 'charlson_score' not in master.columns:
+    master['charlson_score'] = master['Charlson']
+
 # Save master table
 log.info(f"\nSaving master table to {OUT_PATH}")
 master.to_parquet(OUT_PATH, index=False)
@@ -229,7 +252,7 @@ try:
         sys.executable, 
         str(ROOT / "scripts" / "update_study_doc.py"),
         "--step", "Patient master table created",
-        "--kv", f"artefact=patient_master.parquet",
+        "--kv", f"artefact={ARGS.output_file}",
         "--kv", f"patient_master_rows={len(master)}",
         "--kv", f"patient_master_cols={len(master.columns)}",
         "--kv", f"files_merged={len(datasets)}",

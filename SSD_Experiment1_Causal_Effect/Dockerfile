@@ -13,6 +13,7 @@ RUN apt-get update && \
         git \
         curl \
         ca-certificates \
+        make \
         && rm -rf /var/lib/apt/lists/*
 
 # Set work directory
@@ -27,7 +28,8 @@ RUN pip install --upgrade pip && \
     lightgbm==4.3.0 \
     miceforest==6.* \
     econml==0.15.* \
-    xgboost dowhy jupyterlab
+    xgboost dowhy jupyterlab \
+    pytest pytest-cov
 
 # Note: dagitty is an R package, not Python. To install it:
 # (Optional) Install R and tmle3/grf/dagitty for full parity

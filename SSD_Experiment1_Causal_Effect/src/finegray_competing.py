@@ -268,6 +268,7 @@ def main():
     )
     parser.add_argument('--dry-run', action='store_true',
                        help='Run without saving outputs')
+    parser.add_argument('--treatment-col', default='ssd_flag', help='Treatment column name (default: ssd_flag)')
     args = parser.parse_args()
     
     # Set random seeds
@@ -298,14 +299,15 @@ def main():
     covariate_cols = [col for col in covariate_cols if col in df.columns][:10]
     
     # Run cause-specific Cox models
+    treatment_col = args.treatment_col
     cox_results, cph_primary, cph_death = run_cause_specific_cox(
-        df, 'ssd_flag', covariate_cols
+        df, treatment_col, covariate_cols
     )
     
     # Try Fine-Gray if R available
     finegray_result = None
     if R_AVAILABLE:
-        finegray_result = run_fine_gray_r(df, 'ssd_flag', covariate_cols)
+        finegray_result = run_fine_gray_r(df, treatment_col, covariate_cols)
     
     # Compile results
     results = {
@@ -331,7 +333,7 @@ def main():
         figures_dir = Path("figures")
         figures_dir.mkdir(exist_ok=True)
         plot_path = figures_dir / "cumulative_incidence.pdf"
-        create_cumulative_incidence_plot(df, output_path=plot_path)
+        create_cumulative_incidence_plot(df, treatment_col=treatment_col, output_path=plot_path)
         
         # Track outputs
         tracker.track("output_generated", {

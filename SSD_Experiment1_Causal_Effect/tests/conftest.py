@@ -153,6 +153,7 @@ def mock_exposure_data():
     return pd.DataFrame({
         'Patient_ID': range(1, n_patients + 1),
         'ssd_flag': np.random.binomial(1, 0.15, n_patients),  # 15% exposed
+        'ssd_flag_strict': np.random.binomial(1, 0.08, n_patients),  # Lower prevalence for strict
         'normal_lab_count_12m': np.random.poisson(2.5, n_patients),
         'unresolved_referral_count': np.random.poisson(1.2, n_patients),
         'medication_days_continuous': np.random.exponential(60, n_patients),
@@ -173,7 +174,9 @@ def mock_outcome_data():
         'ed_visits': np.random.poisson(0.5, n_patients),
         'specialist_referrals': np.random.poisson(1.2, n_patients),
         'total_cost_proxy': np.random.gamma(2, 500, n_patients),
-        'inappropriate_med_continuation': np.random.binomial(1, 0.3, n_patients)
+        'inappropriate_med_continuation': np.random.binomial(1, 0.3, n_patients),
+        'total_encounters': np.random.poisson(5, n_patients),
+        'outcome_binary': np.random.binomial(1, 0.3, n_patients),
     })
 
 
@@ -191,7 +194,10 @@ def mock_confounder_data():
         'baseline_encounters_6m': np.random.poisson(4, n_patients),
         'deprivation_quintile': np.random.randint(1, 6, n_patients),
         'site_id': np.random.randint(1, 20, n_patients),
-        'calendar_year': np.random.choice([2015, 2016], n_patients)
+        'calendar_year': np.random.choice([2015, 2016], n_patients),
+        'Age_at_2015': np.random.normal(50, 15, n_patients),
+        'baseline_encounters': np.random.poisson(3, n_patients),
+        'baseline_high_utilizer': np.random.binomial(1, 0.25, n_patients),
     })
 
 
