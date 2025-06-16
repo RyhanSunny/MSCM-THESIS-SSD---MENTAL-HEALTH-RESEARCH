@@ -18,7 +18,7 @@
       "Bash(/mnt/c/Users/ProjectC4M/anaconda3/python.exe -c \"\nimport pandas as pd\ncohort = pd.read_parquet(''data_derived/cohort.parquet'')\nprint(''Updated cohort shape:'', cohort.shape)\nprint(''Columns:'', list(cohort.columns))\nprint(''Sample data:'')\nprint(cohort.head())\nprint(''\\nLong-COVID flag distribution:'')\nprint(cohort[''LongCOVID_flag''].value_counts())\nprint(''\\nNYD count distribution:'')\nprint(cohort[''NYD_count''].value_counts())\n\")",
       "Bash(/mnt/c/Users/ProjectC4M/anaconda3/python.exe src/02_exposure_flag.py)",
       "Bash(timeout:*)",
-      "Bash(/mnt/c/Users/ProjectC4M/anaconda3/python.exe -c \"\nimport pandas as pd\nimport os\nfrom pathlib import Path\n\n# Check cohort file\ncohort_path = ''data_derived/cohort.parquet''\nif os.path.exists(cohort_path):\n    cohort = pd.read_parquet(cohort_path)\n    print(''✅ Cohort file exists'')\n    print(f''Shape: {cohort.shape}'')\n    print(f''Columns: {list(cohort.columns)}'')\n    \n    # Check for required columns\n    required_cols = [''Patient_ID'', ''Sex'', ''BirthYear'', ''Age_at_2015'', ''Charlson'', ''LongCOVID_flag'', ''NYD_count'']\n    missing_cols = [col for col in required_cols if col not in cohort.columns]\n    if missing_cols:\n        print(f''❌ Missing columns: {missing_cols}'')\n    else:\n        print(''✅ All required columns present'')\n    \n    print(f''Age column: {[col for col in cohort.columns if \"\"Age\"\" in col]}'')\n    print(f''Sample Charlson values: {cohort[\"\"Charlson\"\"].value_counts().head()}'')\nelse:\n    print(''❌ Cohort file not found'')\n\")",
+      "Bash(/mnt/c/Users/ProjectC4M/anaconda3/python.exe -c \"\nimport pandas as pd\nimport os\nfrom pathlib import Path\n\n# Check cohort file\ncohort_path = ''data_derived/cohort.parquet''\nif os.path.exists(cohort_path):\n    cohort = pd.read_parquet(cohort_path)\n    print(''✅ Cohort file exists'')\n    print(f''Shape: {cohort.shape}'')\n    print(f''Columns: {list(cohort.columns)}'')\n    \n    # Check for required columns\n    required_cols = [''Patient_ID'', ''Sex'', ''BirthYear'', ''Age_at_2018'', ''Charlson'', ''LongCOVID_flag'', ''NYD_count'']\n    missing_cols = [col for col in required_cols if col not in cohort.columns]\n    if missing_cols:\n        print(f''❌ Missing columns: {missing_cols}'')\n    else:\n        print(''✅ All required columns present'')\n    \n    print(f''Age column: {[col for col in cohort.columns if \"\"Age\"\" in col]}'')\n    print(f''Sample Charlson values: {cohort[\"\"Charlson\"\"].value_counts().head()}'')\nelse:\n    print(''❌ Cohort file not found'')\n\")",
       "Bash(/mnt/c/Users/ProjectC4M/anaconda3/python.exe -c \"\nimport pandas as pd\n\n# Simulate the merge issue\ndf1 = pd.DataFrame({''Patient_ID'': [1, 2, 3]})\nseries1 = pd.Series([10, 20, 30], index=[1, 2, 3], name=''norm_count'')\n\n# This would fail without specifying merge keys\nprint(''DataFrame columns:'', df1.columns.tolist())\nprint(''Series index name:'', series1.index.name)\nprint(''Series name:'', series1.name)\n\n# The correct way is to specify left_on and right_index\ntry:\n    result = df1.merge(series1, left_on=''Patient_ID'', right_index=True, how=''left'')\n    print(''✅ Merge works with correct parameters'')\n    print(result)\nexcept Exception as e:\n    print(''❌ Merge failed:'', str(e))\n\")",
       "Bash(rg:*)",
       "Bash(touch:*)",
@@ -33,14 +33,7 @@
       "Bash(/mnt/c/Users/ProjectC4M/anaconda3/Scripts/conda.exe run -n base python -c \"\nimport pandas as pd\nimport numpy as np\n\n# Load referral data\nreferral = pd.read_parquet('Notebooks/data/interim/checkpoint_1_20250318_024427/referral.parquet')\n\nprint('Referral Data Shape:', referral.shape)\nprint('\\nColumn Names:')\nprint(referral.columns.tolist())\nprint('\\nReferrals per patient stats:')\nref_counts = referral['Patient_ID'].value_counts()\nprint(f'Min: {ref_counts.min()}, Max: {ref_counts.max()}, Mean: {ref_counts.mean():.2f}, Median: {ref_counts.median():.2f}')\nprint(f'Total unique patients with referrals: {referral[\\\"Patient_ID\\\"].nunique()}')\nprint('\\nTop 10 patients by referral count:')\nprint(ref_counts.head(10))\n\")",
       "Bash(PYTHONPATH=/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/fa2af730bef1df40d98ead8bb87cfc7945e81731a8440f450e5475b4aee1dd18 /mnt/c/Users/ProjectC4M/anaconda3/python.exe src/02_exposure_flag_fixed.py)",
       "Bash(sudo apt:*)",
-      "Bash(sudo apt install:*)",
-      "Bash(mv:*)",
-      "Bash(for:*)",
-      "Bash(do if [ -f \"$file\" ])",
-      "Bash(then echo \"✓ $file\")",
-      "Bash(else echo \"✗ $file MISSING\")",
-      "Bash(fi)",
-      "Bash(done)"
+      "Bash(sudo apt install:*)"
     ],
     "deny": []
   },
