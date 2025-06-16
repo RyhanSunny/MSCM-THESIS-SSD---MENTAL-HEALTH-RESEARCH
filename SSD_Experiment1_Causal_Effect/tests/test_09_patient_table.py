@@ -28,7 +28,7 @@ summarize_patient_table = patient_table.summarize_patient_table
 def mock_datasets():
     cohort = pd.DataFrame({
         'Patient_ID': [1, 2],
-        'Age_at_2018': [50, 60],
+        'Age_at_2015': [50, 60],
         'Sex_clean': ['Female', 'Male'],
         'NYD_yn': [1, 0],
         'NYD_body_part_summary': ['General', 'None']

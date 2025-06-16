@@ -63,15 +63,15 @@ EXPECTED_FILES = {
     'outcomes.parquet': ['Patient_ID', 'total_encounters', 'ed_visits', 
                         'specialist_referrals', 'medical_costs', 'inappropriate_meds', 
                         'polypharmacy', 'high_utilization'],
-    'confounder_flag.parquet': ['Patient_ID'],  # Will include available columns
-    'lab_flag.parquet': ['Patient_ID'],  # Will include available columns
+    'confounders.parquet': ['Patient_ID'],  # Corrected file name
+    'lab_sensitivity.parquet': ['Patient_ID'],  # Corrected file name
     'referral_sequences.parquet': ['Patient_ID', 'referral_loop', 'loop_count', 
                                   'sequence_length', 'has_circular_pattern', 
                                   'mean_referral_interval_days']
 }
 
 # Optional files (may not exist yet)
-OPTIONAL_FILES = ['confounder_flag.parquet', 'lab_flag.parquet']
+OPTIONAL_FILES = ['referral_sequences.parquet']
 
 # Load all available datasets
 log.info("Loading derived datasets...")
@@ -118,21 +118,26 @@ for filename, df in datasets.items():
     if filename == 'cohort.parquet':
         continue  # Skip base dataset
     
-    # Determine columns to merge (exclude Patient_ID)
+    # Remove duplicates if any
+    if df['Patient_ID'].duplicated().any():
+        log.warning(f"  Found {df['Patient_ID'].duplicated().sum()} duplicate Patient_IDs in {filename}")
+        df = df.drop_duplicates(subset='Patient_ID', keep='first')
+        log.info(f"  After deduplication: {len(df)} rows")
+    
+    # Determine columns to merge (exclude Patient_ID and overlapping columns)
     merge_cols = [col for col in df.columns if col != 'Patient_ID']
     
-    # Check for overlapping columns
+    # Check for overlapping columns and exclude them from merge
     overlap = set(master.columns) & set(merge_cols)
     if overlap:
         log.warning(f"  Overlapping columns with {filename}: {overlap}")
-        # Add suffix to avoid conflicts
-        df_renamed = df.copy()
-        suffix = filename.split('.')[0].split('_')[-1]
-        for col in overlap:
-            df_renamed.rename(columns={col: f"{col}_{suffix}"}, inplace=True)
-        df = df_renamed
-        merge_cols = [col for col in df.columns if col != 'Patient_ID']
+        log.info(f"  Excluding overlapping columns from merge")
+        merge_cols = [col for col in merge_cols if col not in overlap]
     
+    if not merge_cols:
+        log.warning(f"  No columns to merge from {filename} after removing overlaps")
+        continue
+        
     # Perform merge
     log.info(f"  Merging {filename} ({len(merge_cols)} columns)")
     master = master.merge(df[['Patient_ID'] + merge_cols], 

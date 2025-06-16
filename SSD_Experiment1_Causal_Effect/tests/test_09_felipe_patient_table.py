@@ -11,7 +11,7 @@ spec.loader.exec_module(felipe)
 def test_generate_felipe_table_basic():
     cohort = pd.DataFrame({
         'Patient_ID': [1, 2],
-        'Age_at_2018': [40, 60],
+        'Age_at_2015': [40, 60],
         'NYD_count': [1, 0]
     })
     referral = pd.DataFrame({

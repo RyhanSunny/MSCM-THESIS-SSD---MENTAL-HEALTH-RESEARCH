@@ -43,7 +43,12 @@ def create_patient_table() -> pd.DataFrame:
 
     table = pd.DataFrame()
     table["PID"] = cohort["Patient_ID"]
-    table["age"] = cohort.get("Age_at_2018")
+    # Prefer the harmonized 2015 baseline age; fall back to older 2018 label if necessary for
+    # backward-compatibility with any pre-migration artefacts.
+    if "Age_at_2015" in cohort.columns:
+        table["age"] = cohort["Age_at_2015"]
+    else:
+        table["age"] = cohort.get("Age_at_2018")
     table["sex"] = cohort.get("Sex_clean", cohort.get("Sex"))
     table["NYD_yn"] = cohort.get("NYD_yn")
     table["body_part"] = cohort.get("NYD_body_part_summary")
