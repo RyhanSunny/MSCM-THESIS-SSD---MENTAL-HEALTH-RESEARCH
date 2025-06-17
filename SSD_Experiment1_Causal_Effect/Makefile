@@ -14,7 +14,7 @@ TREATMENT_COL ?= ssd_flag
 
 # Default target
 .PHONY: all
-all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness week1-validation
+all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness week1-validation week2-all
 
 # Data pipeline targets
 .PHONY: cohort
@@ -240,6 +240,56 @@ week1-integration-test: ps
 	$(PYTHON) -c "from src.temporal_validator import validate_exposure_outcome_sequence; import pandas as pd; print('Temporal validation ready')"
 	@echo "✓ Week 1 integration tests passed!"
 
+# Week 2 Analysis & Visualization Quality Gates
+.PHONY: week2-hypotheses
+week2-hypotheses: master
+	@echo "Running H1-H3 hypothesis analyses..."
+	$(PYTHON) $(SRC_DIR)/hypothesis_runner.py --treatment-col $(TREATMENT_COL)
+	@echo "✓ Hypothesis analyses complete - results in results/hypothesis_*.json"
+
+.PHONY: week2-figures
+week2-figures: master
+	@echo "Generating Week 2 figures..."
+	$(PYTHON) $(SRC_DIR)/figure_generator.py
+	@echo "✓ Figures generated - check figures/*.svg"
+
+.PHONY: week2-tables
+week2-tables: master
+	@echo "Generating Week 2 tables..."
+	$(PYTHON) $(SRC_DIR)/table_generator.py --treatment-col $(TREATMENT_COL)
+	@echo "✓ Tables generated - check tables/*.md and tables/*.csv"
+
+.PHONY: week2-documentation
+week2-documentation: week2-hypotheses week2-figures week2-tables
+	@echo "Updating Week 2 documentation..."
+	$(PYTHON) $(SRC_DIR)/documentation_updater.py
+	@echo "✓ Documentation updated - check reports/week2_analysis_report.md"
+
+.PHONY: week2-validation
+week2-validation: week2-documentation
+	@echo "Running Week 2 quality gates..."
+	@echo "1. Testing hypothesis runner..."
+	pytest tests/test_hypothesis_runner.py -v
+	@echo "2. Testing figure generator..."
+	pytest tests/test_figure_generator.py -v
+	@echo "3. Validating generated artifacts..."
+	@test -f results/hypothesis_h1.json || (echo "❌ H1 results missing" && exit 1)
+	@test -f results/hypothesis_h2.json || (echo "❌ H2 results missing" && exit 1)
+	@test -f results/hypothesis_h3.json || (echo "❌ H3 results missing" && exit 1)
+	@test -f figures/dag.svg || (echo "❌ DAG figure missing" && exit 1)
+	@test -f figures/forest_plot.svg || (echo "❌ Forest plot missing" && exit 1)
+	@test -f figures/love_plot.svg || (echo "❌ Love plot missing" && exit 1)
+	@test -f figures/consort_flowchart.svg || (echo "❌ CONSORT flowchart missing" && exit 1)
+	@test -f tables/main_results.md || (echo "❌ Main results table missing" && exit 1)
+	@test -f tables/baseline_table.md || (echo "❌ Baseline table missing" && exit 1)
+	@test -f tables/sensitivity.md || (echo "❌ Sensitivity table missing" && exit 1)
+	@test -f reports/week2_analysis_report.md || (echo "❌ Week 2 report missing" && exit 1)
+	@echo "✓ All Week 2 quality gates passed!"
+
+.PHONY: week2-all
+week2-all: week2-validation
+	@echo "✓ Week 2 Analysis & Visualization complete!"
+
 .PHONY: lint
 lint:
 	@echo "Running linters..."
@@ -299,6 +349,16 @@ help:
 	@echo "  make causal       - Run causal estimators"
 	@echo "  make robustness   - Run robustness checks"
 	@echo "  make reporting    - Generate reports"
+	@echo ""
+	@echo "Week 1 & 2 targets:"
+	@echo "  make week1-validation - Run Week 1 quality gates"
+	@echo "  make week1-integration-test - Test Week 1 pipeline integration"
+	@echo "  make week2-hypotheses - Run H1-H3 hypothesis analyses"
+	@echo "  make week2-figures    - Generate DAG, Forest, Love plots"
+	@echo "  make week2-tables     - Generate baseline, results tables"
+	@echo "  make week2-documentation - Update documentation"
+	@echo "  make week2-validation - Run Week 2 quality gates"
+	@echo "  make week2-all        - Complete Week 2 analysis"
 	@echo ""
 	@echo "Utility targets:"
 	@echo "  make clean        - Clean temporary files"
