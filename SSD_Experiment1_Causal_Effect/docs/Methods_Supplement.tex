@@ -1,0 +1,69 @@
+\\documentclass[11pt]{article}
+\\usepackage{amsmath}
+\\usepackage{listings}
+\\usepackage{hyperref}
+\\usepackage{booktabs}
+
+\\title{Supplementary Methods}
+\\author{Ryhan Suny\\footnote{Toronto Metropolitan University}}
+\\date{\\today}
+
+\\begin{document}
+\\maketitle
+
+\\section{Study Design}
+
+We conducted a retrospective cohort study using the Canadian Primary Care Sentinel Surveillance Network (CPCSSN) database. The study followed STROBE-CI reporting guidelines for causal inference studies.
+
+\\subsection{Population}
+
+The study population consisted of primary care patients aged $\\geq$18 years with at least 30 months of follow-up data. We excluded patients with:
+\\begin{itemize}
+    \\item Charlson comorbidity index $>5$
+    \\item Palliative care codes
+    \\item Opt-out status
+\\end{itemize}
+
+Final cohort: N=250,025 patients
+
+\\section{Statistical Analysis}
+
+\\subsection{Propensity Score Methods}
+
+We estimated propensity scores using gradient boosting (XGBoost) with the following covariates:
+
+\\begin{lstlisting}[language=Python]
+ps_model = XGBClassifier(
+    n_estimators=100,
+    max_depth=4,
+    learning_rate=0.1
+)
+\\end{lstlisting}
+
+\\subsection{Inverse Probability of Treatment Weighting}
+
+Weights were calculated as:
+\\begin{align}
+w_i = \\begin{cases}
+    \\frac{1}{\\hat{e}(X_i)} & \\text{if } Z_i = 1 \\\\
+    \\frac{1}{1-\\hat{e}(X_i)} & \\text{if } Z_i = 0
+\\end{cases}
+\\end{align}
+
+where $\\hat{e}(X_i)$ is the estimated propensity score.
+
+\\section{Causal Inference Methods}
+
+\\subsection{Assumptions}
+\\begin{enumerate}
+    \\item \\textbf{Exchangeability}: No unmeasured confounding
+    \\item \\textbf{Positivity}: $0 < P(Z=1|X) < 1$
+    \\item \\textbf{Consistency}: Well-defined treatment
+    \\item \\textbf{SUTVA}: No interference between units
+\\end{enumerate}
+
+\\section{Software}
+
+All analyses were conducted using Python 3.12 and R 4.3.0.
+
+\\end{document}
