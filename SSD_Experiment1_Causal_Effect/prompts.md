@@ -442,3 +442,53 @@ make all                         # Full Weeks 1-4 pipeline
 ```
 
 The enhanced mental health-specific pipeline is now production-ready and addresses the critical domain alignment gaps identified in the SSD THESIS blueprint.
+
+✂️ **START OF PROMPT 5** ✂️
+You are **CLAUDE-CI Chief Engineer**. Week-4 Tasks 1-4 are finished and tested.  
+Complete **Week-4 Task 5 plus final scientific QA** to achieve full blueprint compliance.
+
+──────── REMAINING DELIVERABLES ────────
+A Figures
+   1. Mediation pathway diagram (exposure ➜ SSDSI ➜ utilisation).  
+   2. CATE heterogeneity heat-map from causal forest.  
+   3. E-value bias-sensitivity plot (observed vs hypothetical confounder).  
+   4. Update `love_plot` if covariate list changed.
+
+B Documentation
+   1. Regenerate Methods Supplement & `week4_analysis_report.md` embedding new figs.  
+   2. Tailor STROBE-CI checklist to MH study (fill line refs).  
+   3. Update ROBINS-I table with new bias domains.  
+   4. Refresh glossary & add links in supplement.  
+   5. Update README + Makefile help section for Week-4 targets.
+
+C Statistical refinements
+   1. Replace simple Baron-&-Kenny with DoWhy/econml mediation (5 000 boot, sensitivity ρ).  
+   2. Apply Benjamini-Hochberg FDR to H5 interaction p-values.  
+   3. Add E-value computation for H1-H3 and include in results JSON.  
+   4. Extend weight-diagnostics pytest: fail if ESS < 0.5 N OR max_wt > 10 × median.
+
+D Transportability stub  
+   • Add `transport_weights.py` that reads `ices_marginals.csv`; if file missing, emit “skipped” status so CI passes.
+
+──────── WORKFLOW ────────
+1. Write failing tests for figs (file existence), doc strings, weight QA.  
+2. Implement code.  Keep funcs ≤ 50 LOC, full numpy-style docstrings.  
+3. Commit with `feat(week4-5-X): …` (Ryhan Suny <sunnyrayhan2@gmail.com>).  
+4. Append QA blocks & tick Week-4 tracker.
+
+──────── UPDATE WEEK-4 TRACKER ────────
+| # | Deliverable | Status | Timestamp (UTC) | QA link | Notes |
+|---|-------------|--------|-----------------|---------|-------|
+| 1 | MH cohort & exposures | ✔ DONE | 2025-06-17T09:20Z | QA-W4-1 | – |
+| 2 | MH-specific outcomes | ✔ DONE | 2025-06-17T09:40Z | QA-W4-2 | – |
+| 3 | H4-H6 analyses | ✔ DONE | 2025-06-17T10:05Z | QA-W4-3 | – |
+| 4 | CI/QA integration | ✔ DONE | 2025-06-17T10:25Z | QA-W4-4 | – |
+| 5 | Figs, docs, final QA | ☐ TODO | – | – | – |
+
+──────── SAFETY & QA ────────
+• If any ambiguity, emit `<uncertainty>` with options & recommendation.  
+• Use small dummy data in tests; heavy jobs behind `--dry-run`.  
+• Ensure Docker build succeeds (`make lockfile-verify` & hash check).
+
+Begin Week-4 Task 5 execution now.
+✂️ **END OF PROMPT 5** ✂️
