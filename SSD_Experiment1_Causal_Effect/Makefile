@@ -290,6 +290,40 @@ week2-validation: week2-documentation
 week2-all: week2-validation
 	@echo "✓ Week 2 Analysis & Visualization complete!"
 
+# Week 3 CI/QA Quality Gates
+.PHONY: week3-ci-tests
+week3-ci-tests:
+	@echo "Running Week 3 CI/QA tests..."
+	@echo "1. Testing weight diagnostics CI validation..."
+	pytest tests/test_weight_diagnostics_ci.py -v
+	@echo "2. Testing MC-SIMEX integration..."
+	pytest tests/test_mc_simex_integration.py -v
+	@echo "3. Verifying environment lockfile..."
+	$(MAKE) lockfile-verify
+	@echo "✓ All Week 3 CI/QA tests passed!"
+
+.PHONY: week3-figures
+week3-figures:
+	@echo "Generating high-resolution figures..."
+	$(PYTHON) src/hires_figure_generator.py
+	@echo "✓ High-resolution figures generated"
+
+.PHONY: week3-documentation  
+week3-documentation:
+	@echo "Generating supplementary documentation..."
+	$(PYTHON) src/documentation_generator.py
+	@echo "✓ Documentation artifacts created"
+
+.PHONY: week3-polish
+week3-polish:
+	@echo "Polishing narrative voice..."
+	$(PYTHON) src/voice_polisher.py
+	@echo "✓ Voice conversion complete"
+
+.PHONY: week3-all
+week3-all: week3-figures week3-documentation week3-polish week3-ci-tests
+	@echo "✓ Week 3 Writing, Packaging & QA Polish complete!"
+
 .PHONY: lint
 lint:
 	@echo "Running linters..."
@@ -318,6 +352,25 @@ install:
 docker-build:
 	@echo "Building Docker image..."
 	docker build -t ssd-pipeline:1.1 .
+
+.PHONY: lockfile-verify
+lockfile-verify:
+	@echo "Verifying environment lockfile..."
+	@# Calculate hash of environment.yml
+	@ENV_HASH=$$(sha256sum environment.yml | cut -d' ' -f1); \
+	echo "Environment.yml hash: $$ENV_HASH"; \
+	if docker inspect ssd-pipeline:1.1 >/dev/null 2>&1; then \
+		DOCKER_HASH=$$(docker inspect ssd-pipeline:1.1 | grep -o '"ENV_HASH=[^"]*"' | cut -d'=' -f2 | tr -d '"'); \
+		echo "Docker image hash: $$DOCKER_HASH"; \
+		if [ "$$ENV_HASH" != "$$DOCKER_HASH" ]; then \
+			echo "❌ Environment mismatch! Rebuild Docker image."; \
+			exit 1; \
+		else \
+			echo "✓ Environment lockfile matches Docker image"; \
+		fi; \
+	else \
+		echo "⚠️  Docker image not found. Run 'make docker-build' first."; \
+	fi
 
 .PHONY: docker-run
 docker-run:

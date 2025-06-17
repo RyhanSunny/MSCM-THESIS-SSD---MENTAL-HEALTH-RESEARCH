@@ -6,6 +6,11 @@ FROM python:3.12-slim
 # Set reproducibility
 ENV PYTHONHASHSEED=42
 
+# Set environment hash for lockfile verification
+COPY environment.yml /tmp/environment.yml
+RUN ENV_HASH=$(sha256sum /tmp/environment.yml | cut -d' ' -f1) && \
+    echo "ENV_HASH=${ENV_HASH}" >> /etc/environment
+
 # Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
