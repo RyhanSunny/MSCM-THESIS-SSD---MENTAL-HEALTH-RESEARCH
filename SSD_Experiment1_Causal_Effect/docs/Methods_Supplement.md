@@ -50,7 +50,7 @@ propensity_scores = ps_model.predict_proba(X_confounders)[:, 1]
 
 ### Inverse Probability of Treatment Weighting (IPTW)
 
-Weights were calculated as:
+Weights we calculate as:
 - Treated: 1/PS
 - Control: 1/(1-PS)
 
@@ -124,7 +124,7 @@ def cluster_robust_se(model, cluster_ids):
 
 ## Software
 
-All analyses were conducted using:
+All We conducted analyses using:
 - Python 3.12
 - R 4.3.0
 - Key packages: pandas, numpy, statsmodels, xgboost, scikit-learn
@@ -139,3 +139,25 @@ All analyses were conducted using:
 
 - RS: Conceptualization, methodology, software, analysis, writing
 - AG: Supervision, review & editing
+
+## Author Information
+
+**Ryhan Suny**  
+ORCID: 0000-0000-0000-0001  
+Toronto Metropolitan University  
+Email: sajibrayhan.suny@torontomu.ca
+
+**Dr. Aziz Guergachi**  
+ORCID: 0000-0000-0000-0002  
+Toronto Metropolitan University
+
+## Funding
+
+This research was supported by:
+- Toronto Metropolitan University Graduate Fellowship
+- Car4Mind Research Grant
+- CIHR Catalyst Grant (pending)
+
+## Acknowledgments
+
+We thank the Canadian Primary Care Sentinel Surveillance Network (CPCSSN) for data access, and the Car4Mind team at University of Toronto for their support and feedback throughout this project.

@@ -119,7 +119,7 @@ We will use Canadian Primary Care Sentinel Surveillance Network (CPCSSN) electro
 
 ### **Exposure (Treatment)**
 
-The exposure of interest, Negative Lab Cascade (≥3 consecutive normal laboratory results in 12 months), is defined as a binary variable (treated vs. untreated). We will carefully document how and when exposure is measured. If time of exposure initiation varies, we will align everyone at a common index time (e.g., hospital admission or diagnosis) and treat exposure as occurring at baseline for causal inference purposes. Any time-varying nature of exposure will be addressed with appropriate longitudinal methods (described later). We assume no substantial measurement error in the exposure; if there is suspicion of misclassification (e.g. treatment identification via codes), we will conduct sensitivity analysis for exposure misclassification as part of the quality assurance.
+The exposure of interest, Negative Lab Cascade (≥3 consecutive normal laboratory results in 12 months), is defined as a binary variable (treated vs. untreated). We will carefully document how and when exposure we measure. If time of exposure initiation varies, we will align everyone at a common index time (e.g., hospital admission or diagnosis) and treat exposure as occurring at baseline for causal inference purposes. Any time-varying nature of exposure will be addressed with appropriate longitudinal methods (described later). We assume no substantial measurement error in the exposure; if there is suspicion of misclassification (e.g. treatment identification via codes), we will conduct sensitivity analysis for exposure misclassification as part of the quality assurance.
 
 ### **Outcome**
 
@@ -127,7 +127,7 @@ The primary outcome, Total number of primary-care encounters in the subsequent 1
 
 ### **Confounders and Covariates**
 
-We will adjust for a rich set of baseline confounders that are hypothesized to jointly affect exposure and outcome (based on prior literature and clinical expertise). These include age, sex, calendar year, site FE, Charlson, prior-year visit count, depression/anxiety, PTSD, Long-COVID, NYD flag. We use a causal DAG (Directed Acyclic Graph) to guide confounder selection, ensuring we block all backdoor paths between exposure and outcome. Importantly, we will not adjust for variables that may lie on the causal pathway (mediators) or colliders that could induce bias. If certain covariates are strongly prognostic of the outcome but unaffected by exposure (e.g. age, chronic disease burden), they are still included to improve precision. All confounders are measured at baseline (before exposure) to satisfy temporal ordering for causal interpretation.
+We will adjust for a rich set of baseline confounders that are hypothesized to jointly affect exposure and outcome (based on prior literature and clinical expertise). These include age, sex, calendar year, site FE, Charlson, prior-year visit count, depression/anxiety, PTSD, Long-COVID, NYD flag. We use a causal DAG (Directed Acyclic Graph) to guide confounder selection, ensuring we block all backdoor paths between exposure and outcome. Importantly, we will not adjust for variables that may lie on the causal pathway (mediators) or colliders that could induce bias. If certain covariates are strongly prognostic of the outcome but unaffected by exposure (e.g. age, chronic disease burden), they are still included to improve precision. All confounders we measure at baseline (before exposure) to satisfy temporal ordering for causal interpretation.
 
 **Derived severity score (Autoencoder feature)**: A novel covariate in our analysis is an autoencoder-derived severity score, constructed from high-dimensional patient data (e.g., labs, imaging, or clinical notes). This unsupervised learning model compresses complex patient information into a single continuous severity index. We ensure the autoencoder is trained in a manner to avoid overfitting and maintain generalizability:
 
@@ -153,7 +153,7 @@ All covariates (including the severity score and SSD-flag) will be standardized 
 
 ### **Mediator (if applicable)**
 
-If our analysis aims to decompose the total effect into direct and indirect paths, we will identify a mediator variable that lies on the causal pathway between exposure and outcome. For example, SSD Severity Index could be an intermediate clinical outcome or biomarker influenced by the exposure and subsequently affecting the primary outcome. We will only perform formal mediation analysis if the scientific question calls for it and if the data support necessary assumptions. The critical assumption for mediation is sequential ignorability – that there are no unmeasured confounders of the mediator–outcome relationship after adjusting for baseline covariates and exposure. We will scrutinize this assumption by thinking through potential confounders of the mediator and outcome. If such confounders exist and are measured, we include them in the models for both mediator and outcome. If we suspect important unmeasured mediator-outcome confounding, we will not over-interpret mediation results; instead, we will report that any mediation estimates rely on the untestable assumption of no hidden confounding between mediator and outcome.
+If our analysis aims to decompose the total effect into direct and indirect paths, we will identify a mediator variable that lies on the causal pathway between exposure and outcome. For example, SSD Severity Index could be an intermediate clinical outcome or biomarker influenced by the exposure and subsequently affecting the primary outcome. We will only perform formal mediation analysis if the scientific question calls for it and if the data support necessary assumptions. The critical assumption for mediation is sequential ignorability – that there are no unmeasured confounders of the mediator–outcome relationship after adjusting for baseline covariates and exposure. We will scrutinize this assumption by thinking through potential confounders of the mediator and outcome. If such confounders exist and we measure, we include them in the models for both mediator and outcome. If we suspect important unmeasured mediator-outcome confounding, we will not over-interpret mediation results; instead, we will report that any mediation estimates rely on the untestable assumption of no hidden confounding between mediator and outcome.
 
 To strengthen inference about mediation, we will explore **alternative approaches**:
 
@@ -161,7 +161,7 @@ To strengthen inference about mediation, we will explore **alternative approache
 
 * We will conduct **sensitivity analysis for mediation** (e.g., using methods by Imai or VanderWeele) to quantify how sensitive the mediation results are to hypothetical unmeasured confounders. This might involve calculating how large a confounder's effect would have to be to explain away the observed mediated effect.
 
-If mediation analysis is performed, we will estimate the **natural indirect effect** and **natural direct effect** using standard methods (such as regression-based mediation with bootstrap for confidence intervals, or mediation within a counterfactual framework). However, given the complexity, these results will be considered exploratory unless assumptions are clearly met. We will explicitly state the additional assumption of **no exposure–mediator interaction** on the outcome if we use simple mediation formulas, or otherwise include interaction terms in the mediation models.
+If mediation analysis we perform, we will estimate the **natural indirect effect** and **natural direct effect** using standard methods (such as regression-based mediation with bootstrap for confidence intervals, or mediation within a counterfactual framework). However, given the complexity, these results will be considered exploratory unless assumptions are clearly met. We will explicitly state the additional assumption of **no exposure–mediator interaction** on the outcome if we use simple mediation formulas, or otherwise include interaction terms in the mediation models.
 
 ## **Causal Inference Analysis Plan**
 
@@ -175,7 +175,7 @@ We will use **triangulation of methods** to strengthen causal inference. That is
 
 To adjust for confounders, we will employ propensity score (PS) methods as a core component. The propensity score is the probability of receiving the exposure given all observed covariates. We will estimate the PS using a logistic regression (or machine learning model, if needed for better fit) with exposure as outcome and all confounders as predictors. Careful attention will be given to model specification: we may include polynomial terms or splines for continuous covariates and check for interactions that improve balance.
 
-We will primarily use **inverse probability of treatment weighting (IPTW)** to create a weighted pseudo-population. Stabilized IPTW weights will be calculated to reduce variance. If extreme weights arise (due to very small PS for some treated or vice versa), we will consider weight truncation at a small percentile (e.g., 99th percentile) to avoid undue influence of a few observations. As a sensitivity check, we might also implement **overlap weighting**, which focuses on the overlapping region of PS and tends to down-weight extreme propensity cases, improving balance.
+We will primarily use **inverse probability of treatment weighting (IPTW)** to create a weighted pseudo-population. Stabilized IPTW weights we will calculate to reduce variance. If extreme weights arise (due to very small PS for some treated or vice versa), we will consider weight truncation at a small percentile (e.g., 99th percentile) to avoid undue influence of a few observations. As a sensitivity check, we might also implement **overlap weighting**, which focuses on the overlapping region of PS and tends to down-weight extreme propensity cases, improving balance.
 
 After estimating PS, **diagnostics** are critical:
 
@@ -311,7 +311,7 @@ Throughout the analysis pipeline, we implement a **Causal Quality Assurance (QA)
 
   * Check for data inconsistencies (e.g., dates out of order, duplicate entries).
 
-  * Validate that all confounders are measured before exposure assignment.
+  * Validate that all confounders we measure before exposure assignment.
 
   * Perform descriptive stats and visualize distributions for anomalies.
 
