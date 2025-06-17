@@ -67,6 +67,20 @@ except ImportError:
     STATSMODELS_AVAILABLE = False
     warnings.warn("Statsmodels not available, using simplified SE calculations")
 
+# Import count models
+try:
+    from poisson_count_models import (
+        PoissonCountRegression, 
+        NegativeBinomialCountRegression,
+        count_regression_analysis,
+        select_count_model,
+        test_overdispersion
+    )
+    COUNT_MODELS_AVAILABLE = True
+except ImportError:
+    COUNT_MODELS_AVAILABLE = False
+    warnings.warn("Count models not available")
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -261,6 +275,46 @@ def run_tmle(df, outcome_col, treatment_col, covariate_cols, weights=None, clust
         }
         
         logger.info(f"TMLE ATE: {tmle.ate:.3f} ({ci_lower:.3f}, {ci_upper:.3f}) [naive SE]")
+    
+    return results
+
+def run_count_outcome_analysis(df, outcome_col, treatment_col, covariate_cols, 
+                              cluster_col=None, weight_col='iptw'):
+    """
+    Run Poisson/Negative Binomial regression for count outcomes.
+    
+    Particularly useful for H1 (healthcare encounters) and H3 (medication counts).
+    Automatically selects between Poisson and Negative Binomial based on overdispersion.
+    
+    Args:
+        df: DataFrame with analysis data
+        outcome_col: Count outcome variable (e.g., 'total_encounters')
+        treatment_col: Treatment variable (e.g., 'ssd_flag')
+        covariate_cols: List of covariate columns
+        cluster_col: Optional cluster column (e.g., 'site_id')
+        weight_col: Weight column from propensity score analysis
+        
+    Returns:
+        Dictionary with count regression results including IRR
+    """
+    logger.info(f"Running count outcome analysis for {outcome_col}")
+    
+    if not COUNT_MODELS_AVAILABLE:
+        logger.warning("Count models not available, using simplified linear analysis")
+        return run_tmle(df, outcome_col, treatment_col, covariate_cols, cluster_col=cluster_col)
+    
+    # Use the dedicated count regression analysis
+    results = count_regression_analysis(
+        df=df,
+        outcome_col=outcome_col,
+        treatment_col=treatment_col,
+        covariate_cols=covariate_cols,
+        cluster_col=cluster_col,
+        weight_col=weight_col
+    )
+    
+    # Add method identifier for consistency with other estimators
+    results['method'] = f"Count_{results['selected_model']}"
     
     return results
 
