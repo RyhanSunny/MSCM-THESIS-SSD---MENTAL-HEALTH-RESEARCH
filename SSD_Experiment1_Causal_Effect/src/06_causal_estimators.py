@@ -58,12 +58,81 @@ except ImportError:
     DOWHY_AVAILABLE = False
     warnings.warn("DoWhy not available, skipping causal graph validation")
 
+# Try to import statsmodels for cluster-robust SE
+try:
+    import statsmodels.api as sm
+    from cluster_robust_se import validate_clustering_structure, cluster_robust_poisson, cluster_robust_logistic
+    STATSMODELS_AVAILABLE = True
+except ImportError:
+    STATSMODELS_AVAILABLE = False
+    warnings.warn("Statsmodels not available, using simplified SE calculations")
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+def cluster_bootstrap_se(estimator_func, df, cluster_col='site_id', n_bootstrap=500, random_state=42):
+    """
+    Calculate cluster-robust standard errors using bootstrap.
+    
+    Alternative to statsmodels when not available.
+    Uses cluster bootstrap following Cameron & Miller (2015).
+    """
+    np.random.seed(random_state)
+    
+    # Get unique clusters
+    clusters = df[cluster_col].unique()
+    n_clusters = len(clusters)
+    
+    if n_clusters < 10:
+        warnings.warn(f"Only {n_clusters} clusters. Results may be unreliable.")
+    
+    # Original estimate
+    original_estimate = estimator_func(df)
+    
+    # Bootstrap estimates
+    bootstrap_estimates = []
+    
+    for b in range(n_bootstrap):
+        # Sample clusters with replacement
+        sampled_clusters = np.random.choice(clusters, size=n_clusters, replace=True)
+        
+        # Create bootstrap sample
+        bootstrap_dfs = []
+        for cluster in sampled_clusters:
+            cluster_data = df[df[cluster_col] == cluster].copy()
+            bootstrap_dfs.append(cluster_data)
+        
+        bootstrap_df = pd.concat(bootstrap_dfs, ignore_index=True)
+        
+        # Calculate estimate on bootstrap sample
+        try:
+            bootstrap_estimate = estimator_func(bootstrap_df)
+            bootstrap_estimates.append(bootstrap_estimate)
+        except:
+            continue  # Skip failed bootstrap samples
+    
+    bootstrap_estimates = np.array(bootstrap_estimates)
+    
+    # Calculate cluster-robust standard error
+    cluster_se = np.std(bootstrap_estimates, ddof=1)
+    
+    # Calculate bias-corrected confidence interval
+    alpha = 0.05
+    ci_lower = np.percentile(bootstrap_estimates, 100 * alpha/2)
+    ci_upper = np.percentile(bootstrap_estimates, 100 * (1 - alpha/2))
+    
+    return {
+        'estimate': original_estimate,
+        'cluster_se': cluster_se,
+        'ci_lower': ci_lower,
+        'ci_upper': ci_upper,
+        'n_clusters': n_clusters,
+        'n_bootstrap': len(bootstrap_estimates)
+    }
 
 class SimplifiedTMLE:
     """Simplified TMLE implementation for when R integration is not available"""
@@ -129,8 +198,8 @@ class SimplifiedTMLE:
         
         return self
 
-def run_tmle(df, outcome_col, treatment_col, covariate_cols, weights=None):
-    """Run TMLE estimation"""
+def run_tmle(df, outcome_col, treatment_col, covariate_cols, weights=None, cluster_col=None):
+    """Run TMLE estimation with optional cluster-robust SE"""
     logger.info("Running TMLE estimation")
     
     Y = df[outcome_col].values
@@ -140,24 +209,58 @@ def run_tmle(df, outcome_col, treatment_col, covariate_cols, weights=None):
     if weights is None and 'iptw' in df.columns:
         weights = df['iptw'].values
     
+    # Define estimator function for cluster bootstrap
+    def tmle_estimator(bootstrap_df):
+        Y_b = bootstrap_df[outcome_col].values
+        A_b = bootstrap_df[treatment_col].values
+        W_b = bootstrap_df[covariate_cols].values
+        weights_b = bootstrap_df['iptw'].values if 'iptw' in bootstrap_df.columns else None
+        
+        tmle_b = SimplifiedTMLE(Y_b, A_b, W_b, weights_b)
+        tmle_b.fit()
+        return tmle_b.ate
+    
     # Use simplified TMLE
     tmle = SimplifiedTMLE(Y, A, W, weights)
     tmle.fit()
     
-    # Calculate confidence interval
-    ci_lower = tmle.ate - 1.96 * tmle.se
-    ci_upper = tmle.ate + 1.96 * tmle.se
-    
-    results = {
-        'method': 'TMLE',
-        'estimate': float(tmle.ate),
-        'se': float(tmle.se),
-        'ci_lower': float(ci_lower),
-        'ci_upper': float(ci_upper),
-        'n': len(Y)
-    }
-    
-    logger.info(f"TMLE ATE: {tmle.ate:.3f} ({ci_lower:.3f}, {ci_upper:.3f})")
+    # Calculate standard errors
+    if cluster_col is not None and cluster_col in df.columns:
+        logger.info("Calculating cluster-robust standard errors")
+        cluster_results = cluster_bootstrap_se(tmle_estimator, df, cluster_col)
+        
+        results = {
+            'method': 'TMLE',
+            'estimate': float(tmle.ate),
+            'se_naive': float(tmle.se),
+            'se_cluster': float(cluster_results['cluster_se']),
+            'ci_lower': float(cluster_results['ci_lower']),
+            'ci_upper': float(cluster_results['ci_upper']),
+            'n': len(Y),
+            'n_clusters': cluster_results['n_clusters'],
+            'se_inflation_factor': float(cluster_results['cluster_se'] / tmle.se),
+            'clustered': True
+        }
+        
+        logger.info(f"TMLE ATE: {tmle.ate:.3f} ({cluster_results['ci_lower']:.3f}, {cluster_results['ci_upper']:.3f}) [cluster-robust]")
+        logger.info(f"SE inflation factor: {cluster_results['cluster_se'] / tmle.se:.2f}")
+        
+    else:
+        # Standard (naive) confidence interval
+        ci_lower = tmle.ate - 1.96 * tmle.se
+        ci_upper = tmle.ate + 1.96 * tmle.se
+        
+        results = {
+            'method': 'TMLE',
+            'estimate': float(tmle.ate),
+            'se': float(tmle.se),
+            'ci_lower': float(ci_lower),
+            'ci_upper': float(ci_upper),
+            'n': len(Y),
+            'clustered': False
+        }
+        
+        logger.info(f"TMLE ATE: {tmle.ate:.3f} ({ci_lower:.3f}, {ci_upper:.3f}) [naive SE]")
     
     return results
 
