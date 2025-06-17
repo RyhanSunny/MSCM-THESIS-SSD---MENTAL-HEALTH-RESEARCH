@@ -33,7 +33,9 @@
       "Bash(/mnt/c/Users/ProjectC4M/anaconda3/Scripts/conda.exe run -n base python -c \"\nimport pandas as pd\nimport numpy as np\n\n# Load referral data\nreferral = pd.read_parquet('Notebooks/data/interim/checkpoint_1_20250318_024427/referral.parquet')\n\nprint('Referral Data Shape:', referral.shape)\nprint('\\nColumn Names:')\nprint(referral.columns.tolist())\nprint('\\nReferrals per patient stats:')\nref_counts = referral['Patient_ID'].value_counts()\nprint(f'Min: {ref_counts.min()}, Max: {ref_counts.max()}, Mean: {ref_counts.mean():.2f}, Median: {ref_counts.median():.2f}')\nprint(f'Total unique patients with referrals: {referral[\\\"Patient_ID\\\"].nunique()}')\nprint('\\nTop 10 patients by referral count:')\nprint(ref_counts.head(10))\n\")",
       "Bash(PYTHONPATH=/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/fa2af730bef1df40d98ead8bb87cfc7945e81731a8440f450e5475b4aee1dd18 /mnt/c/Users/ProjectC4M/anaconda3/python.exe src/02_exposure_flag_fixed.py)",
       "Bash(sudo apt:*)",
-      "Bash(sudo apt install:*)"
+      "Bash(sudo apt install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   },

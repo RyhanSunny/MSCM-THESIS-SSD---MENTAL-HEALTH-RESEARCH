@@ -560,6 +560,7 @@ def main():
     parser.add_argument('--outcome', default='total_encounters',
                        help='Outcome variable to analyze')
     parser.add_argument('--treatment-col', default='ssd_flag', help='Treatment column name (default: ssd_flag)')
+    parser.add_argument('--cluster-col', default='site_id', help='Cluster column for robust SE (default: site_id)')
     parser.add_argument('--dry-run', action='store_true',
                        help='Run without saving outputs')
     args = parser.parse_args()
@@ -586,6 +587,7 @@ def main():
     # Define variables
     outcome_col = args.outcome
     TREATMENT_COL = args.treatment_col
+    cluster_col = args.cluster_col if args.cluster_col in df.columns else None
     
     # Define covariates
     covariate_cols = [col for col in df.columns if col.endswith('_conf') or 
@@ -594,25 +596,50 @@ def main():
     covariate_cols = [col for col in covariate_cols if col in df.columns]
     
     logger.info(f"Using {len(covariate_cols)} covariates")
+    if cluster_col:
+        logger.info(f"Using cluster-robust SE with cluster column: {cluster_col}")
+        logger.info(f"Number of clusters: {df[cluster_col].nunique()}")
+    
+    # Check if outcome is count data
+    is_count_outcome = (
+        df[outcome_col].dtype in ['int64', 'int32'] and
+        df[outcome_col].min() >= 0 and
+        'encounter' in outcome_col.lower() or 'count' in outcome_col.lower()
+    )
+    
+    if is_count_outcome:
+        logger.info(f"Detected count outcome: {outcome_col}. Will use Poisson/NB regression.")
     
     # Run different estimators
     ate_estimates = []
     
-    # 1. TMLE
+    # 1. Count outcome analysis (if applicable)
+    if is_count_outcome:
+        try:
+            count_results = run_count_outcome_analysis(
+                df, outcome_col, TREATMENT_COL, covariate_cols, 
+                cluster_col=cluster_col
+            )
+            ate_estimates.append(count_results)
+            logger.info(f"Count model completed: {count_results.get('selected_model', 'unknown')}")
+        except Exception as e:
+            logger.error(f"Count outcome analysis failed: {e}")
+    
+    # 2. TMLE (with cluster-robust SE if specified)
     try:
-        tmle_results = run_tmle(df, outcome_col, TREATMENT_COL, covariate_cols)
+        tmle_results = run_tmle(df, outcome_col, TREATMENT_COL, covariate_cols, cluster_col=cluster_col)
         ate_estimates.append(tmle_results)
     except Exception as e:
         logger.error(f"TMLE failed: {e}")
     
-    # 2. Double ML
+    # 3. Double ML (standard implementation)
     try:
         dml_results = run_double_ml(df, outcome_col, TREATMENT_COL, covariate_cols)
         ate_estimates.append(dml_results)
     except Exception as e:
         logger.error(f"Double ML failed: {e}")
     
-    # 3. Causal Forest
+    # 4. Causal Forest
     try:
         cf_results = run_causal_forest(df, outcome_col, TREATMENT_COL, covariate_cols)
         ate_estimates.append(cf_results)
@@ -690,11 +717,30 @@ def main():
     # Print summary
     print("\n=== Causal Inference Summary ===")
     print(f"Outcome: {outcome_col}")
+    print(f"Treatment: {TREATMENT_COL}")
     print(f"N observations: {len(df):,}")
-    print("\nAverage Treatment Effects:")
+    if cluster_col:
+        print(f"Clustering: {df[cluster_col].nunique()} clusters")
+    if is_count_outcome:
+        print(f"Count outcome detected - using appropriate models")
+        
+    print("\nTreatment Effect Estimates:")
     for est in ate_estimates:
-        print(f"  {est['method']}: {est['estimate']:.3f} "
-              f"({est['ci_lower']:.3f}, {est['ci_upper']:.3f})")
+        method = est['method']
+        estimate = est['estimate']
+        ci_lower = est['ci_lower']
+        ci_upper = est['ci_upper']
+        
+        # Show IRR for count models, ATE for others
+        if 'Count_' in method:
+            print(f"  {method}: IRR = {estimate:.3f} ({ci_lower:.3f}, {ci_upper:.3f})")
+        else:
+            print(f"  {method}: ATE = {estimate:.3f} ({ci_lower:.3f}, {ci_upper:.3f})")
+            
+        # Show cluster inflation if available
+        if est.get('clustered') and 'se_inflation_factor' in est:
+            print(f"    SE inflation factor: {est['se_inflation_factor']:.2f}")
+            
     if 'significant_het' in locals():
         print(f"\nSignificant heterogeneity detected: {significant_het}")
     print("================================\n")

@@ -1,0 +1,10 @@
+{
+  "title": "Forest Plot: H1-H3 Treatment Effects",
+  "description": "Incidence rate ratios with 95% confidence intervals",
+  "hypotheses": [
+    "H1: Normal lab cascade",
+    "H2: Unresolved referrals",
+    "H3: Medication persistence"
+  ],
+  "results_included": true
+}

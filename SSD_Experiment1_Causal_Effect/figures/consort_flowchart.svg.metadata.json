@@ -1,0 +1,8 @@
+{
+  "title": "CONSORT Flow Diagram: Cohort Selection",
+  "description": "Patient selection and exclusion criteria",
+  "initial_n": 689003,
+  "final_n": 250025,
+  "exposed_n": 37646,
+  "control_n": 212379
+}

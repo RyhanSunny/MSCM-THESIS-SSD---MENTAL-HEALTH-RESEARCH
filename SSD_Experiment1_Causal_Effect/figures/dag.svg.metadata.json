@@ -1,0 +1,15 @@
+{
+  "title": "Causal DAG: SSD \u2192 Healthcare Utilization",
+  "description": "Directed acyclic graph showing causal relationships",
+  "nodes": [
+    "SSD",
+    "Healthcare Utilization",
+    "Age",
+    "Sex",
+    "Charlson",
+    "SES",
+    "Mental Health",
+    "Site"
+  ],
+  "edges": "SSD\u2192HC (direct), Confounders\u2192{SSD,HC}, Site\u2192HC (clustering)"
+}

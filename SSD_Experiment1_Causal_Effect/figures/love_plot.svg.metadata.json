@@ -1,0 +1,8 @@
+{
+  "title": "Covariate Balance: Love Plot",
+  "description": "Standardized mean differences before/after weighting",
+  "covariates": 10,
+  "max_smd_before": 0.35,
+  "max_smd_after": 0.08,
+  "balanced": true
+}

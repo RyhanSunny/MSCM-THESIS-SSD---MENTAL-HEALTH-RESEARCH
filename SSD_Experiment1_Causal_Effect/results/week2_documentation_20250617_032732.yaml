@@ -1,0 +1,51 @@
+week2_analysis:
+  completed: '2025-06-17T03:27:32.929605'
+  hypotheses:
+    H1:
+      description: "Normal lab cascade \u2192 healthcare encounters"
+      irr: 1.0045558683528144
+      ci:
+      - 0.9954306979085866
+      - 1.013764689759195
+      p_value: 0.32891400408412497
+      sample_size: 250025
+      exposed_count: 37646
+    H2:
+      description: "Unresolved referrals \u2192 healthcare utilization"
+      irr: 1.0047903209768239
+      ci:
+      - 1.0001563497317516
+      - 1.0094457625545155
+      p_value: 0.04273904571654508
+      sample_size: 250025
+      exposed_count: 19895
+    H3:
+      description: "Medication persistence \u2192 reduced ED visits"
+      irr: 0.9961388160505286
+      ci:
+      - 0.1403195942307583
+      - 7.071660563746389
+      p_value: 0.9969132655579245
+      sample_size: 250025
+      exposed_count: 49955
+  figures:
+  - consort_flowchart
+  - dag
+  - forest_plot
+  - love_plot
+  tables:
+  - baseline_table
+  - main_results
+  - sensitivity
+  summary:
+    total_sample: 250025
+    week2_completed: true
+    key_findings:
+    - 'H1: Normal lab cascade showed IRR=1.005 (95% CI: 0.995-1.014, p=0.329)'
+    - 'H2: Unresolved referrals significantly associated with increased healthcare
+      utilization (IRR=1.005, p=0.043)'
+    - 'H3: Medication persistence showed IRR=0.996 for ED visits'
+    artifacts_created:
+      hypotheses_tested: 3
+      figures_generated: 4
+      tables_created: 3

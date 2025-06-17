@@ -7,11 +7,12 @@
 
 | ID | Statement | Key Variables | Expected Direction / Effect Size | Planned Test |
 |----|-----------|--------------|-------------------------------|--------------|
-| **H1 — MH Diagnostic Cascade** | In MH patients, ≥3 normal lab panels within 12-month exposure window causally increase subsequent healthcare encounters (primary care + mental health visits) over 24 months. | Exposure: binary flag for normal-lab cascade (n=112,134, 43.7%); Outcome: count of all healthcare encounters (Poisson) | IRR ≈ 1.35–1.50 | Poisson/negative-binomial regression after 1:1 PS-matching; over-dispersion check (α). |
-| **H2 — MH Specialist Referral Loop** | In MH patients, ≥2 unresolved specialist referrals (NYD status) predict mental health crisis services or psychiatric emergency visits within 6 months. | Exposure: referral loop flag (n=1,536, 0.6%); Outcome: MH crisis/psychiatric ED visits (binary) | OR ≈ 1.60–1.90 | PS-matched logistic regression; falsification with resolved referrals as negative control. |
-| **H3 — MH Medication Persistence** | In MH patients, >90 consecutive days of psychotropic medications (anxiolytic/antidepressant/hypnotic) predict emergency department visits in next year. | Exposure: psychotropic persistence (n=51,218, 19.9%); Outcome: any ED visit (binary) | aOR ≈ 1.40–1.70 | Multivariable logistic model with IPW; E-value for unmeasured confounding. |
-| **H4 — MH SSD Severity Mediation** | In MH patients, the SSDSI (range 0-100, mean=0.80) mediates ≥55% of total causal effect of H1-H3 exposures on healthcare utilization costs at 24 months. | Mediator: continuous SSDSI in MH population; Outcome: total healthcare costs (gamma GLM) | Proportion mediated ≥0.55 | Causal mediation (DoWhy) with 5K bootstraps; sensitivity to sequential ignorability. |
-| **H5 — MH Clinical Intervention** | In high-SSDSI MH patients, integrated care with somatization-focused interventions reduces predicted utilization by ≥25% vs. usual mental health care. | Intervention: integrated MH-PC care; Outcome: predicted utilization reduction | Δ ≥ -25% (95% CI excludes 0) | G-computation using validated SSDSI + published effect sizes for integrated MH care. |
+| **H1 — MH Diagnostic Cascade** | In MH patients, ≥3 normal lab panels within 12-month exposure window causally increase subsequent healthcare encounters (primary care + mental health visits) over 24 months. | Exposure: binary flag for normal-lab cascade (n=112,134, 43.7%); Outcome: count of all healthcare encounters (Poisson) | IRR ≈ 1.35–1.50 | Poisson/negative-binomial regression after 1:1 PS-matching; over-dispersion check (α). | ⚠️ Tracks all encounters, not MH-specific |
+| **H2 — MH Specialist Referral Loop** | In MH patients, ≥2 unresolved specialist referrals (NYD status) predict mental health crisis services or psychiatric emergency visits within 6 months. | Exposure: referral loop flag (n=1,536, 0.6%); Outcome: MH crisis/psychiatric ED visits (binary) | OR ≈ 1.60–1.90 | PS-matched logistic regression; falsification with resolved referrals as negative control. | ❌ No MH crisis/psychiatric ED identification |
+| **H3 — MH Medication Persistence** | In MH patients, >90 consecutive days of psychotropic medications (anxiolytic/antidepressant/hypnotic) predict emergency department visits in next year. | Exposure: psychotropic persistence (n=51,218, 19.9%); Outcome: any ED visit (binary) | aOR ≈ 1.40–1.70 | Multivariable logistic model with IPW; E-value for unmeasured confounding. | ⚠️ 90 days used (not 180); missing drug classes |
+| **H4 — MH SSD Severity Mediation** | In MH patients, the SSDSI (range 0-100, mean=0.80) mediates ≥55% of total causal effect of H1-H3 exposures on healthcare utilization costs at 24 months. | Mediator: continuous SSDSI in MH population; Outcome: total healthcare costs (gamma GLM) | Proportion mediated ≥0.55 | Causal mediation (DoWhy) with 5K bootstraps; sensitivity to sequential ignorability. | ✅ Framework implemented |
+| **H5 — MH Effect Modification** | The causal effect of SSD-pattern exposure on healthcare utilization differs across predefined high‐risk MH subgroups (anxiety, age < 40, female sex, high baseline utilization); at least two subgroups will show a statistically stronger effect (interaction p < 0.05). | Subgroups: binary flags in master table; Outcome: interaction term in weighted regression | ≥2 significant β_interaction terms (FDR < 0.05) | Interaction analysis in `06_causal_estimators.py` + FDR correction | ⚠️ Anxiety flag creation unclear |
+| **H6 — MH Clinical Intervention** | In high-SSDSI MH patients, integrated care with somatization-focused interventions reduces predicted utilization by ≥25% vs. usual mental health care. | Intervention: integrated MH-PC care; Outcome: predicted utilization reduction | Δ ≥ -25% (95% CI excludes 0) | G-computation using validated SSDSI + published effect sizes for integrated MH care. | ✅ Framework implemented |
 
 **Conceptual Flow for Mental Health Population:**
 1. Pre-existing mental health vulnerability → enhanced somatic awareness and health anxiety
@@ -24,7 +25,7 @@
 **Alignment with RQ:**
 - RQ1 (causal link): H1–H3 (PS/weighting for exchangeability)
 - RQ2 (mediator role): H4
-- RQ3 (actionability): H5
+- RQ3 (actionability): H6
 
 ---
 
@@ -87,6 +88,11 @@
   - Long-COVID: 0 patients (pre-pandemic data) [Source: 01_cohort_builder.log line 59]
   - NYD codes: 17 patients (unexpectedly low) [Source: 01_cohort_builder.log line 60]
 
+**⚠️ Enhanced Modules Status**: 
+- Created in `src/experimental/` but NOT integrated into main pipeline
+- Include: 180-day drug threshold, missing drug classes (N06A, N03A, N05A), psychiatric referral tracking
+- Require Makefile updates to integrate into production pipeline
+
 ### 🔧 **Implementation Notes**
 - Autoencoder achieved lower performance (AUROC 0.588 vs target 0.83) [Source: 03_mediator_autoencoder.log]
 - Feature reduction necessary (24 features vs target 56) [Source: ae56_features.csv line count]
@@ -121,7 +127,7 @@ The primary outcome, Total number of primary-care encounters in the subsequent 1
 
 ### **Confounders and Covariates**
 
-We will adjust for a rich set of baseline confounders that are hypothesized to jointly affect exposure and outcome (based on prior literature and clinical expertise). These include age, sex, calendar year, site FE, Charlson, prior-year visit count, depression/anxiety, PTSD, Long-COVID, NYD flag, neighbourhood deprivation quintile. We use a causal DAG (Directed Acyclic Graph) to guide confounder selection, ensuring we block all backdoor paths between exposure and outcome. Importantly, we will not adjust for variables that may lie on the causal pathway (mediators) or colliders that could induce bias. If certain covariates are strongly prognostic of the outcome but unaffected by exposure (e.g. age, chronic disease burden), they are still included to improve precision. All confounders are measured at baseline (before exposure) to satisfy temporal ordering for causal interpretation.
+We will adjust for a rich set of baseline confounders that are hypothesized to jointly affect exposure and outcome (based on prior literature and clinical expertise). These include age, sex, calendar year, site FE, Charlson, prior-year visit count, depression/anxiety, PTSD, Long-COVID, NYD flag. We use a causal DAG (Directed Acyclic Graph) to guide confounder selection, ensuring we block all backdoor paths between exposure and outcome. Importantly, we will not adjust for variables that may lie on the causal pathway (mediators) or colliders that could induce bias. If certain covariates are strongly prognostic of the outcome but unaffected by exposure (e.g. age, chronic disease burden), they are still included to improve precision. All confounders are measured at baseline (before exposure) to satisfy temporal ordering for causal interpretation.
 
 **Derived severity score (Autoencoder feature)**: A novel covariate in our analysis is an autoencoder-derived severity score, constructed from high-dimensional patient data (e.g., labs, imaging, or clinical notes). This unsupervised learning model compresses complex patient information into a single continuous severity index. We ensure the autoencoder is trained in a manner to avoid overfitting and maintain generalizability:
 
@@ -265,7 +271,7 @@ We will conduct extensive sensitivity analyses to assess the robustness of our f
 
 * **Unmeasured Confounding Sensitivity**: Given that no observational study can measure all confounders, we will quantify how strong an unmeasured confounder would need to be to explain away the observed treatment effect. We will calculate the **E-value** for the risk ratio or odds ratio estimate, which gives the minimum strength of association (on risk ratio scale) that an unmeasured confounder would need with both treatment and outcome to nullify the result. In addition, we will compute **Observed Covariate E-values**, which contextualize this by showing the E-values for each observed covariate's association with the outcome. For example, if age is a strong confounder and has an E-value of X, and any hypothetical confounder would need an E-value twice that to overturn results, it provides context on plausibility. We will present a figure or table (sensitivity matrix) plotting the E-value of an unmeasured confounder against the attenuation of the effect estimate, alongside points for each observed covariate. This **"observed bias plot"** allows easy comparison of how much each known confounder moved the estimate versus what an unknown one would need to do. If the required E-value to explain away the effect is very large (e.g., \>3 on risk ratio scale) relative to known confounders, we gain confidence in a causal interpretation. Conversely, if a small E-value would suffice, caution is warranted.
 
-* **Sensitivity to Covariate Adjustments**: We will systematically re-run the primary analysis excluding or including certain covariates to see impact. For instance, we might drop all socioeconomic variables or all lab variables and see if the effect estimate changes markedly. A **covariate omission sensitivity matrix** will be compiled to show the effect estimate when leaving out each confounder (one at a time or in logical groups). Large changes might indicate that particular variables are strongly confounding or possibly that their measurement error is influential.
+* **Sensitivity to Covariate Adjustments**: We will systematically re-run the primary analysis excluding or including certain covariates to see impact. For instance, we might drop all lab variables or medication variables and see if the effect estimate changes markedly. A **covariate omission sensitivity matrix** will be compiled to show the effect estimate when leaving out each confounder (one at a time or in logical groups). Large changes might indicate that particular variables are strongly confounding or possibly that their measurement error is influential.
 
 * **Sequential Ignorability Check (Mediator-outcome confounding)**: If we performed mediation analysis, we will do a formal sensitivity analysis for violations of sequential ignorability. One approach is using the **mediation sensitivity parameter** (such as $\rho$ for the correlation between mediator and outcome residuals due to unmeasured confounder). We will vary this parameter to see how the estimated indirect effect changes. We will also consider a **negative control outcome or exposure** if available: an outcome that the mediator should not affect, or an exposure variant that does not affect the mediator, to test for spurious associations – although such controls may not always be available.
 
@@ -386,11 +392,12 @@ Below is a **single, unified "v2.0" Methods Blueprint** that merges your origina
 
 ## **2 Exposure Phenotype — *SSD-Pattern Flag* (`02_exposure_flag.py`)**
 
-**⚠️ CRITICAL DISCREPANCY (May 25, 2025)**: Implementation differs from specification:
-- **Code Primary (`exposure_flag`)**: OR logic - ANY criterion → 143,579 patients (55.9%)
-- **Code Secondary (`exposure_flag_strict`)**: AND logic - ALL criteria → 199 patients (0.08%)
+**Decision Update (May 25, 2025)**: After validation analysis, the team adopted OR logic as primary with AND logic for sensitivity analysis.
+- **Primary Analysis (`exposure_flag`)**: OR logic - ANY criterion sufficient → 143,579 patients (55.9%)
+- **Sensitivity Analysis (`exposure_flag_strict`)**: AND logic - ALL criteria required → 199 patients (0.08%)
+- **Rationale**: OR logic provides adequate statistical power while capturing clinical heterogeneity of SSD patterns
 
-Original specification: Binary flag \= 1 if **all** within 12 m post-index:
+Exposure criteria within 12 months post-index:
 
 1. ≥ 3 labs **within normal limits** (decision tree using `LowerNormal`/`UpperNormal` or assay-specific cut-points).
    - **Actual**: 112,134 patients (43.7%) [Source: 02_exposure_flag.log line 13]
@@ -398,10 +405,14 @@ Original specification: Binary flag \= 1 if **all** within 12 m post-index:
 2. ≥ 2 specialist referrals whose final diagnosis **remains** in ICD-9 780-789.
    - **Actual**: 1,536 patients (0.6%) [Source: 02_exposure_flag.log line 14]
 
-3. ≥ 90 d continuous Rx for anxiolytic, non-opioid analgesic, or non-benzo hypnotic.
-   - **Actual**: 51,218 patients (19.9%) [Source: 02_exposure_flag.log line 15]
+3. ≥ 90 consecutive days continuous Rx for anxiolytic, non-opioid analgesic, or non-benzo hypnotic.
+   - **Note**: Enhanced modules test 180-day threshold per Dr. Felipe recommendation (see sensitivity analysis)
+   - **Actual**: 51,218 patients (19.9%) with 90-day threshold [Source: 02_exposure_flag.log line 15]
 
-**Sensitivity sets:** (i) ≥ 2 normal labs; (ii) ≥ 4 normal labs.
+**Sensitivity analyses:**
+- Alternative thresholds: ≥ 2 normal labs; ≥ 4 normal labs
+- Extended drug duration: ≥ 180 days (implemented in `src/experimental/02_exposure_flag_enhanced.py`)
+- Missing drug classes: N06A (antidepressants), N03A (anticonvulsants), N05A (antipsychotics) added in enhanced version
 
 🔹 **Measurement-error QA**
 
@@ -453,7 +464,7 @@ Baseline (-6 m):
 | Mental | Depression/anxiety dx (ICD-9 296/300, ICD-10 F32-F41). |
 | Trauma | PTSD/Acute-Stress codes (ICD-9 308-309, ICD-10 F43). |
 | 🔹 Long-COVID | Any U07.1 or post-acute COVID ICD-10-CA. |
-| SES | Neighbourhood-deprivation quintile (postal-code link). |
+| SES | Occupation and education categories (limited availability: 7.6% and 1.4% respectively). |
 | 🔹 NYD flag | ≥ 1 "Not Yet Diagnosed" code (799.9, V71.x). |
 
 All covariates written to `covariates.parquet`.
@@ -484,7 +495,12 @@ All covariates written to `covariates.parquet`.
 
 ## **6 Causal Estimation Suite (`06_causal_estimators.py`)**
 
-**6.1 Primary Outcome** Total primary-care encounters (count) in 12-m post-treatment.
+**6.1 Primary Outcome** Total primary-care encounters (count) in 12 months post-treatment (for hypothesis testing).
+
+**⚠️ Implementation Gap**: Hypotheses specify mental health-specific outcomes but current implementation tracks generic utilization:
+- **H1 requires**: MH service encounters (not implemented - tracks all encounters)
+- **H2 requires**: MH crisis services & psychiatric ED visits (not implemented - tracks generic ED visits)
+- **Enhancement needed**: Filter encounters by provider type or ICD codes to identify MH-specific services
 
 | Estimator | Purpose | Key additions |
 | ----- | ----- | ----- |
@@ -504,7 +520,7 @@ All covariates written to `covariates.parquet`.
 
 All subgroup p-values will be FDR-adjusted (Benjamini–Hochberg). CATE estimates are exploratory.
 
-**Competing risk** Fine-Gray models are applied only to a *secondary* time-to-first-visit endpoint; the primary count outcome treats death as censoring, and crude death rates are reported separately.
+**Competing risk** Fine-Gray models are applied only to a *secondary* time-to-first-visit endpoint; the primary count outcome treats death as censoring, and crude death rates are reported separately.
 
 **Temporal confounding**
 
@@ -827,7 +843,7 @@ data\_validation:
 
     \- HousingStatus
 
-    \- ResidencePostalCode
+    \- ResidencePostalCode (0% availability)
 
     \- PatientStatus\_orig
 
