@@ -39,6 +39,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 from utils.global_seeds import set_global_seeds, get_random_state
 from src.config_loader import load_config
 from src.artefact_tracker import ArtefactTracker
+from src.weight_diagnostics import validate_weight_diagnostics, save_weight_diagnostics
 
 # Try to import tableone, fall back if not available
 try:
@@ -131,7 +132,7 @@ def train_propensity_model(X, y, config):
     return model, ps, auc
 
 def calculate_weights(ps, treatment, config):
-    """Calculate inverse probability of treatment weights (IPTW)"""
+    """Calculate inverse probability of treatment weights (IPTW) with diagnostics"""
     logger.info("Calculating IPTW weights")
     
     # Basic IPTW
@@ -150,18 +151,30 @@ def calculate_weights(ps, treatment, config):
     sw_trimmed = np.clip(sw, np.percentile(sw, trim_lower), 
                         np.percentile(sw, trim_upper))
     
-    # Calculate effective sample size (ESS)
-    ess_iptw = (np.sum(iptw_trimmed))**2 / np.sum(iptw_trimmed**2)
-    ess_sw = (np.sum(sw_trimmed))**2 / np.sum(sw_trimmed**2)
-    
-    logger.info(f"ESS (IPTW): {ess_iptw:.0f}")
-    logger.info(f"ESS (Stabilized): {ess_sw:.0f}")
-    
     # Use stabilized weights by default
     weights = sw_trimmed
-    ess = ess_sw
     
-    return weights, ess
+    # Validate weight diagnostics (Austin 2011 recommendations)
+    logger.info("Validating weight diagnostics...")
+    try:
+        weight_diagnostics = validate_weight_diagnostics(
+            weights,
+            min_ess_ratio=config.get('weight_diagnostics', {}).get('min_ess_ratio', 0.5),
+            max_weight_ratio=config.get('weight_diagnostics', {}).get('max_weight_ratio', 10.0),
+            raise_on_failure=True
+        )
+        logger.info("✓ Weight diagnostics validation PASSED")
+        
+        # Save diagnostics for CI integration
+        save_weight_diagnostics(weight_diagnostics)
+        
+    except Exception as e:
+        logger.error(f"✗ Weight diagnostics validation FAILED: {e}")
+        raise
+    
+    ess = weight_diagnostics['ess']
+    
+    return weights, ess, weight_diagnostics
 
 def perform_matching(ps, treatment, config):
     """Perform 1:1 propensity score matching with caliper"""
@@ -294,7 +307,7 @@ def main():
     df['propensity_score'] = ps
     
     # Calculate weights
-    weights, ess = calculate_weights(ps, y, config)
+    weights, ess, weight_diagnostics = calculate_weights(ps, y, config)
     df['iptw'] = weights
     
     # Check covariate balance
@@ -361,6 +374,7 @@ def main():
             'max_smd_before': float(max(abs(smd) for smd in smd_before.values())),
             'max_smd_after': float(max_smd_after),
             'n_matched_pairs': len(matched_pairs) if matched_df is not None else None,
+            'weight_diagnostics': weight_diagnostics,
             'timestamp': datetime.now().isoformat()
         }
         
