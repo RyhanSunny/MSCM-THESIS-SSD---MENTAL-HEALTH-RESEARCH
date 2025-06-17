@@ -98,6 +98,7 @@ mc_simex:
   specificity: 0.82
   bootstrap_samples: 100
   lambda_values: [0, 0.5, 1.0, 1.5, 2.0]
+  use_bias_corrected_flag: false  # When true, use ssd_flag_adj instead of ssd_flag
 
 # Data paths (relative to project root)
 paths:

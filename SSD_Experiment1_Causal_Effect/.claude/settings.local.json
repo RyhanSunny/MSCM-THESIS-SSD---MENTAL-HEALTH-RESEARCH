@@ -36,7 +36,13 @@
       "Bash(sudo apt install:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(make:*)"
+      "Bash(make:*)",
+      "Bash(pytest:*)",
+      "Bash(ln:*)",
+      "Bash(OSF_TOKEN=fake-token-12345 python3 scripts/osf_upload.py --dry-run)",
+      "Bash(OSF_TOKEN=test python3 scripts/osf_upload.py --dry-run)",
+      "Bash(/dev/null)",
+      "Bash(test:*)"
     ],
     "deny": []
   },

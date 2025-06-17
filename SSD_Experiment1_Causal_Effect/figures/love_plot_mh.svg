@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="600" fill="lightgray" stroke="black" stroke-width="2"/>
+  <text x="400" y="280" text-anchor="middle" font-size="24" fill="black" font-weight="bold">
+    Love Plot - MH Covariates
+  </text>
+  <text x="400" y="320" text-anchor="middle" font-size="16" fill="black">
+    (Matplotlib not available)
+  </text>
+  <text x="400" y="350" text-anchor="middle" font-size="14" fill="gray">
+    Install matplotlib and seaborn to generate figures
+  </text>
+</svg>

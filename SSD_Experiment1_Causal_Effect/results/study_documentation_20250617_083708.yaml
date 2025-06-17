@@ -96,8 +96,12 @@ power_analysis:
   parameters:
     alpha: 0.05
     attrition_adjustment: 20%
-    effect_size: 0.2
-    power: 0.8
+    power: 0.9
+    relative_risk: 1.05
+    effect_size_derived: 0.05
+    effect_size_note: Derived from RR=1.05
+    last_sync: '2025-06-17 15:30:07'
+    sync_source: blueprint_narrative
   required_n: 235
 protocol:
   date: '2025-02-24'

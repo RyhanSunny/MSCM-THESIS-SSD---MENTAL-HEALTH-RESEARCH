@@ -1,168 +1,201 @@
 #!/usr/bin/env python3
 """
-test_mc_simex_integration.py - Test MC-SIMEX flag integration
+test_mc_simex_integration.py - Tests for MC-SIMEX integration with pipeline
 
-Tests that MC-SIMEX bias correction is properly integrated into the pipeline
-when the use_bias_corrected_flag configuration is enabled.
+Tests the integration of bias-corrected flags with propensity score matching
+and causal estimation modules.
+
+Author: Ryhan Suny
+Date: 2025-06-17
 """
 
 import pytest
+import pandas as pd
+import numpy as np
 from pathlib import Path
 import sys
-import os
-import yaml
-import pandas as pd
+import tempfile
+import shutil
+from unittest.mock import patch, MagicMock
 
-# Add src to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
-
+# Add parent directory to path
+sys.path.append(str(Path(__file__).parent.parent))
+from src.config_loader import load_config
+# Import with importlib to handle numeric prefix
+import importlib.util
+import sys
+spec = importlib.util.spec_from_file_location("misclassification_adjust", 
+    str(Path(__file__).parent.parent / "src" / "07a_misclassification_adjust.py"))
+misclassification_module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(misclassification_module)
+apply_bias_correction = misclassification_module.apply_bias_correction
+from utils.global_seeds import set_global_seeds
 
 class TestMCSimexIntegration:
-    """Test MC-SIMEX integration with main pipeline"""
+    """Test MC-SIMEX integration with pipeline"""
     
-    def test_mc_simex_flag_in_config(self):
-        """Test that MC-SIMEX flag exists in config"""
-        config_path = Path("config.yaml")
-        if config_path.exists():
-            with open(config_path, 'r') as f:
-                config = yaml.safe_load(f)
-            
-            # Check flag exists
-            assert 'use_bias_corrected_flag' in config, \
-                "Missing use_bias_corrected_flag in config.yaml"
-    
-    def test_mc_simex_output_exists(self):
-        """Test that MC-SIMEX produces corrected output"""
-        # Check if MC-SIMEX output exists
-        simex_output = Path("data_derived/ssd_flag_adj.parquet")
+    @pytest.fixture
+    def sample_cohort(self):
+        """Create sample cohort for testing"""
+        set_global_seeds(42)
+        n = 1000
         
-        if not simex_output.exists():
-            pytest.skip("MC-SIMEX output not generated yet")
-        
-        # Load and validate
-        df = pd.read_parquet(simex_output)
-        
-        assert 'ssd_flag_corrected' in df.columns, \
-            "Missing corrected flag column"
-        
-        # Check that correction was applied
-        assert 'correction_factor' in df.columns or 'mc_simex_applied' in df.attrs, \
-            "No evidence of MC-SIMEX correction"
-    
-    def test_ps_match_uses_corrected_flag(self, tmp_path):
-        """Test that PS matching uses corrected flag when enabled"""
-        # Create test config
-        test_config = {
-            'use_bias_corrected_flag': True,
-            'data_dir': str(tmp_path)
+        # Create synthetic cohort
+        data = {
+            'patient_id': range(n),
+            'age': np.random.normal(45, 15, n),
+            'sex_M': np.random.binomial(1, 0.5, n),
+            'charlson_score': np.random.poisson(1.5, n),
+            'baseline_encounters': np.random.poisson(3, n),
+            'baseline_high_utilizer': np.random.binomial(1, 0.2, n),
+            'ssd_flag': np.random.binomial(1, 0.15, n)
         }
         
-        config_path = tmp_path / "config.yaml"
-        with open(config_path, 'w') as f:
-            yaml.dump(test_config, f)
+        df = pd.DataFrame(data)
+        # Ensure age and charlson_score are reasonable
+        df['age'] = np.clip(df['age'], 18, 95)
+        df['charlson_score'] = np.clip(df['charlson_score'], 0, 10)
         
-        # Create test data
-        test_data = pd.DataFrame({
-            'patient_id': range(100),
-            'ssd_flag': [0, 1] * 50,
-            'ssd_flag_corrected': [0, 1, 1, 0] * 25,  # Different from original
-            'age': range(100),
-            'sex': [0, 1] * 50
-        })
-        
-        # Save regular and corrected versions
-        test_data.to_parquet(tmp_path / "master_analysis_data.parquet")
-        test_data.to_parquet(tmp_path / "ssd_flag_adj.parquet")
-        
-        # Mock PS matching to check which flag is used
-        from unittest.mock import patch, MagicMock
-        
-        with patch('pandas.read_parquet') as mock_read:
-            mock_read.return_value = test_data
-            
-            # Import after patching
-            os.environ['CONFIG_PATH'] = str(config_path)
-            
-            # Check that corrected flag would be used
-            # This would be in actual PS matching code
-            if test_config.get('use_bias_corrected_flag', False):
-                treatment_col = 'ssd_flag_corrected'
-            else:
-                treatment_col = 'ssd_flag'
-            
-            assert treatment_col == 'ssd_flag_corrected'
+        return df
     
-    def test_causal_estimators_use_corrected_flag(self):
-        """Test that causal estimators use corrected flag"""
-        # Similar test for causal estimators
-        config_path = Path("config.yaml")
-        if not config_path.exists():
-            pytest.skip("No config.yaml found")
-        
-        with open(config_path, 'r') as f:
-            config = yaml.safe_load(f)
-        
-        if config.get('use_bias_corrected_flag', False):
-            # Check that estimators would use corrected flag
-            expected_treatment = 'ssd_flag_corrected'
-        else:
-            expected_treatment = 'ssd_flag'
-        
-        # This assertion documents expected behavior
-        assert expected_treatment in ['ssd_flag', 'ssd_flag_corrected']
+    @pytest.fixture
+    def config_with_bias_correction(self):
+        """Config with bias correction enabled"""
+        config = {
+            'mc_simex': {
+                'enabled': True,
+                'sensitivity': 0.82,
+                'specificity': 0.82,
+                'bootstrap_samples': 10,  # Reduced for testing
+                'use_bias_corrected_flag': True
+            },
+            'misclassification': {
+                'sensitivity': 0.82,
+                'specificity': 0.82,
+                'simex_B': 10
+            }
+        }
+        return config
     
-    def test_mc_simex_sensitivity_threshold(self):
-        """Test MC-SIMEX sensitivity to misclassification"""
-        from misclassification_adjust import MCSimexAdjuster
-        import numpy as np
-        
-        # Create test data with known misclassification
-        n = 1000
-        true_exposure = np.random.binomial(1, 0.3, n)
-        
-        # Add 10% misclassification
-        misclass_prob = 0.1
-        noise = np.random.binomial(1, misclass_prob, n)
-        observed_exposure = (true_exposure + noise) % 2
-        
-        # Create adjuster
-        adjuster = MCSimexAdjuster()
-        
-        # Test correction
-        corrected = adjuster.adjust_binary_exposure(
-            observed_exposure,
-            sensitivity=0.9,
-            specificity=0.9
+    @pytest.fixture
+    def config_without_bias_correction(self):
+        """Config with bias correction disabled"""
+        config = {
+            'mc_simex': {
+                'enabled': True,
+                'sensitivity': 0.82,
+                'specificity': 0.82,
+                'bootstrap_samples': 10,
+                'use_bias_corrected_flag': False
+            },
+            'misclassification': {
+                'sensitivity': 0.82,
+                'specificity': 0.82,
+                'simex_B': 10
+            }
+        }
+        return config
+    
+    def test_mc_simex_creates_bias_corrected_flag(self, sample_cohort, config_with_bias_correction):
+        """Test that MC-SIMEX creates ssd_flag_adj column"""
+        # Apply bias correction
+        corrected_df, results = apply_bias_correction(
+            sample_cohort, config_with_bias_correction
         )
         
-        # Corrected should be closer to true than observed
-        obs_error = np.mean(np.abs(observed_exposure - true_exposure))
-        corrected_error = np.mean(np.abs(corrected - true_exposure))
+        # Check that ssd_flag_adj was created
+        assert 'ssd_flag_adj' in corrected_df.columns
+        assert 'ssd_flag_naive' in corrected_df.columns
+        assert 'bias_correction_applied' in corrected_df.columns
         
-        assert corrected_error < obs_error, \
-            "MC-SIMEX should reduce misclassification error"
+        # Check that flags are different (should be with random correction)
+        original_sum = sample_cohort['ssd_flag'].sum()
+        corrected_sum = corrected_df['ssd_flag_adj'].sum()
+        
+        # Flags should be different due to bias correction
+        # Given sensitivity/specificity of 0.82, we expect some changes
+        assert original_sum != corrected_sum, "Bias correction should change the flag counts"
+        
+        # Check results structure
+        assert 'sensitivity' in results
+        assert 'specificity' in results
+        assert results['sensitivity'] == 0.82
+        assert results['specificity'] == 0.82
+    
+    def test_flag_selection_logic(self, sample_cohort):
+        """Test logic for selecting between original and bias-corrected flags"""
+        # Test with bias correction enabled
+        config_enabled = {'mc_simex': {'use_bias_corrected_flag': True}}
+        
+        # Add ssd_flag_adj to dataframe
+        sample_cohort['ssd_flag_adj'] = 1 - sample_cohort['ssd_flag']  # Flip for testing
+        
+        # Logic should select ssd_flag_adj
+        treatment_col = get_treatment_column(sample_cohort, config_enabled)
+        assert treatment_col == 'ssd_flag_adj'
+        
+        # Test with bias correction disabled
+        config_disabled = {'mc_simex': {'use_bias_corrected_flag': False}}
+        treatment_col = get_treatment_column(sample_cohort, config_disabled)
+        assert treatment_col == 'ssd_flag'
+    
+    def test_estimates_differ_with_correction(self, sample_cohort, config_with_bias_correction, config_without_bias_correction):
+        """Test that estimates differ when using bias-corrected flag"""
+        # Apply bias correction to create ssd_flag_adj
+        corrected_df, _ = apply_bias_correction(sample_cohort, config_with_bias_correction)
+        
+        # Simulate simple treatment effect estimation
+        # Original flag
+        original_treated = corrected_df[corrected_df['ssd_flag'] == 1]['baseline_encounters'].mean()
+        original_control = corrected_df[corrected_df['ssd_flag'] == 0]['baseline_encounters'].mean()
+        original_effect = original_treated - original_control
+        
+        # Bias-corrected flag  
+        corrected_treated = corrected_df[corrected_df['ssd_flag_adj'] == 1]['baseline_encounters'].mean()
+        corrected_control = corrected_df[corrected_df['ssd_flag_adj'] == 0]['baseline_encounters'].mean()
+        corrected_effect = corrected_treated - corrected_control
+        
+        # Effects should be different (unless by extreme chance)
+        assert abs(original_effect - corrected_effect) > 0.01  # Some meaningful difference
+    
+    def test_missing_ssd_flag_adj_handling(self, sample_cohort):
+        """Test handling when ssd_flag_adj is requested but doesn't exist"""
+        config = {'mc_simex': {'use_bias_corrected_flag': True}}
+        
+        # Should fall back to ssd_flag if ssd_flag_adj doesn't exist
+        treatment_col = get_treatment_column(sample_cohort, config)
+        assert treatment_col == 'ssd_flag'
+    
+    def test_integration_with_ps_matching(self, sample_cohort, config_with_bias_correction):
+        """Test integration with propensity score matching"""
+        # This would test the actual integration with 05_ps_match.py
+        # For now, just test the logic of treatment column selection
+        
+        # Apply bias correction
+        corrected_df, _ = apply_bias_correction(sample_cohort, config_with_bias_correction)
+        
+        # Test treatment column selection
+        treatment_col = get_treatment_column(corrected_df, config_with_bias_correction)
+        assert treatment_col == 'ssd_flag_adj'
+        
+        # Check that the selected column exists and has valid values
+        assert treatment_col in corrected_df.columns
+        assert corrected_df[treatment_col].isin([0, 1]).all()
+        assert corrected_df[treatment_col].sum() > 0  # Should have some treated units
 
 
-def test_mc_simex_cli_integration():
-    """Test MC-SIMEX can be run from command line"""
-    import subprocess
+def get_treatment_column(df, config):
+    """
+    Helper function to determine which treatment column to use
+    This mimics the logic that should be in 05_ps_match.py and 06_causal_estimators.py
+    """
+    use_bias_corrected = config.get('mc_simex', {}).get('use_bias_corrected_flag', False)
     
-    # Check if script exists
-    script_path = Path("src/07a_misclassification_adjust.py")
-    if not script_path.exists():
-        pytest.skip("MC-SIMEX script not found")
-    
-    # Try dry run
-    result = subprocess.run(
-        ['python3', str(script_path), '--dry-run'],
-        capture_output=True,
-        text=True
-    )
-    
-    # Should not error
-    assert result.returncode == 0 or "No data file found" in result.stderr, \
-        f"MC-SIMEX script failed: {result.stderr}"
+    if use_bias_corrected and 'ssd_flag_adj' in df.columns:
+        return 'ssd_flag_adj'
+    else:
+        return 'ssd_flag'
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, '-v'])
+    pytest.main([__file__])

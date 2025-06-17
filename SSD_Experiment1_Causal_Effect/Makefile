@@ -213,6 +213,17 @@ test:
 	@echo "Running tests..."
 	pytest tests/ -v --cov=$(SRC_DIR) --cov-report=html
 
+.PHONY: msm_smoke_test
+msm_smoke_test:
+	@echo "Running MSM smoke test with toy longitudinal data..."
+	@echo "1. Creating toy longitudinal data..."
+	$(PYTHON) create_longitudinal_demo.py
+	@echo "2. Running MSM demo analysis..."
+	$(PYTHON) test_msm_demo.py
+	@echo "3. Verifying results file exists..."
+	@test -f results/msm_demo.json || (echo "❌ MSM demo results missing" && exit 1)
+	@echo "✓ MSM smoke test completed successfully!"
+
 # Week 1 Implementation Quality Gates
 .PHONY: week1-validation
 week1-validation:
@@ -409,7 +420,7 @@ help:
 	@echo "  make robustness   - Run robustness checks"
 	@echo "  make reporting    - Generate reports"
 	@echo ""
-	@echo "Week 1-4 targets:"
+	@echo "Week 1-5 targets:"
 	@echo "  make week1-validation - Run Week 1 quality gates"
 	@echo "  make week1-integration-test - Test Week 1 pipeline integration"
 	@echo "  make week2-hypotheses - Run H1-H3 hypothesis analyses"
@@ -422,6 +433,10 @@ help:
 	@echo "  make week4-mh-cohort  - Build mental health cohort"
 	@echo "  make week4-advanced-analyses - Run H4-H6 advanced analyses"
 	@echo "  make week4-all        - Complete Week 4 MH alignment"
+	@echo "  make week5-transport  - Run transport weights analysis"
+	@echo "  make week5-reconcile  - Run estimate reconciliation rule"
+	@echo "  make week5-autoencoder - Run autoencoder performance improvement"
+	@echo "  make week5-validation - Run Week 5 compliance polish"
 	@echo ""
 	@echo "Utility targets:"
 	@echo "  make clean        - Clean temporary files"
@@ -483,6 +498,43 @@ week4-validation: week4-integration-test
 .PHONY: week4-all
 week4-all: week4-mh-cohort week4-mh-exposure week4-mh-outcomes week4-advanced-analyses week4-validation
 	@echo "✓ Week 4 Mental Health Alignment & Advanced Analysis complete!"
+
+# ------------------------------------------------------------------ #
+#  Week 5: Compliance Polish & External Validation
+# ------------------------------------------------------------------ #
+.PHONY: week5-transport
+week5-transport:
+	@echo "Running transport weights analysis for external validity..."
+	@echo "Creating example ICES marginals if needed..."
+	$(PYTHON) $(SRC_DIR)/transport_weights.py --create-example || true
+	@echo "Testing transport weights with CSV present and missing scenarios..."
+	pytest tests/test_transport_weights_enhanced.py -v
+	@echo "✓ Transport weights analysis complete!"
+
+.PHONY: week5-reconcile
+week5-reconcile:
+	@echo "Running estimate reconciliation rule..."
+	pytest tests/test_reconcile_estimates.py -v
+	@echo "✓ Estimate reconciliation complete!"
+
+.PHONY: week5-autoencoder
+week5-autoencoder:
+	@echo "Running autoencoder performance improvement..."
+	pytest tests/test_retrain_autoencoder.py -v
+	@echo "✓ Autoencoder retraining tests complete!"
+
+.PHONY: week5-validation
+week5-validation: week5-transport week5-reconcile week5-autoencoder
+	@echo "Running Week 5 compliance validation..."
+	@echo "1. Testing transport weights..."
+	pytest tests/test_transport_weights_enhanced.py -v
+	@echo "2. Testing estimate reconciliation..."
+	pytest tests/test_reconcile_estimates.py -v
+	@echo "3. Testing autoencoder performance improvement..."
+	pytest tests/test_retrain_autoencoder.py -v
+	@echo "4. Checking code quality (placeholder for future linting)..."
+	@echo "   Note: flake8 and black checks to be added in final QA task"
+	@echo "✓ Week 5 validation complete!"
 
 # ------------------------------------------------------------------ #
 #  Logic Comparison Report

@@ -29,7 +29,7 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent))
 from utils.global_seeds import set_global_seeds, get_random_state
 from src.config_loader import load_config
-from src.artefact_tracker import ArtefactTracker
+from src.artefact_tracker import create_artefact_metadata
 
 # Configure logging
 logging.basicConfig(
@@ -87,7 +87,7 @@ def mc_simex(y, X, z_observed, sensitivity, specificity, B=100, lambdas=None):
             flip_prob_0_to_1 = lam * (1 - specificity)  # False positive
             
             # Apply misclassification
-            rng = get_random_state()
+            rng = np.random.RandomState(get_random_state())
             for i in range(len(z_star)):
                 if z_observed[i] == 1:
                     if rng.random() < flip_prob_1_to_0:
@@ -160,6 +160,24 @@ def apply_bias_correction(cohort_df, config, treatment_col='ssd_flag'):
     cohort_df['bias_correction_applied'] = True
     cohort_df['simex_adjustment_factor'] = adjustment_factor
     
+    # Create bias-corrected flag: ssd_flag_adj
+    # Apply probabilistic correction based on sensitivity/specificity
+    rng = np.random.RandomState(get_random_state())
+    ssd_flag_adj = cohort_df[treatment_col].copy()
+    
+    for i in range(len(cohort_df)):
+        if cohort_df[treatment_col].iloc[i] == 1:
+            # If flagged as SSD, apply false negative correction
+            if rng.random() > sensitivity:
+                ssd_flag_adj.iloc[i] = 0
+        else:
+            # If not flagged, apply false positive correction
+            if rng.random() > specificity:
+                ssd_flag_adj.iloc[i] = 1
+    
+    cohort_df['ssd_flag_adj'] = ssd_flag_adj
+    logger.info(f"Created ssd_flag_adj: {ssd_flag_adj.sum()}/{len(ssd_flag_adj)} flagged ({ssd_flag_adj.mean():.3f} rate)")
+    
     results = {
         'sensitivity': sensitivity,
         'specificity': specificity,
@@ -188,9 +206,8 @@ def main():
     # Load configuration
     config = load_config()
     
-    # Initialize tracker
-    tracker = ArtefactTracker()
-    tracker.track("script_start", {"script": "07a_misclassification_adjust.py"})
+    # Log script start
+    logger.info("Starting MC-SIMEX bias correction script")
     
     # Load cohort data
     cohort_path = Path("data_derived/patient_master.parquet")
@@ -224,12 +241,18 @@ def main():
             json.dump(simex_results, f, indent=2)
         logger.info(f"Saved SIMEX results to {results_path}")
         
-        # Track outputs
-        tracker.track("output_generated", {
-            "file": str(output_path),
-            "rows": len(cohort_corrected),
-            "se_reduction": simex_results['se_reduction_percent']
-        })
+        # Create artefact metadata
+        create_artefact_metadata(
+            artefact_path=output_path,
+            script_name="07a_misclassification_adjust.py",
+            hypotheses=["H1", "H2", "H3"],
+            metrics={
+                "rows": len(cohort_corrected),
+                "se_reduction": simex_results['se_reduction_percent'],
+                "adjustment_factor": simex_results['adjustment_factor']
+            },
+            description="MC-SIMEX bias-corrected cohort with ssd_flag_adj"
+        )
         
         # Update study documentation
         if Path("scripts/update_study_doc.py").exists():

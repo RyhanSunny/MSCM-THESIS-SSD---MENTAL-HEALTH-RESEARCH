@@ -88,6 +88,35 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+def get_treatment_column(df, config, default_col='ssd_flag'):
+    """
+    Determine which treatment column to use based on configuration.
+    
+    Parameters:
+    -----------
+    df : DataFrame
+        Input dataframe
+    config : dict
+        Configuration dictionary
+    default_col : str
+        Default treatment column name
+        
+    Returns:
+    --------
+    str
+        Name of treatment column to use
+    """
+    use_bias_corrected = config.get('mc_simex', {}).get('use_bias_corrected_flag', False)
+    
+    if use_bias_corrected and 'ssd_flag_adj' in df.columns:
+        logger.info("Using bias-corrected flag: ssd_flag_adj")
+        return 'ssd_flag_adj'
+    else:
+        if use_bias_corrected:
+            logger.warning("Bias-corrected flag requested but ssd_flag_adj not found, using default")
+        logger.info(f"Using original flag: {default_col}")
+        return default_col
+
 def cluster_bootstrap_se(estimator_func, df, cluster_col='site_id', n_bootstrap=500, random_state=42):
     """
     Calculate cluster-robust standard errors using bootstrap.
@@ -571,9 +600,8 @@ def main():
     # Load configuration
     config = load_config()
     
-    # Initialize tracker
-    tracker = ArtefactTracker()
-    tracker.track("script_start", {"script": "06_causal_estimators.py"})
+    # Log script start
+    logger.info("Starting causal inference estimation script")
     
     # Load data
     data_path = Path("data_derived/ps_weighted.parquet")
@@ -586,7 +614,9 @@ def main():
     
     # Define variables
     outcome_col = args.outcome
-    TREATMENT_COL = args.treatment_col
+    # Define treatment column based on config and bias correction settings
+    default_treatment_col = args.treatment_col
+    TREATMENT_COL = get_treatment_column(df, config, default_treatment_col)
     cluster_col = args.cluster_col if args.cluster_col in df.columns else None
     
     # Define covariates

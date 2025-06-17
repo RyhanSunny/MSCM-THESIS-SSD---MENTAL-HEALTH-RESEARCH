@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="600" height="400" xmlns="http://www.w3.org/2000/svg">
+    <rect width="600" height="400" fill="white"/>
+    
+    <!-- Title -->
+    <text x="300" y="30" text-anchor="middle" font-size="18" font-weight="bold">
+        Cost-Effectiveness Plane
+    </text>
+    <text x="300" y="50" text-anchor="middle" font-size="14">
+        Mental Health Intervention Analysis
+    </text>
+    
+    <!-- Axes -->
+    <line x1="100" y1="200" x2="500" y2="200" stroke="black" stroke-width="2"/>
+    <line x1="300" y1="100" x2="300" y2="300" stroke="black" stroke-width="2"/>
+    
+    <!-- Axis labels -->
+    <text x="500" y="220" text-anchor="middle" font-size="12">Effectiveness →</text>
+    <text x="280" y="100" text-anchor="middle" font-size="12" transform="rotate(-90 280 100)">Cost →</text>
+    
+    <!-- Quadrant labels -->
+    <text x="400" y="130" text-anchor="middle" font-size="10" fill="orange">More costly, More effective</text>
+    <text x="200" y="130" text-anchor="middle" font-size="10" fill="green">Less costly, More effective (Dominant)</text>
+    <text x="400" y="270" text-anchor="middle" font-size="10" fill="red">More costly, Less effective (Dominated)</text>
+    <text x="200" y="270" text-anchor="middle" font-size="10" fill="blue">Less costly, Less effective</text>
+    
+    <!-- Scenario data -->
+    <text x='50' y='150' font-size='12'>Baseline: Cost=$0, Eff=0</text>
+    <text x='50' y='180' font-size='12'>Enhanced Screening: Cost=$150, Eff=0.12</text>
+    <text x='50' y='210' font-size='12'>Reduced Testing: Cost=$-75, Eff=-0.05</text>
+    <text x='50' y='240' font-size='12'>AI-Assisted Diagnosis: Cost=$200, Eff=0.18</text>
+    <text x='50' y='270' font-size='12'>Telemedicine: Cost=$-50, Eff=0.08</text>
+
+    
+    <!-- Note -->
+    <text x="300" y="350" text-anchor="middle" font-size="12" fill="gray">
+        Generated with matplotlib fallback (matplotlib not available)
+    </text>
+</svg>

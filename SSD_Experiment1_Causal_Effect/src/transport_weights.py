@@ -14,7 +14,10 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 import logging
+import json
+import argparse
 from typing import Dict, Optional, Any
+from datetime import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -97,8 +100,12 @@ def calculate_transport_weights(study_data: pd.DataFrame,
     weights = np.ones(len(study_data))
     
     for var in available_vars:
-        # Get target proportions for this variable from long format data
-        var_target = target_marginals[target_marginals['variable'] == var]
+        try:
+            # Get target proportions for this variable from long format data
+            var_target = target_marginals[target_marginals['variable'] == var]
+        except KeyError:
+            logger.warning(f"Column 'variable' not found in marginals file")
+            return _create_placeholder_results(study_data, "invalid_marginals_format")
         
         if len(var_target) > 0:
             # Create target proportions dictionary
@@ -153,7 +160,21 @@ def calculate_effective_sample_size(weights: np.ndarray) -> float:
 
 
 def _create_placeholder_results(study_data: pd.DataFrame, reason: str) -> Dict[str, Any]:
-    """Create placeholder results when transport weighting cannot be performed"""
+    """
+    Create placeholder results when transport weighting cannot be performed
+    
+    Parameters:
+    -----------
+    study_data : pd.DataFrame
+        Study dataset to generate uniform weights for
+    reason : str
+        Reason why transport weighting was skipped
+        
+    Returns:
+    --------
+    Dict[str, Any]
+        Dictionary with uniform weights and placeholder statistics
+    """
     n = len(study_data)
     uniform_weights = np.ones(n)
     
@@ -253,25 +274,251 @@ def create_example_ices_marginals(output_path: Path) -> None:
     logger.info(f"Example ICES marginals saved to: {output_path}")
 
 
+def main_cli(study_data_path: Path, 
+             marginals_path: Optional[Path] = None,
+             output_dir: Optional[Path] = None,
+             variables: Optional[list] = None) -> Dict[str, Any]:
+    """
+    Command-line interface for transport weights analysis
+    
+    Parameters:
+    -----------
+    study_data_path : Path
+        Path to CSV file with study data
+    marginals_path : Optional[Path]
+        Path to ICES marginals CSV file
+    output_dir : Optional[Path]
+        Output directory for results
+    variables : Optional[list]
+        Variables to use for transport weighting
+        
+    Returns:
+    --------
+    Dict[str, Any]
+        Transport weight analysis results
+    """
+    logger.info("Starting transport weights CLI analysis...")
+    
+    # Set defaults
+    if marginals_path is None:
+        marginals_path = Path("data/external/ices_marginals.csv")
+    if output_dir is None:
+        output_dir = Path("results/transport_weights")
+    
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Load study data
+    try:
+        study_data = pd.read_csv(study_data_path)
+        logger.info(f"Loaded study data: {study_data.shape}")
+    except Exception as e:
+        logger.error(f"Failed to load study data: {e}")
+        return {'status': 'error', 'message': str(e)}
+    
+    # Calculate transport weights
+    results = calculate_transport_weights(
+        study_data, marginals_path, variables
+    )
+    
+    # Save results
+    try:
+        # Save weights to CSV
+        weights_df = pd.DataFrame({
+            'patient_id': range(len(results['weights'])),
+            'transport_weight': results['weights']
+        })
+        weights_path = output_dir / 'transport_weights.csv'
+        weights_df.to_csv(weights_path, index=False)
+        logger.info(f"Weights saved: {weights_path}")
+        
+        # Save diagnostics to JSON
+        diagnostics = {
+            'status': results['status'],
+            'effective_sample_size': results['effective_sample_size'],
+            'max_weight': results['max_weight'],
+            'mean_weight': results['mean_weight'],
+            'n_observations': results['n_observations'],
+            'analysis_timestamp': datetime.now().isoformat()
+        }
+        if 'reason' in results:
+            diagnostics['reason'] = results['reason']
+        if 'variables_used' in results:
+            diagnostics['variables_used'] = results['variables_used']
+            
+        diag_path = output_dir / 'transport_diagnostics.json'
+        with open(diag_path, 'w') as f:
+            json.dump(diagnostics, f, indent=2)
+        logger.info(f"Diagnostics saved: {diag_path}")
+        
+        # Add file paths to results
+        results['weights_file'] = str(weights_path)
+        results['diagnostics_file'] = str(diag_path)
+        
+    except Exception as e:
+        logger.error(f"Failed to save results: {e}")
+        results['save_error'] = str(e)
+    
+    logger.info("Transport weights CLI analysis complete")
+    return results
+
+
+def run_transport_analysis(study_data_path: Path,
+                          output_dir: Optional[Path] = None,
+                          marginals_path: Optional[Path] = None) -> Dict[str, Any]:
+    """
+    Run complete transport analysis workflow
+    
+    Parameters:
+    -----------
+    study_data_path : Path
+        Path to study data CSV
+    output_dir : Optional[Path]
+        Output directory for results
+    marginals_path : Optional[Path]
+        Path to ICES marginals (optional)
+        
+    Returns:
+    --------
+    Dict[str, Any]
+        Complete analysis results
+    """
+    logger.info("Running complete transport analysis workflow...")
+    
+    if output_dir is None:
+        output_dir = Path("results/transport_analysis")
+    
+    # Run main analysis
+    transport_results = main_cli(
+        study_data_path=study_data_path,
+        marginals_path=marginals_path,
+        output_dir=output_dir
+    )
+    
+    # Validate weights if analysis succeeded
+    validation_results = None
+    if transport_results['status'] in ['completed', 'skipped']:
+        try:
+            validation_results = validate_transport_weights(
+                transport_results['weights']
+            )
+            logger.info(f"Weight validation: {validation_results['overall_quality']}")
+        except Exception as e:
+            logger.warning(f"Weight validation failed: {e}")
+            validation_results = {'error': str(e)}
+    
+    # Create summary report
+    try:
+        report_content = f"""# Transport Weights Analysis Report
+
+Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+## Analysis Results
+
+**Status:** {transport_results['status']}
+**Sample Size:** {transport_results['n_observations']}
+**Effective Sample Size:** {transport_results['effective_sample_size']:.1f}
+**Maximum Weight:** {transport_results['max_weight']:.3f}
+**Mean Weight:** {transport_results['mean_weight']:.3f}
+
+"""
+        
+        if transport_results['status'] == 'skipped':
+            report_content += f"""
+## Note
+
+Analysis was skipped due to: {transport_results.get('reason', 'Unknown reason')}
+Uniform weights (all 1.0) were applied for compatibility.
+"""
+        elif transport_results['status'] == 'completed':
+            report_content += f"""
+## Transport Variables
+
+Variables used for reweighting: {', '.join(transport_results.get('variables_used', []))}
+
+## Quality Assessment
+
+"""
+            if validation_results:
+                quality = validation_results.get('overall_quality', False)
+                report_content += f"""
+**Overall Quality:** {'✅ PASS' if quality else '⚠️ FAIL'}
+**ESS Ratio:** {validation_results.get('ess_ratio', 0):.3f}
+**Max Weight Check:** {'✅ PASS' if validation_results.get('max_weight_ok', False) else '⚠️ FAIL'}
+"""
+        
+        report_content += "\n---\n*Generated by SSD Experiment 1 Transport Weights Module v4.0.0*"
+        
+        report_path = output_dir / 'transport_report.md'
+        with open(report_path, 'w') as f:
+            f.write(report_content)
+        logger.info(f"Report saved: {report_path}")
+        
+    except Exception as e:
+        logger.warning(f"Failed to create report: {e}")
+    
+    return {
+        'transport_results': transport_results,
+        'validation_results': validation_results,
+        'output_directory': str(output_dir)
+    }
+
+
 def main():
     """Main execution for transport weights"""
-    logger.info("Transportability weights module ready")
+    parser = argparse.ArgumentParser(description='Transport weights for external validity')
+    parser.add_argument('--study-data', type=Path,
+                       help='Path to study data CSV file')
+    parser.add_argument('--marginals', type=Path,
+                       help='Path to ICES marginals CSV file')
+    parser.add_argument('--output-dir', type=Path, default=Path('results/transport'),
+                       help='Output directory for results')
+    parser.add_argument('--variables', nargs='+',
+                       help='Variables to use for transport weighting')
+    parser.add_argument('--create-example', action='store_true',
+                       help='Create example ICES marginals file')
     
-    print("Transport Weights Functions:")
-    print("  - calculate_transport_weights() - Compute transportability weights")
-    print("  - validate_transport_weights() - Validate weight quality")
-    print("  - create_example_ices_marginals() - Create example marginals file")
-    print("")
-    print("Usage:")
-    print("  weights = calculate_transport_weights(study_data)")
-    print("  if weights['status'] == 'skipped':")
-    print("      print('ICES marginals not available - using uniform weights')")
+    args = parser.parse_args()
     
-    # Check if example file should be created
-    example_path = Path("data/external/ices_marginals.csv")
-    if not example_path.exists():
-        print(f"\nExample marginals file can be created at: {example_path}")
-        print("Run: create_example_ices_marginals(Path('data/external/ices_marginals.csv'))")
+    if args.create_example:
+        example_path = Path("data/external/ices_marginals.csv")
+        create_example_ices_marginals(example_path)
+        print(f"Example ICES marginals created: {example_path}")
+        return
+    
+    if args.study_data:
+        results = main_cli(
+            study_data_path=args.study_data,
+            marginals_path=args.marginals,
+            output_dir=args.output_dir,
+            variables=args.variables
+        )
+        
+        print(f"Transport weights analysis complete:")
+        print(f"  Status: {results['status']}")
+        print(f"  Sample size: {results['n_observations']}")
+        print(f"  Effective sample size: {results['effective_sample_size']:.1f}")
+        
+        if results['status'] == 'skipped':
+            print(f"  Reason: {results.get('reason', 'Unknown')}")
+    else:
+        logger.info("Transportability weights module ready")
+        
+        print("Transport Weights Functions:")
+        print("  - calculate_transport_weights() - Compute transportability weights")
+        print("  - validate_transport_weights() - Validate weight quality")
+        print("  - create_example_ices_marginals() - Create example marginals file")
+        print("  - main_cli() - Command-line interface")
+        print("  - run_transport_analysis() - Complete workflow")
+        print("")
+        print("Usage:")
+        print("  python3 transport_weights.py --study-data data.csv --marginals ices.csv")
+        print("  python3 transport_weights.py --create-example")
+        
+        # Check if example file should be created
+        example_path = Path("data/external/ices_marginals.csv")
+        if not example_path.exists():
+            print(f"\nExample marginals file can be created at: {example_path}")
+            print("Run: python3 transport_weights.py --create-example")
 
 
 if __name__ == "__main__":

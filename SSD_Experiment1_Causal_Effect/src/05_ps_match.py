@@ -49,12 +49,49 @@ except ImportError:
     TABLEONE_AVAILABLE = False
     warnings.warn("tableone not available, will use custom SMD calculation")
 
+# Try to import SHAP for model explanations
+try:
+    import shap
+    SHAP_AVAILABLE = True
+except ImportError:
+    SHAP_AVAILABLE = False
+    warnings.warn("SHAP not available, will skip explainability analysis")
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+def get_treatment_column(df, config, default_col='ssd_flag'):
+    """
+    Determine which treatment column to use based on configuration.
+    
+    Parameters:
+    -----------
+    df : DataFrame
+        Input dataframe
+    config : dict
+        Configuration dictionary
+    default_col : str
+        Default treatment column name
+        
+    Returns:
+    --------
+    str
+        Name of treatment column to use
+    """
+    use_bias_corrected = config.get('mc_simex', {}).get('use_bias_corrected_flag', False)
+    
+    if use_bias_corrected and 'ssd_flag_adj' in df.columns:
+        logger.info("Using bias-corrected flag: ssd_flag_adj")
+        return 'ssd_flag_adj'
+    else:
+        if use_bias_corrected:
+            logger.warning("Bias-corrected flag requested but ssd_flag_adj not found, using default")
+        logger.info(f"Using original flag: {default_col}")
+        return default_col
 
 def calculate_smd(df, var, treatment_col='ssd_flag', weights=None):
     """Calculate Standardized Mean Difference"""
@@ -253,6 +290,102 @@ def create_love_plot(smd_before, smd_after, output_path):
     
     logger.info(f"Love plot saved to {output_path}")
 
+def generate_shap_explanations(model, X, feature_names, output_dir=None):
+    """
+    Generate SHAP explanations for XGBoost propensity score model
+    
+    Parameters:
+    -----------
+    model : xgboost.Booster
+        Trained XGBoost model
+    X : np.ndarray
+        Feature matrix
+    feature_names : list
+        Names of features
+    output_dir : Path, optional
+        Directory to save outputs
+        
+    Returns:
+    --------
+    dict
+        SHAP analysis results
+    """
+    if not SHAP_AVAILABLE:
+        logger.warning("SHAP not available, skipping explainability analysis")
+        return None
+    
+    logger.info("Generating SHAP explanations for propensity score model")
+    
+    try:
+        # Create SHAP explainer for XGBoost
+        explainer = shap.TreeExplainer(model)
+        
+        # Calculate SHAP values (subsample for performance if needed)
+        if X.shape[0] > 1000:
+            # Random subsample for SHAP calculation
+            np.random.seed(42)
+            sample_indices = np.random.choice(X.shape[0], 1000, replace=False)
+            X_sample = X[sample_indices]
+        else:
+            X_sample = X
+        
+        # Get SHAP values
+        shap_values = explainer.shap_values(X_sample)
+        
+        # Calculate feature importance (mean absolute SHAP values)
+        feature_importance = np.abs(shap_values).mean(axis=0)
+        
+        # Create importance DataFrame
+        importance_df = pd.DataFrame({
+            'feature': feature_names,
+            'shap_importance': feature_importance
+        }).sort_values('shap_importance', ascending=False)
+        
+        # Get top 20 features
+        top_features = importance_df.head(20)
+        
+        logger.info(f"Top 5 features by SHAP importance:")
+        for i, row in top_features.head(5).iterrows():
+            logger.info(f"  {row['feature']}: {row['shap_importance']:.4f}")
+        
+        # Save outputs if directory provided
+        if output_dir:
+            output_dir = Path(output_dir)
+            output_dir.mkdir(exist_ok=True)
+            
+            # Save feature importance table
+            importance_path = output_dir / "ps_shap_importance.csv"
+            top_features.to_csv(importance_path, index=False)
+            logger.info(f"SHAP importance saved to {importance_path}")
+            
+            # Create and save summary plot
+            try:
+                plt.figure(figsize=(10, 8))
+                shap.summary_plot(shap_values, X_sample, feature_names=feature_names, 
+                                show=False, max_display=20)
+                plot_path = output_dir / "ps_shap_summary.svg"
+                plt.savefig(plot_path, format='svg', dpi=300, bbox_inches='tight')
+                plt.close()
+                logger.info(f"SHAP summary plot saved to {plot_path}")
+            except Exception as e:
+                logger.warning(f"Failed to save SHAP summary plot: {e}")
+        
+        results = {
+            'feature_importance': importance_df,
+            'shap_values': shap_values,
+            'top_features': top_features,
+            'n_features_nonzero': (feature_importance > 0).sum(),
+            'explainer': explainer
+        }
+        
+        logger.info(f"SHAP analysis complete. {results['n_features_nonzero']} features have non-zero importance.")
+        
+        return results
+        
+    except Exception as e:
+        logger.error(f"SHAP analysis failed: {e}")
+        return None
+
 def main():
     parser = argparse.ArgumentParser(
         description="Propensity score estimation and matching"
@@ -270,9 +403,8 @@ def main():
     # Load configuration
     config = load_config()
     
-    # Initialize tracker
-    tracker = ArtefactTracker()
-    tracker.track("script_start", {"script": "05_ps_match.py"})
+    # Log script start
+    logger.info("Starting propensity score matching script")
     
     # Load data
     master_path = Path("data_derived/patient_master.parquet")
@@ -284,8 +416,9 @@ def main():
     df = pd.read_parquet(master_path)
     initial_rows = len(df)
     
-    # Define treatment
-    treatment_col = args.treatment_col
+    # Define treatment column based on config and bias correction settings
+    default_treatment_col = args.treatment_col
+    treatment_col = get_treatment_column(df, config, default_treatment_col)
     y = df[treatment_col].values
     
     # Define covariates (all confounder columns)
@@ -326,12 +459,20 @@ def main():
     max_smd_after = max(abs(smd) for smd in smd_after.values())
     logger.info(f"Maximum SMD after weighting: {max_smd_after:.3f}")
     
-    # Create Love plot
+    # Create Love plot and SHAP explanations
     if not args.dry_run:
         figures_dir = Path("figures")
         figures_dir.mkdir(exist_ok=True)
         love_plot_path = figures_dir / "love_plot.pdf"
         create_love_plot(smd_before, smd_after, love_plot_path)
+        
+        # Generate SHAP explanations for the propensity score model
+        shap_results = generate_shap_explanations(
+            model=model,
+            X=X,
+            feature_names=covar_cols,
+            output_dir=figures_dir
+        )
     
     # Perform 1:1 matching if requested
     matched_df = None

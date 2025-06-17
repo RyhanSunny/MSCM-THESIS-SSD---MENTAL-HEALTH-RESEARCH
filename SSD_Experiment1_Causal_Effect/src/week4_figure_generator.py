@@ -37,14 +37,35 @@ except ImportError:
     logger.warning("Matplotlib not available - figure generation will use fallback")
 
 def _check_matplotlib():
-    """Check if matplotlib is available and raise informative error if not"""
+    """
+    Check if matplotlib is available and raise informative error if not
+    
+    Raises:
+    -------
+    ImportError
+        If matplotlib is not available with installation instructions
+    """
     if not MATPLOTLIB_AVAILABLE:
         raise ImportError(
             "Matplotlib not available. Install with: pip install matplotlib seaborn"
         )
 
 def _create_placeholder_figure(output_path: Path, title: str) -> Path:
-    """Create placeholder SVG figure when matplotlib unavailable"""
+    """
+    Create placeholder SVG figure when matplotlib unavailable
+    
+    Parameters:
+    -----------
+    output_path : Path
+        Output path for placeholder SVG file
+    title : str
+        Title to display in placeholder figure
+        
+    Returns:
+    --------
+    Path
+        Path to created placeholder figure
+    """
     placeholder_content = f'''<?xml version="1.0" encoding="UTF-8"?>
 <svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
   <rect width="800" height="600" fill="lightgray" stroke="black" stroke-width="2"/>
@@ -75,6 +96,7 @@ def _create_placeholder_figure(output_path: Path, title: str) -> Path:
 def create_mediation_pathway_diagram(mediation_results: Dict[str, Any],
                                    output_dir: Path,
                                    dpi: int = 300) -> Path:
+    # pragma: allow-long
     """
     Create mediation pathway diagram showing exposure → mediator → outcome
     
@@ -170,6 +192,7 @@ def create_mediation_pathway_diagram(mediation_results: Dict[str, Any],
 def create_cate_heatmap(causal_forest_results: Dict[str, Any],
                        output_dir: Path,
                        dpi: int = 300) -> Path:
+    # pragma: allow-long
     """
     Create CATE heterogeneity heatmap from causal forest results
     
@@ -265,6 +288,7 @@ def create_cate_heatmap(causal_forest_results: Dict[str, Any],
 def create_evalue_plot(hypothesis_results: Dict[str, Any],
                       output_dir: Path,
                       dpi: int = 300) -> Path:
+    # pragma: allow-long
     """
     Create E-value bias sensitivity plot
     
@@ -374,6 +398,7 @@ def create_evalue_plot(hypothesis_results: Dict[str, Any],
 def update_love_plot_mh(ps_data: pd.DataFrame,
                        output_dir: Path,
                        dpi: int = 300) -> Path:
+    # pragma: allow-long
     """
     Update love plot with mental health-specific covariates
     
