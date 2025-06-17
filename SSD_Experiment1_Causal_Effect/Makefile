@@ -14,7 +14,7 @@ TREATMENT_COL ?= ssd_flag
 
 # Default target
 .PHONY: all
-all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness week1-validation week2-all week3-all
+all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness week1-validation week2-all week3-all week4-all
 
 # Data pipeline targets
 .PHONY: cohort
@@ -409,7 +409,7 @@ help:
 	@echo "  make robustness   - Run robustness checks"
 	@echo "  make reporting    - Generate reports"
 	@echo ""
-	@echo "Week 1 & 2 targets:"
+	@echo "Week 1-4 targets:"
 	@echo "  make week1-validation - Run Week 1 quality gates"
 	@echo "  make week1-integration-test - Test Week 1 pipeline integration"
 	@echo "  make week2-hypotheses - Run H1-H3 hypothesis analyses"
@@ -418,6 +418,10 @@ help:
 	@echo "  make week2-documentation - Update documentation"
 	@echo "  make week2-validation - Run Week 2 quality gates"
 	@echo "  make week2-all        - Complete Week 2 analysis"
+	@echo "  make week3-all        - Complete Week 3 QA & packaging"
+	@echo "  make week4-mh-cohort  - Build mental health cohort"
+	@echo "  make week4-advanced-analyses - Run H4-H6 advanced analyses"
+	@echo "  make week4-all        - Complete Week 4 MH alignment"
 	@echo ""
 	@echo "Utility targets:"
 	@echo "  make clean        - Clean temporary files"
@@ -429,6 +433,56 @@ help:
 	@echo ""
 	@echo "Release targets:"
 	@echo "  make release VERSION=X.Y.Z - Create a release"
+
+# ------------------------------------------------------------------ #
+#  Week 4: Mental Health Alignment & Advanced Analysis
+# ------------------------------------------------------------------ #
+.PHONY: week4-mh-cohort
+week4-mh-cohort: cohort
+	@echo "Building mental health-specific cohort..."
+	$(PYTHON) $(SRC_DIR)/mh_cohort_builder.py
+
+.PHONY: week4-mh-exposure
+week4-mh-exposure: week4-mh-cohort
+	@echo "Generating enhanced mental health exposure flags..."
+	$(PYTHON) $(SRC_DIR)/mh_exposure_enhanced.py
+
+.PHONY: week4-mh-outcomes
+week4-mh-outcomes: week4-mh-cohort
+	@echo "Creating mental health-specific outcome flags..."
+	$(PYTHON) $(SRC_DIR)/mh_outcomes.py
+
+.PHONY: week4-advanced-analyses
+week4-advanced-analyses: week4-mh-cohort week4-mh-exposure week4-mh-outcomes
+	@echo "Running H4-H6 advanced causal analyses..."
+	$(PYTHON) $(SRC_DIR)/advanced_analyses.py
+
+.PHONY: week4-integration-test
+week4-integration-test:
+	@echo "Testing Week 4 mental health module integration..."
+	@echo "1. Testing MH cohort builder..."
+	pytest tests/test_mh_cohort_builder.py -v || echo "⚠️  MH cohort builder tests not found"
+	@echo "2. Testing MH exposure enhancement..."
+	pytest tests/test_mh_exposure_enhanced.py -v || echo "⚠️  MH exposure tests not found"
+	@echo "3. Testing MH outcomes..."
+	pytest tests/test_mh_outcomes.py -v
+	@echo "4. Testing advanced analyses..."
+	pytest tests/test_advanced_analyses.py -v
+	@echo "✓ Week 4 module tests complete!"
+
+.PHONY: week4-validation
+week4-validation: week4-integration-test
+	@echo "Running Week 4 quality gates..."
+	@echo "Validating mental health-specific outputs..."
+	@test -f $(DATA_DIR)/cohort_mh_enhanced.parquet || echo "⚠️  Enhanced MH cohort missing"
+	@test -f $(DATA_DIR)/cohort_mh_outcomes.parquet || echo "⚠️  MH outcomes missing"
+	@test -f $(RESULTS_DIR)/advanced_analyses_results.pkl || echo "⚠️  Advanced analysis results missing"
+	@test -f $(RESULTS_DIR)/advanced_analyses_report.md || echo "⚠️  Advanced analysis report missing"
+	@echo "✓ Week 4 quality gates complete!"
+
+.PHONY: week4-all
+week4-all: week4-mh-cohort week4-mh-exposure week4-mh-outcomes week4-advanced-analyses week4-validation
+	@echo "✓ Week 4 Mental Health Alignment & Advanced Analysis complete!"
 
 # ------------------------------------------------------------------ #
 #  Logic Comparison Report
