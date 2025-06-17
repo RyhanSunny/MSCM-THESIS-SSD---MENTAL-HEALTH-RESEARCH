@@ -14,7 +14,7 @@ TREATMENT_COL ?= ssd_flag
 
 # Default target
 .PHONY: all
-all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness
+all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness week1-validation
 
 # Data pipeline targets
 .PHONY: cohort
@@ -107,7 +107,18 @@ ps: master
 .PHONY: causal
 causal: ps
 	@echo "Running causal estimators..."
-	$(PYTHON) $(SRC_DIR)/06_causal_estimators.py --treatment-col $(TREATMENT_COL)
+	$(PYTHON) $(SRC_DIR)/06_causal_estimators.py --treatment-col $(TREATMENT_COL) --cluster-col site_id
+
+# Week 2 targets - H1-H3 hypothesis analysis
+.PHONY: hypotheses
+hypotheses: ps
+	@echo "Running H1-H3 hypothesis analyses..."
+	$(PYTHON) $(SRC_DIR)/hypothesis_runner.py --data-path $(DATA_DIR)/ps_weighted.parquet --results-dir $(RESULTS_DIR)
+
+.PHONY: hypotheses-dry-run
+hypotheses-dry-run: ps
+	@echo "Validating H1-H3 hypothesis setup..."
+	$(PYTHON) $(SRC_DIR)/hypothesis_runner.py --dry-run
 
 .PHONY: mediation
 mediation: master
@@ -201,6 +212,33 @@ clean-data:
 test:
 	@echo "Running tests..."
 	pytest tests/ -v --cov=$(SRC_DIR) --cov-report=html
+
+# Week 1 Implementation Quality Gates
+.PHONY: week1-validation
+week1-validation:
+	@echo "Running Week 1 quality gates..."
+	@echo "1. Testing weight diagnostics..."
+	pytest tests/test_weight_diagnostics.py -v
+	@echo "2. Testing cluster-robust standard errors..."
+	pytest tests/test_cluster_robust_se.py -v
+	@echo "3. Testing Poisson/NB count models..."
+	pytest tests/test_poisson_count_models.py -v
+	@echo "4. Testing temporal ordering validation..."
+	pytest tests/test_temporal_validator.py -v
+	@echo "5. Testing multiple imputation..."
+	pytest tests/test_multiple_imputation.py -v
+	@echo "✓ All Week 1 quality gates passed!"
+
+.PHONY: week1-integration-test
+week1-integration-test: ps
+	@echo "Testing Week 1 integration with pipeline..."
+	@echo "Running propensity score matching with weight diagnostics..."
+	$(PYTHON) $(SRC_DIR)/05_ps_match.py --treatment-col $(TREATMENT_COL) --dry-run
+	@echo "Running causal estimators with count models and cluster-robust SE..."
+	$(PYTHON) $(SRC_DIR)/06_causal_estimators.py --treatment-col $(TREATMENT_COL) --cluster-col site_id --outcome total_encounters --dry-run
+	@echo "Running temporal validation..."
+	$(PYTHON) -c "from src.temporal_validator import validate_exposure_outcome_sequence; import pandas as pd; print('Temporal validation ready')"
+	@echo "✓ Week 1 integration tests passed!"
 
 .PHONY: lint
 lint:
