@@ -14,7 +14,7 @@ TREATMENT_COL ?= ssd_flag
 
 # Default target
 .PHONY: all
-all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness week1-validation week2-all
+all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness week1-validation week2-all week3-all
 
 # Data pipeline targets
 .PHONY: cohort
@@ -320,8 +320,14 @@ week3-polish:
 	$(PYTHON) src/voice_polisher.py
 	@echo "✓ Voice conversion complete"
 
+.PHONY: week3-packaging
+week3-packaging:
+	@echo "Creating submission package..."
+	$(PYTHON) src/submission_packager.py
+	@echo "✓ Submission package created"
+
 .PHONY: week3-all
-week3-all: week3-figures week3-documentation week3-polish week3-ci-tests
+week3-all: week3-figures week3-documentation week3-polish week3-ci-tests week3-packaging
 	@echo "✓ Week 3 Writing, Packaging & QA Polish complete!"
 
 .PHONY: lint

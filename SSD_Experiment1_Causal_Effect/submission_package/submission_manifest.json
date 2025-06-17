@@ -1,0 +1,9 @@
+{
+  "submission_package": "submission_package/SSD_Week3_20250617_090810.zip",
+  "osf_upload_script": "submission_package/upload_to_osf.sh",
+  "docker_image": null,
+  "generated": "2025-06-17T09:08:12.001873",
+  "files_checksums": {
+    "SSD_Week3_20250617_090810.zip": "8a4ecb82e144a6905cadb61d1e8f47ba8903d20e6c840f144c1d31e577083382"
+  }
+}
