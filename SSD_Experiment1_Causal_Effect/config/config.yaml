@@ -1,150 +1,151 @@
-# SSD Causal Analysis Configuration
-# Author: Ryhan Suny
-# Date: 2025-05-24
-
-# Study metadata
 study:
-  name: "SSD Causal Effect Analysis"
-  version: "1.1.0"
-  author: "Ryhan Suny"
-  institution: "Toronto Metropolitan University"
-  team: "Car4Mind Research Team"
-  supervisor: "Dr. Aziz Guergachi"
-
-# Temporal settings
+  name: SSD Causal Effect Analysis
+  version: 1.1.0
+  author: Ryhan Suny
+  institution: Toronto Metropolitan University
+  team: Car4Mind Research Team
+  supervisor: Dr. Aziz Guergachi
 temporal:
-  reference_date: "2015-01-01"
-  censor_date: "2015-06-30"
-  exposure_window_start: "2015-01-01"
-  exposure_window_end: "2016-01-01"
-  outcome_window_start: "2016-07-01"
-  outcome_window_end: "2017-12-31"
-  covid_cutoff_date: "2020-03-01"
-
-# Cohort criteria
+  reference_date: '2015-01-01'
+  censor_date: '2015-06-30'
+  exposure_window_start: '2015-01-01'
+  exposure_window_end: '2016-01-01'
+  outcome_window_start: '2016-07-01'
+  outcome_window_end: '2017-12-31'
+  covid_cutoff_date: '2020-03-01'
 cohort:
   min_age: 18
   min_observation_months: 30
   max_charlson_score: 5
   exclude_palliative: true
-  palliative_codes: ["V66.7", "Z51.5"]
-  opt_out_column: "OptedOut"
-
-# Exposure criteria (SSD pattern)
+  palliative_codes:
+  - V66.7
+  - Z51.5
+  opt_out_column: OptedOut
 exposure:
   min_normal_labs: 3
   min_symptom_referrals: 2
-  min_drug_days: 180  # Enhanced from 90 to 180 days per Felipe's recommendation
-  symptom_code_regex: "^(78[0-9]|799)"
+  min_drug_days: 180
+  symptom_code_regex: ^(78[0-9]|799)
   drug_atc_codes:
-    anxiolytic: ["N05B", "N05C"]
-    analgesic: ["N02B"]
-    hypnotic: ["N05CH"]
-    antidepressant: ["N06A"]  # Felipe enhancement - antidepressants
-    anticonvulsant: ["N03A"]  # Felipe enhancement - anticonvulsants (gabapentin/pregabalin)
-    antipsychotic: ["N05A"]   # Felipe enhancement - antipsychotics for off-label use
-  drug_name_patterns: ["ZOPICLONE", "ZOLPIDEM", "BUSPIRONE", "BENZODIAZEPINE", "GABAPENTIN", "PREGABALIN"]
-
-# NYD (Not Yet Diagnosed) codes
+    anxiolytic:
+    - N05B
+    - N05C
+    analgesic:
+    - N02B
+    hypnotic:
+    - N05CH
+    antidepressant:
+    - N06A
+    anticonvulsant:
+    - N03A
+    antipsychotic:
+    - N05A
+  drug_name_patterns:
+  - ZOPICLONE
+  - ZOLPIDEM
+  - BUSPIRONE
+  - BENZODIAZEPINE
+  - GABAPENTIN
+  - PREGABALIN
 nyd:
-  codes: ["799.9", "V71.0", "V71.1", "V71.2", "V71.3", "V71.4", "V71.5", "V71.6", "V71.7", "V71.8", "V71.9"]
-  
-# Long COVID codes
+  codes:
+  - '799.9'
+  - V71.0
+  - V71.1
+  - V71.2
+  - V71.3
+  - V71.4
+  - V71.5
+  - V71.6
+  - V71.7
+  - V71.8
+  - V71.9
 long_covid:
-  icd_codes: ["U07.1", "U09.9"]
-  text_patterns: ["post-acute COVID", "long COVID", "post COVID"]
-
-# Autoencoder settings
+  icd_codes:
+  - U07.1
+  - U09.9
+  text_patterns:
+  - post-acute COVID
+  - long COVID
+  - post COVID
 autoencoder:
   input_features: 56
   encoding_dim: 16
   hidden_dim: 32
-  regularization: 0.00001
+  regularization: 1.0e-05
   epochs: 100
   batch_size: 256
   validation_split: 0.2
   early_stopping_patience: 10
-
-# Propensity score settings
 propensity_score:
-  method: "xgboost"
+  method: xgboost
   gpu_enabled: true
   max_depth: 6
   learning_rate: 0.1
   n_estimators: 100
-  weight_truncation_percentiles: [1, 99]
+  weight_truncation_percentiles:
+  - 1
+  - 99
   caliper: 0.05
-  matching_ratio: "1:1"
-
-# Causal estimation
+  matching_ratio: '1:1'
 causal:
-  methods: ["tmle", "double_ml", "causal_forest"]
+  methods:
+  - tmle
+  - double_ml
+  - causal_forest
   bootstrap_iterations: 1000
   confidence_level: 0.95
-  
-# Robustness checks
 robustness:
-  placebo_outcomes: ["dental_visits", "eye_exams"]
+  placebo_outcomes:
+  - dental_visits
+  - eye_exams
   e_value_calculation: true
   sensitivity_analyses:
-    - "unmeasured_confounding"
-    - "misclassification"
-    - "selection_bias"
-  
-# MC-SIMEX settings for misclassification
+  - unmeasured_confounding
+  - misclassification
+  - selection_bias
 mc_simex:
-  enabled: true
-  sensitivity: 0.82
-  specificity: 0.82
+  enabled: false
+  sensitivity: NEEDS_CLINICAL_VALIDATION
+  specificity: NEEDS_CLINICAL_VALIDATION
   bootstrap_samples: 100
-  lambda_values: [0, 0.5, 1.0, 1.5, 2.0]
-  use_bias_corrected_flag: false  # When true, use ssd_flag_adj instead of ssd_flag
-
-# Data paths (relative to project root)
+  lambda_values:
+  - 0
+  - 0.5
+  - 1.0
+  - 1.5
+  - 2.0
+  use_bias_corrected_flag: false
 paths:
-  checkpoint_root: "Notebooks/data/interim"
-  derived_data: "data_derived"
-  results: "results"
-  figures: "figures"
-  reports: "reports"
-  code_lists: "code_lists"
-
-# Random seeds for reproducibility
+  checkpoint_root: Notebooks/data/interim
+  derived_data: data_derived
+  results: results
+  figures: figures
+  reports: reports
+  code_lists: code_lists
 random_state:
   global_seed: 42
   numpy_seed: 42
   tensorflow_seed: 42
   torch_seed: 42
-
-# Cost proxies for medical services (in CAD)
-# Based on Ontario Schedule of Benefits and CIHI estimates
 costs:
-  pc_visit: 75  # Primary care visit (A007 comprehensive assessment)
-  ed_visit: 600  # Emergency department visit (CIHI average)
-  specialist_referral: 180  # Specialist consultation (A415)
-  lab_test: 35  # Lab test (average of common tests)
-  medication_per_day: 5  # Daily medication cost (generic anxiolytics/analgesics)
-
-# Analysis parameters
+  pc_visit: 75
+  ed_visit: 600
+  specialist_referral: 180
+  lab_test: 35
+  medication_per_day: 5
 analysis:
-  baseline_encounter_rate: null  # Will be calculated from data
-  
-# Logging
+  baseline_encounter_rate: null
 logging:
-  level: "INFO"
-  format: "%(asctime)s  %(levelname)-8s  %(message)s"
-  
-# DVC settings
+  level: INFO
+  format: '%(asctime)s  %(levelname)-8s  %(message)s'
 dvc:
-  remote_name: "myremote"
-  cache_dir: ".dvc/cache"
-  
-# Performance settings
+  remote_name: myremote
+  cache_dir: .dvc/cache
 performance:
-  n_jobs: -1  # Use all available cores
-  chunk_size: 100000  # For processing large datasets
-  
-# Quality control thresholds
+  n_jobs: -1
+  chunk_size: 100000
 qc:
   max_missing_percent: 5.0
   min_cohort_size: 200000

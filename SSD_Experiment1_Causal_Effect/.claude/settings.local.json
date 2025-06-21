@@ -42,7 +42,20 @@
       "Bash(OSF_TOKEN=fake-token-12345 python3 scripts/osf_upload.py --dry-run)",
       "Bash(OSF_TOKEN=test python3 scripts/osf_upload.py --dry-run)",
       "Bash(/dev/null)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "mcp__serena-local__initial_instructions",
+      "mcp__serena-local__check_onboarding_performed",
+      "mcp__serena-local__list_memories",
+      "mcp__serena-local__list_dir",
+      "mcp__serena-local__find_file",
+      "mcp__serena-local__find_symbol",
+      "mcp__serena-local__search_for_pattern",
+      "mcp__serena-local__get_symbols_overview",
+      "mcp__context7__resolve-library-id",
+      "mcp__serena-local__write_memory",
+      "mcp__serena-local__read_memory",
+      "mcp__serena-local__think_about_collected_information",
+      "Bash(conda activate:*)"
     ],
     "deny": []
   },

@@ -14,7 +14,7 @@ TREATMENT_COL ?= ssd_flag
 
 # Default target
 .PHONY: all
-all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness week1-validation week2-all week3-all week4-all
+all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness week1-validation week2-all week3-all week4-all week5-validation
 
 # Data pipeline targets
 .PHONY: cohort

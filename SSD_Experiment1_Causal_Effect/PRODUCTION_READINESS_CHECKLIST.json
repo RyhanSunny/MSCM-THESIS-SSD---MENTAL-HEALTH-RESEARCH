@@ -1,0 +1,55 @@
+{
+  "timestamp": "2025-06-21T13:38:13.536401",
+  "clinical_validations_needed": {
+    "ssd_phenotype": {
+      "status": "REQUIRED",
+      "description": "200-patient chart review for sensitivity/specificity",
+      "current_values": "0.82/0.82 from literature",
+      "blocker": true
+    },
+    "drug_persistence": {
+      "status": "REQUIRED",
+      "description": "Validate 180-day threshold for each drug class",
+      "current_values": "180 days for all classes",
+      "blocker": true
+    },
+    "icd_codes": {
+      "status": "REQUIRED",
+      "description": "Review mental health ICD code mappings",
+      "current_values": "See mh_cohort_builder.py",
+      "blocker": false
+    },
+    "utilization_thresholds": {
+      "status": "REQUIRED",
+      "description": "Validate 75th percentile for high utilization",
+      "current_values": "75th percentile",
+      "blocker": false
+    },
+    "normal_labs": {
+      "status": "REQUIRED",
+      "description": "Validate \u22653 normal labs threshold",
+      "current_values": "3 normal labs",
+      "blocker": false
+    }
+  },
+  "data_requirements": {
+    "ices_marginals": {
+      "status": "MISSING",
+      "description": "Real Ontario population marginals needed",
+      "current": "Using synthetic data",
+      "blocker": false
+    },
+    "full_cohort": {
+      "status": "AVAILABLE",
+      "description": "Using checkpoint data with 352,161 patients",
+      "current": "checkpoint_1_20250318_024427",
+      "blocker": false
+    }
+  },
+  "technical_status": {
+    "pipeline_complete": true,
+    "tests_passing": true,
+    "documentation_complete": true,
+    "makefile_targets": "week1-5 ready"
+  }
+}
