@@ -1,6 +1,6 @@
 # Table 3. Sensitivity Analysis Summary
 
-*Generated: 2025-06-17 03:26:02*
+*Generated: 2025-06-21 18:33:24*
 
 | Analysis | Method | H1 IRR | H2 IRR | H3 IRR | Conclusion |
 |---|---|---|---|---|---|

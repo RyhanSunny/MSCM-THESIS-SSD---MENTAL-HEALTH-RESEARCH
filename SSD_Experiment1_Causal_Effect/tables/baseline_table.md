@@ -1,6 +1,6 @@
 # Table 1. Baseline Characteristics
 
-*Generated: 2025-06-17 03:26:02*
+*Generated: 2025-06-21 18:33:24*
 
 | Characteristic | Exposed | Control | SMD |
 |---|---|---|---|

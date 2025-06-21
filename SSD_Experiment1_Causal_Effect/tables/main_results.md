@@ -1,6 +1,6 @@
 # Table 2. Main Results: H1-H3 Hypotheses
 
-*Generated: 2025-06-17 03:26:02*
+*Generated: 2025-06-21 18:33:24*
 
 | Hypothesis | Description | Outcome | N Exposed | IRR (95% CI) | P-value |
 |---|---|---|---|---|---|

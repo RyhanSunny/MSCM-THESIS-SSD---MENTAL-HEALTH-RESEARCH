@@ -1,0 +1,75 @@
+# June 21 To-Do List - UPDATED REALITY CHECK
+
+The following tasks consolidate the outstanding issues documented across the assessment and project files. Each item includes a reference to the source lines for context.
+
+## Outstanding Tasks (Not Yet Completed)
+
+- [x] **Merge misclassification-corrected flag** ✅ **COMPLETED 2025-06-21**
+  - The MC-SIMEX step now automatically merges `ssd_flag_adj` back to `patient_master.parquet` ✓
+  - Created `mc_simex_flag_merger.py` module with comprehensive TDD testing ✓
+  - Source: lines 33–52 in `assesment as of June 21 2025.md`.
+  - **Status**: ✅ COMPLETE - Auto-merge integrated, TDD tests pass, commit 0da63bf
+  
+- [x] **Remove socioeconomic variables and synthetic marginals** ✅ **COMPLETED 2025-06-21**
+  - Removed 5 synthetic SES quintile rows from `ices_marginals.csv` ✓
+  - Commented out SES references in 3 source files with '# REMOVED SES:' marking ✓
+  - Created comprehensive TDD tests and validation framework ✓
+  - Source: lines 132–216 in `assesment as of June 21 2025.md`.
+  - **Status**: ✅ COMPLETE - SES data removed, backups created, validation passes, commit b1253a4
+  
+- [ ] **Update documentation to reflect proxy cost data and SES limitations**
+  - Mark cost estimates as proxies and clarify missing SES information.
+  - Source: lines 207–211 in `assesment as of June 21 2025.md`.
+  - **Status**: Documentation updates pending
+  
+- [ ] **Run production readiness check and clinical validations**
+  - Execute `prepare_for_production.py` and send `CLINICAL_VALIDATION_REQUEST.md` for chart review of the SSD phenotype, drug persistence thresholds, ICD code mappings, utilization cut‑offs, and ≥3 normal labs.
+  - Source: `COMPREHENSIVE_PROJECT_MAP.md` lines 227–234 and `PRODUCTION_READINESS_CHECKLIST.json` lines 2–33.
+  - **Status**: Scripts exist but haven't been executed yet
+  
+- [x] **Fix Makefile install target** ✅ **COMPLETED 2025-06-21**
+  - `week5-validation` now appears in the `all` target ✓, and `install` recipe now uses `environment.yml` ✓
+  - Modified the `install` target to create the conda environment from `environment.yml`.
+  - Source: `COMPREHENSIVE_PROJECT_MAP.md` lines 227–231 and `SSD THESIS final METHODOLOGIES blueprint (1).md` lines 74–78.
+  - **Status**: ✅ COMPLETE - TDD tests pass, Makefile updated, commit 736a46d
+  
+- [ ] **Acquire real ICES population marginals (optional)**
+  - Synthetic data limits external validity; request official age, sex, and region frequencies.
+  - Source: `assesment as of June 21 2025.md` lines 189–217 and `PRODUCTION_READINESS_CHECKLIST.json` lines 34–41.
+  - **Status**: Optional - can proceed without this
+  
+- [ ] **Prepare manuscript materials (figures, tables, STROBE checklist)**
+  - After final analyses, generate the required output for a Q1 journal submission.
+  - Source: `JUNE-16-MAX-EVAL.md` lines 620–664.
+  - **Status**: Awaiting completion of above tasks
+
+## Completed Tasks (Already Done)
+
+- [x] **Complete remaining pipeline modules**
+  - `07_missing_data.py`, `07a_misclassification_adjust.py`, `05_ps_match.py`, and `06_causal_estimators.py` are implemented with full logic.
+  - Source: `SSD THESIS final METHODOLOGIES blueprint (1).md` lines 46–68.
+  - **Verified**: All modules exist and are fully implemented
+  
+- [x] **Ensure weight diagnostics, clustered SEs, Poisson regression, multiple imputation, and temporal checks are active**
+  - Verified in the code base: `weight_diagnostics` in `05_ps_match.py`, cluster‑robust SEs in `06_causal_estimators.py`, Rubin-style imputation in `07_missing_data.py`, and segmented regression in `12_temporal_adjust.py`.
+  - Source: `JUNE-16-MAX-EVAL.md` lines 82–104 and 478–516.
+  - **Verified**: All components implemented and integrated
+  
+- [x] **Improve autoencoder performance toward AUROC ≥0.7**
+  - `simple_autoencoder_retrain.py` and its tests show AUROC >0.84.
+  - Source: `COMPREHENSIVE_PROJECT_MAP.md` line 214.
+  - **Verified**: Performance exceeds target threshold
+  
+- [x] **Align power analysis narrative with YAML values**
+  - `power_analysis_sync.py` and tests confirm YAML parameters match the documentation.
+  - Source: `JUNE-16-MAX-EVAL.md` lines 315–330.
+  - **Verified**: Script exists for synchronization
+
+*Note: Do not introduce synthetic or dummy data while completing these tasks. The goal is a production‑ready analysis using real CPCSSN records.*
+
+## Summary
+
+**Tasks Remaining: 7** (5 required + 2 optional)
+**Tasks Completed: 4**
+
+The pipeline infrastructure is complete but needs final integration work and clinical validation before production deployment.

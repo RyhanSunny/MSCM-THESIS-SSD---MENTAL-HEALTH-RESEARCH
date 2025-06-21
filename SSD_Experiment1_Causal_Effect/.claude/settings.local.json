@@ -55,7 +55,13 @@
       "mcp__serena-local__write_memory",
       "mcp__serena-local__read_memory",
       "mcp__serena-local__think_about_collected_information",
-      "Bash(conda activate:*)"
+      "Bash(conda activate:*)",
+      "mcp__serena-local__think_about_task_adherence",
+      "mcp__serena-local__insert_after_symbol",
+      "mcp__serena-local__replace_regex",
+      "Bash(cp:*)",
+      "Bash(git reset:*)",
+      "mcp__serena-local__think_about_whether_you_are_done"
     ],
     "deny": []
   },
