@@ -10,7 +10,7 @@
 | **H1 — MH Diagnostic Cascade** | In MH patients, ≥3 normal lab panels within 12-month exposure window causally increase subsequent healthcare encounters (primary care + mental health visits) over 24 months. | Exposure: binary flag for normal-lab cascade (n=112,134, 43.7%); Outcome: count of all healthcare encounters (Poisson) | IRR ≈ 1.35–1.50 | Poisson/negative-binomial regression after 1:1 PS-matching; over-dispersion check (α). | ⚠️ Tracks all encounters, not MH-specific |
 | **H2 — MH Specialist Referral Loop** | In MH patients, ≥2 unresolved specialist referrals (NYD status) predict mental health crisis services or psychiatric emergency visits within 6 months. | Exposure: referral loop flag (n=1,536, 0.6%); Outcome: MH crisis/psychiatric ED visits (binary) | OR ≈ 1.60–1.90 | PS-matched logistic regression; falsification with resolved referrals as negative control. | ❌ No MH crisis/psychiatric ED identification |
 | **H3 — MH Medication Persistence** | In MH patients, >90 consecutive days of psychotropic medications (anxiolytic/antidepressant/hypnotic) predict emergency department visits in next year. | Exposure: psychotropic persistence (n=51,218, 19.9%); Outcome: any ED visit (binary) | aOR ≈ 1.40–1.70 | Multivariable logistic model with IPW; E-value for unmeasured confounding. | ⚠️ 90 days used (not 180); missing drug classes |
-| **H4 — MH SSD Severity Mediation** | In MH patients, the SSDSI (range 0-100, mean=0.80) mediates ≥55% of total causal effect of H1-H3 exposures on healthcare utilization costs at 24 months. | Mediator: continuous SSDSI in MH population; Outcome: total healthcare costs (gamma GLM) | Proportion mediated ≥0.55 | Causal mediation (DoWhy) with 5K bootstraps; sensitivity to sequential ignorability. | ✅ Framework implemented |
+| **H4 — MH SSD Severity Mediation** | In MH patients, the SSDSI (range 0-100, mean=0.80) mediates ≥55% of total causal effect of H1-H3 exposures on healthcare utilization costs (proxy estimates based on encounter counts) at 24 months. | Mediator: continuous SSDSI in MH population; Outcome: total healthcare costs (proxy estimates) (gamma GLM) | Proportion mediated ≥0.55 | Causal mediation (DoWhy) with 5K bootstraps; sensitivity to sequential ignorability. | ✅ Framework implemented |
 | **H5 — MH Effect Modification** | The causal effect of SSD-pattern exposure on healthcare utilization differs across predefined high‐risk MH subgroups (anxiety, age < 40, female sex, high baseline utilization); at least two subgroups will show a statistically stronger effect (interaction p < 0.05). | Subgroups: binary flags in master table; Outcome: interaction term in weighted regression | ≥2 significant β_interaction terms (FDR < 0.05) | Interaction analysis in `06_causal_estimators.py` + FDR correction | ⚠️ Anxiety flag creation unclear |
 | **H6 — MH Clinical Intervention** | In high-SSDSI MH patients, integrated care with somatization-focused interventions reduces predicted utilization by ≥25% vs. usual mental health care. | Intervention: integrated MH-PC care; Outcome: predicted utilization reduction | Δ ≥ -25% (95% CI excludes 0) | G-computation using validated SSDSI + published effect sizes for integrated MH care. | ✅ Framework implemented |
 
@@ -464,7 +464,7 @@ Baseline (-6 m):
 | Mental | Depression/anxiety dx (ICD-9 296/300, ICD-10 F32-F41). |
 | Trauma | PTSD/Acute-Stress codes (ICD-9 308-309, ICD-10 F43). |
 | 🔹 Long-COVID | Any U07.1 or post-acute COVID ICD-10-CA. |
-| SES | Occupation and education categories (limited availability: 7.6% and 1.4% respectively). |
+| SES (socioeconomic status data not available) | Occupation and education categories (limited availability: 7.6% and 1.4% respectively). |
 | 🔹 NYD flag | ≥ 1 "Not Yet Diagnosed" code (799.9, V71.x). |
 
 All covariates written to `covariates.parquet`.
@@ -568,7 +568,7 @@ All subgroup p-values will be FDR-adjusted (Benjamini–Hochberg). CATE estimate
 
 ## **7a Misclassification Adjustment (`07a_misclassification_adjust.py`)**
 
-Reads chart-review PPV/NPV for SSD-flag, runs MC-SIMEX bias correction, writes corrected indicator `ssd_flag_adj` and exports variance-adjusted SEs.
+Reads chart-review PPV/NPV for SSD-flag, runs MC-SIMEX bias correction, writes corrected indicator `ssd_flag_adj` and exports variance-adjusted SES (socioeconomic status data not available).
 
 In the pipeline, 07a_misclassification_adjust is run after 02_exposure_flag.py and before 08_patient_master_table. The config.yaml key use_bias_corrected_flag: true toggles downstream analyses.
 
