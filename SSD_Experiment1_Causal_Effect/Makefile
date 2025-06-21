@@ -79,6 +79,11 @@ mc-simex-merge:
 	@echo "Merging MC-SIMEX bias-corrected flag to patient_master.parquet..."
 	$(PYTHON) $(SRC_DIR)/mc_simex_flag_merger.py --master-path $(DATA_DIR)/patient_master.parquet --corrected-path $(DATA_DIR)/cohort_bias_corrected.parquet
 
+.PHONY: clean-ses-data
+clean-ses-data:
+	@echo "Removing synthetic socioeconomic status data..."
+	$(PYTHON) $(SRC_DIR)/ses_data_cleaner.py
+
 # ------------------------------------------------------------------ #
 #  Master Table Targets (OR vs AND)
 # ------------------------------------------------------------------ #

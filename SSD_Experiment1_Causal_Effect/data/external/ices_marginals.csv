@@ -10,8 +10,3 @@ region,urban,0.45
 region,suburban,0.35
 region,rural,0.15
 region,remote,0.05
-socioeconomic_quintile,q1_lowest,0.2
-socioeconomic_quintile,q2,0.2
-socioeconomic_quintile,q3,0.2
-socioeconomic_quintile,q4,0.2
-socioeconomic_quintile,q5_highest,0.2

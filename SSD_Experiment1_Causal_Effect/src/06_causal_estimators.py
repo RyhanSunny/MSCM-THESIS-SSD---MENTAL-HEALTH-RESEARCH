@@ -498,8 +498,8 @@ def analyze_heterogeneity(df, cate, covariate_cols):
         'low_charlson': df['charlson_score'] < 3,
         'high_baseline_use': df.get('baseline_high_utilizer', 0) == 1,
         'prior_anxiety': df.get('anxiety_flag', 0) == 1,
-        'high_deprivation': df.get('deprivation_quintile', 3) >= 4,
-        'low_deprivation': df.get('deprivation_quintile', 3) <= 2
+        # REMOVED SES: 'high_deprivation': df.get('deprivation_quintile', 3) >= 4,
+        # REMOVED SES: 'low_deprivation': df.get('deprivation_quintile', 3) <= 2
     }
     
     # Calculate CATE by subgroup

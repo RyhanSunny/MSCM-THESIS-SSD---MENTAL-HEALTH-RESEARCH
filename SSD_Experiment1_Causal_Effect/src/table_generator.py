@@ -48,7 +48,7 @@ class SSDTableGenerator:
                 'charlson_score': np.random.poisson(1, n),
                 'baseline_encounters': np.random.poisson(3, n),
                 'rural': np.random.binomial(1, 0.3, n),
-                'income_quintile': np.random.randint(1, 6, n),
+                # REMOVED SES: 'income_quintile': np.random.randint(1, 6, n),
                 'iptw': np.random.gamma(2, 0.5, n)
             })
         

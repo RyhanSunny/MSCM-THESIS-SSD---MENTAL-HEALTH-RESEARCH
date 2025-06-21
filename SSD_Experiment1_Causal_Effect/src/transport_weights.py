@@ -80,7 +80,7 @@ def calculate_transport_weights(study_data: pd.DataFrame,
     
     # Default variables for transport weighting
     if variables is None:
-        variables = ['age_group', 'sex', 'region', 'socioeconomic_quintile']
+        # REMOVED SES: variables = ['age_group', 'sex', 'region', 'socioeconomic_quintile']
     
     # Check which variables are available
     available_vars = [var for var in variables if var in study_data.columns]
@@ -245,8 +245,8 @@ def create_example_ices_marginals(output_path: Path) -> None:
             'age_group', 'age_group', 'age_group', 'age_group', 'age_group',
             'sex', 'sex',
             'region', 'region', 'region', 'region',
-            'socioeconomic_quintile', 'socioeconomic_quintile', 'socioeconomic_quintile', 
-            'socioeconomic_quintile', 'socioeconomic_quintile'
+            # REMOVED SES: 'socioeconomic_quintile', 'socioeconomic_quintile', 'socioeconomic_quintile',
+            # REMOVED SES: 'socioeconomic_quintile', 'socioeconomic_quintile'
         ],
         'category': [
             '18-34', '35-49', '50-64', '65-79', '80+',
