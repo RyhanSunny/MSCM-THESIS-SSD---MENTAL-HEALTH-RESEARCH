@@ -279,15 +279,26 @@ import gc
 gc.collect()
 
 # ------------------------------------------------------------------ #
-#  5  Criterion 3 – ≥{config} d prescription coverage
+#  5  Criterion 3 – ≥{config} d prescription coverage (Felipe Enhancement: 180 days)
 # ------------------------------------------------------------------ #
-MIN_DRUG_DAYS = get_config("exposure.min_drug_days", 90)
+MIN_DRUG_DAYS = get_config("exposure.min_drug_days", 180)  # Enhanced: Felipe's 180-day threshold
 
-# Load drug ATC codes from config
+# Load enhanced drug ATC codes (Felipe's suggestions: N06A, N03A, N05A)
 drug_atc_config = get_config("exposure.drug_atc_codes", {})
 all_atc_codes = []
 for drug_class, codes in drug_atc_config.items():
     all_atc_codes.extend(codes)
+
+# Felipe Enhancement: Add missing drug classes
+felipe_enhanced_codes = [
+    # Antidepressants (N06A)
+    'N06A', 'N06A1', 'N06A2', 'N06A3', 'N06A4', 'N06AB', 'N06AF', 'N06AX',
+    # Anticonvulsants (N03A) 
+    'N03A', 'N03A1', 'N03A2', 'N03AB', 'N03AC', 'N03AD', 'N03AE', 'N03AF', 'N03AG', 'N03AX',
+    # Antipsychotics (N05A)
+    'N05A', 'N05A1', 'N05A2', 'N05A3', 'N05A4', 'N05AA', 'N05AB', 'N05AC', 'N05AD', 'N05AE', 'N05AF', 'N05AH', 'N05AL', 'N05AN'
+]
+all_atc_codes.extend(felipe_enhanced_codes)
 
 # Also load from drug_atc.csv if available
 drug_atc_path = ROOT / 'code_lists' / 'drug_atc.csv'
@@ -297,7 +308,10 @@ if drug_atc_path.exists():
     # Add any codes from CSV that aren't in config
     csv_codes = drug_atc_df['atc_code'].unique().tolist()
     all_atc_codes.extend([code for code in csv_codes if code not in all_atc_codes])
-    log.info(f"Total ATC codes: {len(all_atc_codes)}")
+
+# Remove duplicates and log
+all_atc_codes = list(set(all_atc_codes))
+log.info(f"Enhanced ATC codes (Felipe): {len(all_atc_codes)} total codes including N06A, N03A, N05A classes")
 
 # Drug name patterns from config
 drug_name_patterns = get_config("exposure.drug_name_patterns", [])

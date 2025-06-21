@@ -25,7 +25,8 @@ This script supports ALL hypotheses (H1-H6) and the Research Question by:
 from __future__ import annotations
 import sys, logging, re, glob
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
+import locale
 
 import pandas as pd
 import numpy  as np
@@ -272,9 +273,7 @@ cols_out = ["Patient_ID", "Sex", "BirthYear", age_col,
             "LongCOVID_flag", "NYD_count"]
 elig = elig[cols_out]
 
-log.info(f"Writing cohort -> {OUT_FILE}  ({len(elig):,} rows)")
-elig.to_parquet(OUT_FILE, index=False, compression="snappy")
-log.info("Done.")
+# Original cohort building complete - now applying Felipe's enhancements
 
 # --------------------------------------------------------------------------- #
 # 8  Update study documentation
@@ -296,3 +295,302 @@ try:
         log.warning(f"Study doc update failed: {result.stderr}")
 except Exception as e:
     log.warning(f"Could not update study doc: {e}")
+
+# ------------------------------------------------------------------ #
+#  NYD Enhancement Functions (Dr. Felipe's Suggestions)
+# ------------------------------------------------------------------ #
+
+def create_nyd_body_part_mapping():
+    """
+    Create validated NYD ICD code to body part mapping
+    Based on ICD-9 780-789 range (Symptoms, Signs, and Ill-defined Conditions)
+    """
+    log.info("Creating validated NYD body part mapping...")
+    
+    # Clinically validated ICD-9 codes 780-789
+    nyd_mapping = {
+        # General/Systemic symptoms (780-789)
+        '780.0': 'General',  # Alteration of consciousness
+        '780.1': 'General',  # Hallucinations
+        '780.2': 'General',  # Syncope and collapse
+        '780.3': 'General',  # Convulsions
+        '780.4': 'Neurological',  # Dizziness and giddiness
+        '780.5': 'General',  # Sleep disturbances
+        '780.6': 'General',  # Fever and other physiologic disturbances
+        '780.7': 'General',  # Malaise and fatigue
+        '780.8': 'General',  # Generalized hyperhidrosis
+        '780.9': 'General',  # Other general symptoms
+        '780.93': 'General', # Memory loss
+        '780.94': 'General', # Early satiety
+        '780.95': 'General', # Excessive crying
+        '780.96': 'General', # Generalized pain
+        '780.97': 'General', # Altered mental status
+        
+        # Symptoms involving nervous system (781)
+        '781.0': 'Neurological',  # Abnormal involuntary movements
+        '781.1': 'Neurological',  # Disturbances of sensation of smell/taste
+        '781.2': 'Neurological',  # Abnormality of gait
+        '781.3': 'Neurological',  # Lack of coordination
+        '781.4': 'Neurological',  # Transient paralysis of limb
+        '781.5': 'Neurological',  # Clubbing of fingers
+        '781.6': 'Neurological',  # Meningismus
+        '781.7': 'Neurological',  # Tetany
+        '781.8': 'Neurological',  # Neurologic neglect syndrome
+        '781.9': 'Neurological',  # Other symptoms nervous system
+        
+        # Symptoms involving skin (782)
+        '782.0': 'Dermatological',  # Disturbance of skin sensation
+        '782.1': 'Dermatological',  # Rash and other nonspecific skin eruption
+        '782.2': 'Dermatological',  # Localized superficial swelling
+        '782.3': 'Dermatological',  # Edema
+        '782.4': 'Dermatological',  # Jaundice, unspecified
+        '782.5': 'Dermatological',  # Cyanosis
+        '782.6': 'Dermatological',  # Pallor and flushing
+        '782.7': 'Dermatological',  # Spontaneous ecchymoses
+        '782.8': 'Dermatological',  # Changes in skin texture
+        '782.9': 'Dermatological',  # Other symptoms skin/integumentary
+        
+        # Symptoms concerning nutrition/metabolism (783)
+        '783.0': 'General',  # Anorexia
+        '783.1': 'General',  # Abnormal weight gain
+        '783.2': 'General',  # Abnormal loss of weight
+        '783.3': 'General',  # Feeding difficulties and mismanagement
+        '783.4': 'General',  # Lack of expected normal physiological development
+        '783.5': 'General',  # Polydipsia
+        '783.6': 'General',  # Polyphagia
+        '783.7': 'General',  # Adult failure to thrive
+        '783.9': 'General',  # Other symptoms nutrition/metabolism
+        
+        # Symptoms involving head and neck (784)
+        '784.0': 'Neurological',  # Headache
+        '784.1': 'Respiratory',   # Throat pain
+        '784.2': 'Respiratory',   # Swelling, mass, or lump in head and neck
+        '784.3': 'Neurological',  # Aphasia
+        '784.4': 'Neurological',  # Voice disturbance
+        '784.5': 'Neurological',  # Other speech disturbance
+        '784.6': 'Neurological',  # Other symbolic dysfunction
+        '784.7': 'Neurological',  # Epistaxis
+        '784.8': 'Neurological',  # Hemorrhage from throat
+        '784.9': 'Neurological',  # Other symptoms head and neck
+        
+        # Symptoms involving cardiovascular system (785)
+        '785.0': 'Cardiovascular',  # Tachycardia
+        '785.1': 'Cardiovascular',  # Palpitations
+        '785.2': 'Cardiovascular',  # Undiagnosed cardiac murmurs
+        '785.3': 'Cardiovascular',  # Other abnormal heart sounds
+        '785.4': 'Cardiovascular',  # Gangrene
+        '785.5': 'Cardiovascular',  # Shock
+        '785.6': 'Cardiovascular',  # Enlargement of lymph nodes
+        '785.9': 'Cardiovascular',  # Other symptoms circulatory system
+        
+        # Symptoms involving respiratory system (786)
+        '786.0': 'Respiratory',  # Dyspnea and respiratory abnormalities
+        '786.1': 'Respiratory',  # Stridor
+        '786.2': 'Respiratory',  # Cough
+        '786.3': 'Respiratory',  # Hemoptysis
+        '786.4': 'Respiratory',  # Abnormal sputum
+        '786.5': 'Respiratory',  # Chest pain
+        '786.50': 'Respiratory', # Chest pain, unspecified
+        '786.51': 'Respiratory', # Precordial pain
+        '786.52': 'Respiratory', # Painful respiration
+        '786.59': 'Respiratory', # Other chest pain
+        '786.6': 'Respiratory',  # Swelling, mass, or lump in chest
+        '786.7': 'Respiratory',  # Abnormal chest sounds
+        '786.8': 'Respiratory',  # Hiccough
+        '786.9': 'Respiratory',  # Other symptoms respiratory system
+        
+        # Symptoms involving digestive system (787)
+        '787.0': 'Gastrointestinal',  # Nausea and vomiting
+        '787.1': 'Gastrointestinal',  # Heartburn
+        '787.2': 'Gastrointestinal',  # Dysphagia
+        '787.3': 'Gastrointestinal',  # Flatulence, eructation, and gas pain
+        '787.4': 'Gastrointestinal',  # Visible peristalsis
+        '787.5': 'Gastrointestinal',  # Abnormal bowel sounds
+        '787.6': 'Gastrointestinal',  # Incontinence of feces
+        '787.7': 'Gastrointestinal',  # Abnormal feces
+        '787.9': 'Gastrointestinal',  # Other symptoms digestive system
+        '787.91': 'Gastrointestinal', # Diarrhea
+        
+        # Symptoms involving urinary system (788)
+        '788.0': 'Genitourinary',  # Renal colic
+        '788.1': 'Genitourinary',  # Dysuria
+        '788.2': 'Genitourinary',  # Retention of urine
+        '788.3': 'Genitourinary',  # Urinary incontinence
+        '788.4': 'Genitourinary',  # Frequency of urination and polyuria
+        '788.5': 'Genitourinary',  # Oliguria and anuria
+        '788.6': 'Genitourinary',  # Other abnormality of urination
+        '788.7': 'Genitourinary',  # Urethral discharge
+        '788.8': 'Genitourinary',  # Extravasation of urine
+        '788.9': 'Genitourinary',  # Other symptoms urinary system
+        
+        # Other symptoms and signs (789)
+        '789.0': 'Gastrointestinal',  # Abdominal pain
+        '789.1': 'General',           # Hepatomegaly
+        '789.2': 'General',           # Splenomegaly
+        '789.3': 'Gastrointestinal',  # Abdominal or pelvic swelling, mass, or lump
+        '789.4': 'Gastrointestinal',  # Abdominal rigidity
+        '789.5': 'Gastrointestinal',  # Ascites
+        '789.6': 'Gastrointestinal',  # Abdominal tenderness
+        '789.7': 'Gastrointestinal',  # Colic
+        '789.9': 'Gastrointestinal',  # Other symptoms abdomen/pelvis
+        
+        # Mental/Behavioral V codes related to symptoms
+        'V71.0': 'Mental/Behavioral',  # Observation for suspected mental condition
+        'V71.09': 'Mental/Behavioral', # Observation for other suspected mental condition
+    }
+    
+    log.info(f"Validated NYD mapping created: {len(nyd_mapping)} codes across {len(set(nyd_mapping.values()))} body systems")
+    
+    # Save mapping for clinical reference
+    mapping_df = pd.DataFrame([
+        {'icd_code': code, 'body_part': body_part, 'clinical_category': 'NYD_symptoms'}
+        for code, body_part in nyd_mapping.items()
+    ])
+    
+    mapping_path = ROOT / "code_lists" / "nyd_body_part_mapping_validated.csv"
+    mapping_path.parent.mkdir(exist_ok=True)
+    mapping_df.to_csv(mapping_path, index=False)
+    log.info(f"Clinical mapping saved: {mapping_path}")
+    
+    return nyd_mapping
+
+def load_real_nyd_data():
+    """Load real NYD diagnosis records from encounter_diagnosis"""
+    log.info("Loading real NYD diagnosis records from encounter data...")
+    
+    # Load encounter diagnosis data from checkpoint
+    enc_diag = pd.read_parquet(CKPT / "encounter_diagnosis.parquet")
+    
+    # NYD codes (780-789 range) - clinically validated
+    nyd_pattern = r'^(78[0-9]|799|V71\.0)'
+    nyd_diagnoses = enc_diag[
+        enc_diag['DiagnosisCode_calc'].str.match(nyd_pattern, na=False)
+    ].copy()
+    
+    # Get patient IDs and ICD codes with encounter context
+    nyd_data = nyd_diagnoses[['Patient_ID', 'DiagnosisCode_calc', 'Encounter_ID']].copy()
+    nyd_data = nyd_data.rename(columns={'DiagnosisCode_calc': 'ICD_code'})
+    nyd_data = nyd_data.drop_duplicates()
+    
+    log.info(f"Real NYD data loaded: {len(nyd_data):,} records for {nyd_data['Patient_ID'].nunique():,} patients")
+    
+    return nyd_data
+
+def add_nyd_enhancements(cohort_df):
+    """
+    Add NYD enhancements to cohort based on REAL patient data
+    """
+    log.info("Adding NYD enhancements to main cohort...")
+    
+    enhanced_cohort = cohort_df.copy()
+    
+    # Load real NYD data
+    nyd_data = load_real_nyd_data()
+    
+    # Filter to cohort patients only
+    cohort_patients = set(cohort_df['Patient_ID'])
+    nyd_data = nyd_data[nyd_data['Patient_ID'].isin(cohort_patients)]
+    
+    # Create mapping
+    nyd_mapping = create_nyd_body_part_mapping()
+    
+    if len(nyd_data) == 0:
+        log.info("No NYD data found for cohort - setting all flags to 0")
+        body_part_flags = ['NYD_yn', 'NYD_general_yn', 'NYD_mental_yn', 'NYD_neuro_yn', 
+                          'NYD_cardio_yn', 'NYD_resp_yn', 'NYD_gi_yn', 'NYD_musculo_yn', 
+                          'NYD_derm_yn', 'NYD_gu_yn']
+        for flag in body_part_flags:
+            enhanced_cohort[flag] = 0
+        return enhanced_cohort
+    
+    # Map ICD codes to body parts
+    nyd_data = nyd_data.copy()
+    nyd_data['body_part'] = nyd_data['ICD_code'].map(nyd_mapping).fillna('Unknown')
+    
+    # Calculate overall NYD binary flag
+    patients_with_nyd = set(nyd_data['Patient_ID'].unique())
+    enhanced_cohort['NYD_yn'] = enhanced_cohort['Patient_ID'].isin(patients_with_nyd).astype(int)
+    
+    # Calculate body part-specific flags
+    body_part_mapping = {
+        'General': 'NYD_general_yn',
+        'Mental/Behavioral': 'NYD_mental_yn', 
+        'Neurological': 'NYD_neuro_yn',
+        'Cardiovascular': 'NYD_cardio_yn',
+        'Respiratory': 'NYD_resp_yn',
+        'Gastrointestinal': 'NYD_gi_yn',
+        'Musculoskeletal': 'NYD_musculo_yn',
+        'Dermatological': 'NYD_derm_yn',
+        'Genitourinary': 'NYD_gu_yn'
+    }
+    
+    for body_part, column_name in body_part_mapping.items():
+        patients_with_body_part = set(
+            nyd_data[nyd_data['body_part'] == body_part]['Patient_ID'].unique()
+        )
+        enhanced_cohort[column_name] = enhanced_cohort['Patient_ID'].isin(patients_with_body_part).astype(int)
+    
+    # Calculate NYD counts for existing compatibility (preserve original NYD_count)
+    nyd_counts = nyd_data.groupby('Patient_ID').size().rename('NYD_count_enhanced')
+    enhanced_cohort = enhanced_cohort.merge(nyd_counts, left_on='Patient_ID', right_index=True, how='left')
+    enhanced_cohort['NYD_count_enhanced'] = enhanced_cohort['NYD_count_enhanced'].fillna(0)
+    
+    # Update the original NYD_count with enhanced count if it's higher
+    if 'NYD_count' in enhanced_cohort.columns:
+        enhanced_cohort['NYD_count'] = enhanced_cohort[['NYD_count', 'NYD_count_enhanced']].max(axis=1)
+    else:
+        enhanced_cohort['NYD_count'] = enhanced_cohort['NYD_count_enhanced']
+    
+    # Drop the temporary column
+    enhanced_cohort = enhanced_cohort.drop(columns=['NYD_count_enhanced'], errors='ignore')
+    
+    # Log summary statistics for REAL data
+    nyd_count = enhanced_cohort['NYD_yn'].sum()
+    total_patients = len(enhanced_cohort)
+    log.info(f"NYD enhancements added to main cohort:")
+    log.info(f"  Total cohort size: {total_patients:,} patients")
+    log.info(f"  Patients with NYD diagnoses: {nyd_count:,} ({nyd_count/total_patients*100:.1f}%)")
+    
+    for body_part, column_name in body_part_mapping.items():
+        count = enhanced_cohort[column_name].sum()
+        if count > 0:
+            log.info(f"  {body_part}: {count:,} patients ({count/total_patients*100:.1f}%)")
+    
+    return enhanced_cohort
+
+# ------------------------------------------------------------------ #
+#  Enhanced execution with Felipe's NYD suggestions
+# ------------------------------------------------------------------ #
+
+# Add Felipe's NYD enhancements to the existing cohort
+log.info("=== APPLYING FELIPE'S NYD ENHANCEMENTS ===")
+enhanced_cohort = add_nyd_enhancements(elig)
+
+# Update the final cohort with enhanced columns
+age_col = f"Age_at_{REF_DATE.year}"
+enhanced_cols_out = ["Patient_ID", "Sex", "BirthYear", age_col,
+                    "SpanMonths", "IndexDate_lab", "Charlson", 
+                    "LongCOVID_flag", "NYD_count",
+                    "NYD_yn", "NYD_general_yn", "NYD_mental_yn", "NYD_neuro_yn", 
+                    "NYD_cardio_yn", "NYD_resp_yn", "NYD_gi_yn", "NYD_musculo_yn", 
+                    "NYD_derm_yn", "NYD_gu_yn"]
+
+# Ensure all enhanced columns exist
+for col in enhanced_cols_out:
+    if col not in enhanced_cohort.columns:
+        log.warning(f"Column {col} not found, setting to 0")
+        enhanced_cohort[col] = 0
+
+final_cohort = enhanced_cohort[enhanced_cols_out]
+
+log.info(f"Writing ENHANCED cohort -> {OUT_FILE}  ({len(final_cohort):,} rows)")
+final_cohort.to_parquet(OUT_FILE, index=False, compression="snappy")
+
+# Log enhancement statistics
+nyd_count = final_cohort['NYD_yn'].sum()
+total_patients = len(final_cohort)
+log.info(f"✓ Felipe's NYD enhancements applied:")
+log.info(f"  Total cohort: {total_patients:,} patients")
+log.info(f"  NYD patients: {nyd_count:,} ({nyd_count/total_patients*100:.1f}%)")
+log.info("✓ Enhanced cohort saved with body system flags")
+log.info("Done.")

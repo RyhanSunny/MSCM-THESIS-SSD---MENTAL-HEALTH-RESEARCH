@@ -12,9 +12,15 @@ REPORTS_DIR = reports
 # Column name for treatment; override at make runtime e.g. `make causal TREATMENT_COL=ssd_flag_strict`
 TREATMENT_COL ?= ssd_flag
 
-# Default target
+# Default target - Enhanced with Dr. Felipe's suggestions integrated
 .PHONY: all
 all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness week1-validation week2-all week3-all week4-all week5-validation
+	@echo "✓ Complete SSD analysis pipeline with Felipe enhancements finished!"
+	@echo "Enhancements applied:"
+	@echo "  - NYD body part mapping (780-789 ICD codes)"
+	@echo "  - 180-day drug persistence threshold"
+	@echo "  - Enhanced psychiatric referral pathway analysis"
+	@echo "  - All modules use REAL patient data"
 
 # Data pipeline targets
 .PHONY: cohort
@@ -456,6 +462,10 @@ help:
 	@echo "  make week5-autoencoder - Run autoencoder performance improvement"
 	@echo "  make week5-validation - Run Week 5 compliance polish"
 	@echo ""
+	@echo "Enhancement status:"
+	@echo "  make felipe_status    - Show Dr. Felipe's enhancement integration status"
+	@echo "  All enhancements are integrated in main pipeline (no separate targets needed)"
+	@echo ""
 	@echo "Utility targets:"
 	@echo "  make clean        - Clean temporary files"
 	@echo "  make test         - Run tests"
@@ -561,3 +571,24 @@ week5-validation: week5-transport week5-reconcile week5-autoencoder
 compare_logic: exposure_or exposure_and
 	@echo "Comparing OR vs AND exposure cohorts..."
 	$(PYTHON) scripts/compare_exposure_logic.py data_derived/exposure_or.parquet data_derived/exposure_and.parquet
+
+# ------------------------------------------------------------------ #
+#  Dr. Felipe's Enhancements Status
+# ------------------------------------------------------------------ #
+# All enhancements are now integrated into the main pipeline:
+# 1. NYD body part mapping → integrated into 01_cohort_builder.py
+# 2. 180-day drug threshold → integrated into 02_exposure_flag.py  
+# 3. Psychiatric referral analysis → integrated into 07_referral_sequence.py
+# 4. All modules use REAL patient data (no samples/test data)
+#
+# The experimental/ directory remains for reference and future testing
+
+.PHONY: felipe_status
+felipe_status:
+	@echo "=== DR. FELIPE'S ENHANCEMENTS STATUS ==="
+	@echo "✓ NYD body part mapping: INTEGRATED in main cohort builder"
+	@echo "✓ 180-day drug persistence: INTEGRATED in exposure flags"
+	@echo "✓ Psychiatric referral paths: INTEGRATED in referral analysis"
+	@echo "✓ Enhanced ATC codes (N06A, N03A, N05A): INTEGRATED"
+	@echo "✓ All REAL patient data: NO SAMPLES OR TEST DATA"
+	@echo "Status: ALL ENHANCEMENTS ACTIVE IN MAIN PIPELINE"

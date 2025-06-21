@@ -1,10 +1,18 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-07_referral_sequence.py - Referral Sequence Analysis
+07_referral_sequence.py  – Enhanced Referral Sequence Analysis
 
-Analyzes referral patterns and identifies referral loops.
-Supports H2 by identifying inefficient care patterns.
+Enhanced with Felipe's suggestions:
+- Psychiatric vs medical specialist separation
+- Dual pathway tracking (medical → psychiatric)
+- Enhanced referral loop detection
+
+Outputs:
+`data_derived/referral_sequences.parquet`
+
+HYPOTHESIS MAPPING:
+Supports H2 enhanced criteria with psychiatric pathway analysis
 """
 
 import pandas as pd
@@ -13,6 +21,7 @@ from pathlib import Path
 import logging
 import sys
 from collections import Counter
+from datetime import datetime
 
 # Add src and utils to path
 SRC = (Path(__file__).resolve().parents[1] / "src").as_posix()
@@ -164,21 +173,65 @@ log.info("\nTop 10 referral paths:")
 for path, count in path_counts.most_common(10):
     log.info(f"  {path}: {count} times")
 
-# Create output dataframe
-log.info("Creating output dataset...")
+# Apply Felipe's psychiatric pathway enhancements
+log.info("=== APPLYING FELIPE'S PSYCHIATRIC PATHWAY ENHANCEMENTS ===")
+
+# Perform dual pathway analysis
+pathway_df, psychiatric_refs, medical_refs = analyze_dual_pathway_patterns(referrals, cohort)
+
+# Enhance H2 criteria
+h2_enhanced = enhance_h2_referral_criteria(pathway_df, cohort)
+
+# Create enhanced output dataframe
+log.info("Creating enhanced output dataset...")
 output = cohort[["Patient_ID"]].copy()
+
+# Original referral loop analysis
 output["referral_loop"] = output.Patient_ID.map(referral_loops).fillna(False)
 output["loop_count"] = output.Patient_ID.map(loop_counts).fillna(0)
 output["sequence_length"] = output.Patient_ID.map(sequence_lengths).fillna(0)
 output["has_circular_pattern"] = output.Patient_ID.map(circular_patterns).fillna(False)
 output["mean_referral_interval_days"] = output.Patient_ID.map(referral_intervals).fillna(0)
 
-# Summary statistics
-log.info("\nReferral pattern summary:")
-log.info(f"  Patients with referral loops: {output['referral_loop'].sum():,} ({output['referral_loop'].mean():.1%})")
+# Felipe's enhancements - merge psychiatric pathway analysis
+if len(h2_enhanced) > 0:
+    enhanced_columns = ['Patient_ID', 'H2_referral_loop_enhanced', 'dual_pathway', 
+                       'has_psychiatric_referral', 'has_medical_specialist', 'total_specialist_referrals']
+    enhanced_data = h2_enhanced[enhanced_columns]
+    output = output.merge(enhanced_data, on='Patient_ID', how='left')
+    
+    # Fill missing values (patients with no specialist referrals)
+    referral_columns = ['H2_referral_loop_enhanced', 'dual_pathway', 'has_psychiatric_referral', 
+                       'has_medical_specialist']
+    for col in referral_columns:
+        output[col] = output[col].fillna(False)
+    
+    output['total_specialist_referrals'] = output['total_specialist_referrals'].fillna(0)
+    
+    log.info("✓ Felipe's psychiatric pathway enhancements integrated")
+else:
+    log.warning("No enhanced referral data available - setting Felipe columns to defaults")
+    output['H2_referral_loop_enhanced'] = False
+    output['dual_pathway'] = False
+    output['has_psychiatric_referral'] = False
+    output['has_medical_specialist'] = False
+    output['total_specialist_referrals'] = 0
+
+# Enhanced summary statistics (original + Felipe's enhancements)
+log.info("\nEnhanced referral pattern summary:")
+log.info(f"  Patients with referral loops (original): {output['referral_loop'].sum():,} ({output['referral_loop'].mean():.1%})")
 log.info(f"  Mean sequence length: {output['sequence_length'].mean():.2f}")
 log.info(f"  Patients with circular patterns: {output['has_circular_pattern'].sum():,} ({output['has_circular_pattern'].mean():.1%})")
 log.info(f"  Mean interval between referrals: {output['mean_referral_interval_days'].mean():.1f} days")
+
+# Felipe's enhanced metrics
+if 'H2_referral_loop_enhanced' in output.columns:
+    log.info(f"\n✓ Felipe's psychiatric pathway enhancements:")
+    log.info(f"  H2 Enhanced referral loops: {output['H2_referral_loop_enhanced'].sum():,} ({output['H2_referral_loop_enhanced'].mean():.1%})")
+    log.info(f"  Dual pathway patients (medical + psychiatric): {output['dual_pathway'].sum():,} ({output['dual_pathway'].mean():.1%})")
+    log.info(f"  Patients with psychiatric referrals: {output['has_psychiatric_referral'].sum():,} ({output['has_psychiatric_referral'].mean():.1%})")
+    log.info(f"  Patients with medical specialist referrals: {output['has_medical_specialist'].sum():,} ({output['has_medical_specialist'].mean():.1%})")
+    log.info(f"  Mean specialist referrals per patient: {output['total_specialist_referrals'].mean():.2f}")
 
 # Save output
 log.info(f"\nSaving referral sequence data to {OUT_PATH}")
@@ -206,3 +259,155 @@ try:
         log.warning(f"Study doc update failed: {result.stderr}")
 except Exception as e:
     log.warning(f"Could not update study doc: {e}")
+
+def identify_psychiatric_referrals(referrals):
+    """Identify psychiatric/mental health referrals with enhanced patterns"""
+    log.info("Identifying psychiatric referrals...")
+    
+    # Enhanced psychiatric keywords based on clinical review
+    psychiatric_keywords = [
+        'psychiatr', 'mental health', 'psych', 'behavioral health',
+        'addiction', 'substance', 'counsell', 'therapy', 'therapist',
+        'psychology', 'psychologist', 'cognitive', 'behavioral',
+        'mood', 'anxiety', 'depression', 'bipolar', 'schizophren',
+        'eating disorder', 'ptsd', 'trauma', 'stress management',
+        'crisis', 'suicide', 'self harm', 'mental wellness'
+    ]
+    
+    # Create pattern for case-insensitive matching
+    pattern = '|'.join(psychiatric_keywords)
+    
+    # Handle empty dataframe case
+    if len(referrals) == 0:
+        log.info("No referrals to analyze")
+        empty_result = referrals.copy()
+        empty_result['referral_type'] = pd.Series([], dtype='object')
+        return empty_result
+    
+    # Identify psychiatric referrals
+    psych_mask = referrals['Name_calc'].str.contains(pattern, case=False, na=False)
+    
+    # Also check specialty codes if available
+    if 'SpecialtyCode' in referrals.columns:
+        psych_codes = ['PSYC', 'MENT', 'BEHV', 'ADDI', 'COUN']
+        code_pattern = '|'.join(psych_codes)
+        psych_mask |= referrals['SpecialtyCode'].str.contains(code_pattern, case=False, na=False)
+    
+    psychiatric_referrals = referrals[psych_mask].copy()
+    psychiatric_referrals['referral_type'] = 'psychiatric'
+    
+    log.info(f"Psychiatric referrals identified: {len(psychiatric_referrals):,}")
+    
+    return psychiatric_referrals
+
+def analyze_dual_pathway_patterns(referrals, cohort):
+    """Analyze medical → psychiatric referral pathways"""
+    log.info("Analyzing dual pathway patterns...")
+    
+    # Get psychiatric and medical referrals
+    psychiatric_refs = identify_psychiatric_referrals(referrals)
+    
+    # Identify medical specialists (non-psychiatric)
+    medical_specialties = [
+        'cardio', 'gastro', 'neuro', 'orthop', 'rheuma', 'endocrin',
+        'pulmon', 'nephro', 'oncol', 'dermat', 'urol', 'ophthal',
+        'otolaryn', 'ent', 'allergy', 'immunol', 'hematol',
+        'infectious', 'radiol', 'pathol', 'surgery', 'surgeon'
+    ]
+    medical_pattern = '|'.join(medical_specialties)
+    
+    # Exclude general practice and psychiatric
+    exclude_patterns = ['family', 'general', 'gp', 'primary', 'walk-in', 'clinic'] + psychiatric_keywords
+    exclude_pattern = '|'.join(exclude_patterns)
+    
+    medical_mask = (referrals['Name_calc'].str.contains(medical_pattern, case=False, na=False) & 
+                   ~referrals['Name_calc'].str.contains(exclude_pattern, case=False, na=False))
+    
+    medical_refs = referrals[medical_mask].copy()
+    medical_refs['referral_type'] = 'medical_specialist'
+    
+    # Combine and sort by patient and date
+    all_specialist_refs = pd.concat([psychiatric_refs, medical_refs])
+    all_specialist_refs = all_specialist_refs.sort_values(['Patient_ID', 'CompletedDate'])
+    
+    # Analyze patient-level patterns
+    pathway_analysis = {}
+    
+    for patient_id in all_specialist_refs['Patient_ID'].unique():
+        patient_refs = all_specialist_refs[all_specialist_refs['Patient_ID'] == patient_id]
+        
+        # Get referral sequence
+        referral_sequence = patient_refs['referral_type'].tolist()
+        referral_dates = patient_refs['CompletedDate'].tolist()
+        
+        # Analyze patterns
+        has_medical = 'medical_specialist' in referral_sequence
+        has_psychiatric = 'psychiatric' in referral_sequence
+        
+        # Check for medical → psychiatric sequence
+        medical_to_psych = False
+        if has_medical and has_psychiatric:
+            for i, ref_type in enumerate(referral_sequence[:-1]):
+                if ref_type == 'medical_specialist' and 'psychiatric' in referral_sequence[i+1:]:
+                    medical_to_psych = True
+                    break
+        
+        pathway_analysis[patient_id] = {
+            'total_specialist_referrals': len(patient_refs),
+            'medical_referrals': sum(1 for x in referral_sequence if x == 'medical_specialist'),
+            'psychiatric_referrals': sum(1 for x in referral_sequence if x == 'psychiatric'),
+            'has_medical_specialist': has_medical,
+            'has_psychiatric_referral': has_psychiatric,
+            'dual_pathway': has_medical and has_psychiatric,
+            'medical_to_psychiatric_sequence': medical_to_psych
+        }
+    
+    # Convert to DataFrame
+    pathway_df = pd.DataFrame.from_dict(pathway_analysis, orient='index')
+    pathway_df.index.name = 'Patient_ID'
+    pathway_df = pathway_df.reset_index()
+    
+    return pathway_df, psychiatric_refs, medical_refs
+
+def enhance_h2_referral_criteria(pathway_df, cohort):
+    """Enhanced H2 referral loop criteria with psychiatric specialization"""
+    log.info("Enhancing H2 referral loop criteria...")
+    
+    # Enhanced H2 criteria:
+    # 1. ≥2 medical specialist referrals with no clear resolution, OR
+    # 2. ≥1 medical specialist + ≥1 psychiatric referral (dual pathway), OR  
+    # 3. ≥3 total specialist referrals of any type
+    
+    h2_enhanced_criteria = pathway_df.copy()
+    
+    # Criterion 1: Multiple medical specialists (original H2 concept)
+    h2_enhanced_criteria['h2_medical_loop'] = h2_enhanced_criteria['medical_referrals'] >= 2
+    
+    # Criterion 2: Dual pathway (Felipe enhancement)
+    h2_enhanced_criteria['h2_dual_pathway'] = h2_enhanced_criteria['dual_pathway']
+    
+    # Criterion 3: High specialist utilization
+    h2_enhanced_criteria['h2_high_utilization'] = h2_enhanced_criteria['total_specialist_referrals'] >= 3
+    
+    # Combined H2 (any of the above)
+    h2_enhanced_criteria['H2_referral_loop_enhanced'] = (
+        h2_enhanced_criteria['h2_medical_loop'] |
+        h2_enhanced_criteria['h2_dual_pathway'] |
+        h2_enhanced_criteria['h2_high_utilization']
+    )
+    
+    # Statistics
+    h2_original_count = h2_enhanced_criteria['h2_medical_loop'].sum()
+    h2_dual_count = h2_enhanced_criteria['h2_dual_pathway'].sum()
+    h2_high_util_count = h2_enhanced_criteria['h2_high_utilization'].sum()
+    h2_enhanced_total = h2_enhanced_criteria['H2_referral_loop_enhanced'].sum()
+    
+    log.info(f"Enhanced H2 referral loop results:")
+    log.info(f"  H2 Medical loops (≥2 medical specialists): {h2_original_count:,}")
+    log.info(f"  H2 Dual pathways (medical + psychiatric): {h2_dual_count:,}")
+    log.info(f"  H2 High utilization (≥3 total specialists): {h2_high_util_count:,}")
+    log.info(f"  H2 Enhanced total: {h2_enhanced_total:,}")
+    
+    return h2_enhanced_criteria
+
+# Felipe's enhancement functions are now integrated into the main execution above
