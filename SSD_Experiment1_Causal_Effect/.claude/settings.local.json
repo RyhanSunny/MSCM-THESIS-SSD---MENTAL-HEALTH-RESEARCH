@@ -61,7 +61,8 @@
       "mcp__serena-local__replace_regex",
       "Bash(cp:*)",
       "Bash(git reset:*)",
-      "mcp__serena-local__think_about_whether_you_are_done"
+      "mcp__serena-local__think_about_whether_you_are_done",
+      "mcp__serena-local__summarize_changes"
     ],
     "deny": []
   },
