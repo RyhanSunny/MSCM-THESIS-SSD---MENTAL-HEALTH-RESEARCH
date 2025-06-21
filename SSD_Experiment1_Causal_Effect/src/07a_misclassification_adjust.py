@@ -254,6 +254,20 @@ def main():
             description="MC-SIMEX bias-corrected cohort with ssd_flag_adj"
         )
         
+        # Merge bias-corrected flag back to patient_master.parquet
+        logger.info("Merging ssd_flag_adj back to patient_master.parquet...")
+        try:
+            from mc_simex_flag_merger import merge_bias_corrected_flag
+            merge_bias_corrected_flag(
+                master_path=cohort_path,
+                corrected_path=output_path,
+                backup=True
+            )
+            logger.info("✓ Successfully merged ssd_flag_adj to patient_master.parquet")
+        except Exception as e:
+            logger.error(f"Failed to merge ssd_flag_adj: {e}")
+            logger.warning("Continuing without flag merge - manual merge required")
+        
         # Update study documentation
         if Path("scripts/update_study_doc.py").exists():
             import subprocess

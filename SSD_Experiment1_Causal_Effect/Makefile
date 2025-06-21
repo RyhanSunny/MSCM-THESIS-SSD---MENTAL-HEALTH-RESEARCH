@@ -74,6 +74,11 @@ misclassification: exposure
 	@echo "Adjusting for misclassification..."
 	$(PYTHON) $(SRC_DIR)/07a_misclassification_adjust.py --treatment-col $(TREATMENT_COL)
 
+.PHONY: mc-simex-merge
+mc-simex-merge:
+	@echo "Merging MC-SIMEX bias-corrected flag to patient_master.parquet..."
+	$(PYTHON) $(SRC_DIR)/mc_simex_flag_merger.py --master-path $(DATA_DIR)/patient_master.parquet --corrected-path $(DATA_DIR)/cohort_bias_corrected.parquet
+
 # ------------------------------------------------------------------ #
 #  Master Table Targets (OR vs AND)
 # ------------------------------------------------------------------ #
