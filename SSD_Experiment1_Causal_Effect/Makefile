@@ -362,8 +362,16 @@ format:
 
 .PHONY: install
 install:
-	@echo "Installing dependencies..."
-	pip install -r requirements.txt
+	@echo "Installing conda environment from environment.yml..."
+	@if command -v mamba &> /dev/null; then \
+		mamba env create -f environment.yml; \
+	elif command -v conda &> /dev/null; then \
+		conda env create -f environment.yml; \
+	else \
+		echo "Neither conda nor mamba found. Please install conda or mamba first."; \
+		exit 1; \
+	fi
+	@echo "✓ Conda environment created. Activate with: conda activate ssd-pipeline"
 
 .PHONY: docker-build
 docker-build:
