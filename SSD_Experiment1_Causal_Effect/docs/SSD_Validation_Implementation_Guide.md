@@ -132,6 +132,7 @@ print(f"Specificity: {specificity:.3f}")
 2. **Run MC-SIMEX correction**:
    ```bash
    python src/07a_misclassification_adjust.py
+   # Creates data_derived/cohort_bias_corrected.parquet with ssd_flag_adj
    ```
 
 3. **Enable bias-corrected flag**:
@@ -167,7 +168,7 @@ print(f"Specificity: {specificity:.3f}")
 - [ ] Flagged uncertain cases for senior clinician review
 - [ ] Calculated sensitivity and specificity
 - [ ] Updated config.yaml with results
-- [ ] Ran MC-SIMEX to generate ssd_flag_adj
+- [ ] Ran MC-SIMEX to create `cohort_bias_corrected.parquet`
 - [ ] Documented validation process and decisions
 
 ## Expected Outcomes

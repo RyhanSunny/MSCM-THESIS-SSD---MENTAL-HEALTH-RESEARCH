@@ -321,9 +321,9 @@ The weight-influence jack-knife notebook is now superseded by automated guards:
   • Called in `05_ps_match.py`; CI fails if thresholds breached.
 
 ### 1.12 MC-SIMEX script
-07a_misclassification_adjust.py is present, but its output (ssd_flag_adj.parquet) is not currently consumed by 05_ps_match.py or 06_causal_estimators.py when the YAML toggle use_bias_corrected_flag: true is on.
-→ Action: modify both scripts to select the corrected flag when the toggle is true; add unit test.
-**✅ IMPLEMENTED** - Both `05_ps_match.py` and `06_causal_estimators.py` check `use_bias_corrected_flag` and use `ssd_flag_adj` when available
+`07a_misclassification_adjust.py` runs after `08_patient_master_table.py`. It reads `patient_master.parquet` and writes `cohort_bias_corrected.parquet` containing an `ssd_flag_adj` column.  However, `05_ps_match.py` and `06_causal_estimators.py` still load `patient_master.parquet`, so the corrected file must be merged manually when `mc_simex.use_bias_corrected_flag` is enabled.
+→ Action: document this execution order and update the pipeline to load the adjusted table automatically.
+**⚠️ PARTIALLY IMPLEMENTED** – Scripts check for `ssd_flag_adj` but the adjusted table is not linked by default
 
 ### 1.13 Longitudinal MSM branch
 The MSM code block is gated behind config["run_msm"] but there is no Make target that activates it, and no test dataset to prove it runs on limited hardware.
@@ -812,10 +812,11 @@ Tip: run vale or proselint with a rule that flags passive voice; then a quick se
 
 ### ⚠️ PROMPT 8 (WEEK 6) IMPLEMENTATION STATUS:
 
-**A. MC-SIMEX Integration** - ✅ IMPLEMENTED
-- `use_bias_corrected_flag` in config.yaml exists
-- Both `05_ps_match.py` and `06_causal_estimators.py` consume `ssd_flag_adj` when flag is true
-- Tests exist but not comprehensive
+**A. MC-SIMEX Integration** - ⚠️ PARTIALLY IMPLEMENTED
+- `use_bias_corrected_flag` in `config.yaml` exists
+- `07a_misclassification_adjust.py` outputs `cohort_bias_corrected.parquet` after the master table stage
+- `05_ps_match.py` and `06_causal_estimators.py` check for `ssd_flag_adj` but still load `patient_master.parquet`
+- Manual merging is required to use the bias-corrected flag; tests not comprehensive
 
 **B. Autoencoder Performance** - ⚠️ PARTIALLY IMPLEMENTED
 - `src/retrain_autoencoder.py` exists and functional

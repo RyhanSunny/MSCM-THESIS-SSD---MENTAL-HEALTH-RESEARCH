@@ -27,7 +27,7 @@ Significant progress has been made on the SSD pipeline implementation. All place
 - ✅ **Referral Sequence (07_referral_sequence.py)**: Complete implementation
 
 ### Phase 3 - Causal Analysis
-- ✅ **MC-SIMEX (07a_misclassification_adjust.py)**: Created, fixed hardcoded values
+- ⚠️ **MC-SIMEX (07a_misclassification_adjust.py)**: Produces `cohort_bias_corrected.parquet` after `08_patient_master_table.py` but downstream scripts still load `patient_master.parquet`
 - ✅ **Patient Master (08_patient_master_table.py)**: Complete implementation
 
 ### Phase 4 - Matching/Weighting
