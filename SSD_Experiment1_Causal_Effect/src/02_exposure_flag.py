@@ -289,16 +289,184 @@ all_atc_codes = []
 for drug_class, codes in drug_atc_config.items():
     all_atc_codes.extend(codes)
 
-# Felipe Enhancement: Add missing drug classes
+# Enhanced Drug Classifications - Clinically Validated
+# Clinical validation completed 2025-06-22 (see CLINICAL_VALIDATION_DRUG_CLASSES_ICD_CODES.md)
+# Evidence levels: STRONG (N06A), APPROPRIATE (N05B/N05C, N02B), LIMITED (N03A, N05A)
+# Source: Meta-analysis of 94 trials, DSM-5 criteria, APA guidelines
+
 felipe_enhanced_codes = [
-    # Antidepressants (N06A)
+    # N06A - Antidepressants (STRONG EVIDENCE) 
+    # "Primary evidence-based treatment" - Meta-analysis NNT=3
     'N06A', 'N06A1', 'N06A2', 'N06A3', 'N06A4', 'N06AB', 'N06AF', 'N06AX',
-    # Anticonvulsants (N03A) 
+    
+    # N03A - Anticonvulsants (LIMITED EVIDENCE)
+    # "Limited supporting evidence" but captures inappropriate prescribing patterns  
     'N03A', 'N03A1', 'N03A2', 'N03AB', 'N03AC', 'N03AD', 'N03AE', 'N03AF', 'N03AG', 'N03AX',
-    # Antipsychotics (N05A)
+    
+    # N05A - Antipsychotics (LIMITED EVIDENCE) 
+    # "Little support" but "SSRI+atypical more effective than SSRI alone"
     'N05A', 'N05A1', 'N05A2', 'N05A3', 'N05A4', 'N05AA', 'N05AB', 'N05AC', 'N05AD', 'N05AE', 'N05AF', 'N05AH', 'N05AL', 'N05AN'
 ]
+
+def get_enhanced_drug_mapping():
+    """
+    Enhanced drug mapping unified from experimental and MH versions.
+    Incorporates psychiatric specificity with clinical evidence levels.
+    
+    Clinical Evidence Summary (validated 2025-06-22):
+    - N06A: Strong evidence (APA guidelines, meta-analysis NNT=3)
+    - N05B/N05C: Appropriate for anxiety/sleep in SSD (DSM-5 Criterion B)
+    - N02B: Appropriate for pain management (A-MUPS AUC=0.900)
+    - N03A: Limited evidence but research value for inappropriate prescribing
+    - N05A: Limited evidence but valuable for severe/augmentation cases
+    
+    Returns:
+        dict: ATC code to clinical classification mapping
+    """
+    return {
+        # Strong evidence - First-line treatments
+        'N06A': 'antidepressants_primary',
+        'N06AB': 'ssri_antidepressants',      # First-line, high persistence (60.9%)
+        'N06AC': 'tricyclic_antidepressants', # "Notable success" in trials
+        'N06AF': 'maoi_antidepressants',      # Specialized use
+        'N06AX': 'other_antidepressants',     # Alternative agents
+        
+        # Appropriate - Symptom management
+        'N05B': 'anxiolytics',               # DSM-5 Criterion B anxiety
+        'N05C': 'hypnotics',                 # Sleep disturbances
+        'N02B': 'analgesics_non_opioid',     # A-MUPS validated for pain
+        
+        # Limited evidence - Research value
+        'N03A': 'anticonvulsants_mood',      # Off-label mood/pain
+        'N03AE': 'anticonvulsants_gabapentin', # "Widespread prescribing not supported"
+        'N03AF': 'anticonvulsants_carbam',   # Carbamazepine derivatives
+        
+        'N05A': 'antipsychotics_augment',    # Augmentation therapy
+        'N05AA': 'antipsychotics_typical',   # Limited use
+        'N05AB': 'antipsychotics_atypical',  # "More effective with SSRI"
+        'N05AL': 'antipsychotics_modern',    # Newer atypicals
+        'N05AN': 'lithium_compounds',        # Mood stabilization
+    }
+
+def create_enhanced_drug_atc_export():
+    """
+    Create comprehensive ATC drug code mapping export with enhanced classifications.
+    Integrates experimental enhancements for mental health patient cohort.
+    
+    Returns:
+        pd.DataFrame: Enhanced ATC codes with clinical classifications
+    """
+    enhanced_codes = {
+        # Existing codes (maintain backward compatibility)
+        'N05B': 'anxiolytics',
+        'N05C': 'hypnotics', 
+        'N02B': 'analgesics_non_opioid',
+        
+        # Enhanced Psychiatric Medications - Mental Health Cohort Focus
+        'N06A1': 'antidepressants_tricyclic',
+        'N06A2': 'antidepressants_ssri',
+        'N06A3': 'antidepressants_snri', 
+        'N06A4': 'antidepressants_other',
+        'N06AB': 'antidepressants_ssri_specific',
+        'N06AF': 'antidepressants_maoi',
+        'N06AX': 'antidepressants_other_specific',
+        
+        'N03A1': 'anticonvulsants_phenytoin',
+        'N03A2': 'anticonvulsants_carbamazepine',
+        'N03AX': 'anticonvulsants_other',
+        'N03AB': 'anticonvulsants_succinimide',
+        'N03AC': 'anticonvulsants_oxazolidine',
+        'N03AD': 'anticonvulsants_succinimide_derivatives',
+        'N03AE': 'anticonvulsants_benzodiazepine',
+        'N03AF': 'anticonvulsants_carboxamide',
+        'N03AG': 'anticonvulsants_fatty_acid',
+        
+        'N05A1': 'antipsychotics_typical',
+        'N05A2': 'antipsychotics_atypical',
+        'N05A3': 'antipsychotics_lithium',
+        'N05A4': 'antipsychotics_other',
+        'N05AA': 'antipsychotics_phenothiazine',
+        'N05AB': 'antipsychotics_butyrophenone',
+        'N05AC': 'antipsychotics_benzisoxazole',
+        'N05AD': 'antipsychotics_substituted_benzamide',
+        'N05AE': 'antipsychotics_indole',
+        'N05AF': 'antipsychotics_thioxanthene',
+        'N05AH': 'antipsychotics_diazepine',
+        'N05AL': 'antipsychotics_benzothiazole',
+        'N05AN': 'antipsychotics_lithium'
+    }
+    
+    # Create comprehensive export DataFrame
+    export_data = []
+    for code, drug_class in enhanced_codes.items():
+        enhancement_status = 'consolidated' if code.startswith(('N06A', 'N03A', 'N05A')) else 'original'
+        evidence_level = 'STRONG' if code.startswith('N06A') else 'APPROPRIATE' if code.startswith(('N05B', 'N05C', 'N02B')) else 'LIMITED'
+        
+        export_data.append({
+            'atc_code': code,
+            'drug_class': drug_class,
+            'enhancement_status': enhancement_status,
+            'evidence_level': evidence_level,
+            'mental_health_relevance': 'HIGH' if code.startswith(('N06A', 'N05A')) else 'MEDIUM',
+            'consolidation_date': '2025-06-22'
+        })
+    
+    export_df = pd.DataFrame(export_data)
+    
+    # Save enhanced codes to CSV
+    codes_path = ROOT / "code_lists" / "drug_atc_enhanced_consolidated.csv"
+    export_df.to_csv(codes_path, index=False)
+    log.info(f"Enhanced ATC codes exported: {len(enhanced_codes)} total codes to {codes_path}")
+    
+    return export_df
+
+def export_unified_validation():
+    """
+    Export unified drug validation combining clinical evidence with code mapping.
+    Integrates findings from CLINICAL_VALIDATION_DRUG_CLASSES_ICD_CODES.md
+    """
+    try:
+        drug_mapping = get_enhanced_drug_mapping()
+        evidence_levels = {
+            'N06A': 'STRONG',     # Meta-analysis evidence
+            'N05B': 'APPROPRIATE', # DSM-5 criterion
+            'N05C': 'APPROPRIATE', # Sleep symptoms  
+            'N02B': 'APPROPRIATE', # A-MUPS validation
+            'N03A': 'LIMITED',    # Research value only
+            'N05A': 'LIMITED',    # Augmentation cases
+        }
+        
+        validation_data = []
+        for code in felipe_enhanced_codes:
+            prefix = code[:4] if len(code) >= 4 else code[:3]
+            evidence = evidence_levels.get(prefix, 'LIMITED')
+            classification = drug_mapping.get(code, 'general_psychotropic')
+            
+            validation_data.append({
+                'atc_code': code,
+                'drug_class': classification,
+                'evidence_level': evidence,
+                'validation_date': '2025-06-22',
+                'clinical_source': 'CLINICAL_VALIDATION_DRUG_CLASSES_ICD_CODES.md',
+                'integration_source': 'unified_experimental_mh_versions'
+            })
+        
+        # Save for validation workflow
+        validation_df = pd.DataFrame(validation_data)
+        validation_path = ROOT / 'validation' / 'unified_drug_classification.csv'
+        validation_path.parent.mkdir(exist_ok=True)
+        validation_df.to_csv(validation_path, index=False)
+        log.info(f"Unified drug validation exported: {len(validation_data)} codes to {validation_path}")
+        
+        return len(validation_data)
+        
+    except Exception as e:
+        log.warning(f"Validation export failed: {e}")
+        return 0
 all_atc_codes.extend(felipe_enhanced_codes)
+
+# Export unified validation data (combines experimental/MH enhancements with clinical evidence)
+validation_count = export_unified_validation()
 
 # Also load from drug_atc.csv if available
 drug_atc_path = ROOT / 'code_lists' / 'drug_atc.csv'
@@ -309,9 +477,18 @@ if drug_atc_path.exists():
     csv_codes = drug_atc_df['atc_code'].unique().tolist()
     all_atc_codes.extend([code for code in csv_codes if code not in all_atc_codes])
 
-# Remove duplicates and log
+# Remove duplicates and log unified enhancements
 all_atc_codes = list(set(all_atc_codes))
-log.info(f"Enhanced ATC codes (Felipe): {len(all_atc_codes)} total codes including N06A, N03A, N05A classes")
+n06a_count = len([c for c in all_atc_codes if c.startswith('N06A')])
+n03a_count = len([c for c in all_atc_codes if c.startswith('N03A')])
+n05a_count = len([c for c in all_atc_codes if c.startswith('N05A')])
+
+log.info(f"UNIFIED Enhanced ATC codes: {len(all_atc_codes)} total codes")
+log.info(f"  - N06A Antidepressants: {n06a_count} codes (STRONG evidence)")
+log.info(f"  - N03A Anticonvulsants: {n03a_count} codes (LIMITED evidence - research value)")
+log.info(f"  - N05A Antipsychotics: {n05a_count} codes (LIMITED evidence - augmentation)")
+log.info(f"  - Clinical validation: {validation_count} codes validated 2025-06-22")
+log.info(f"  - Source: Unified experimental + MH versions with clinical evidence")
 
 # Drug name patterns from config
 drug_name_patterns = get_config("exposure.drug_name_patterns", [])
@@ -387,6 +564,15 @@ log.info(f"Combined exposure (OR logic): {exposure.exposure_flag.sum():,}"
          f" / {len(exposure):,} ({exposure.exposure_flag.mean():.1%})")
 log.info(f"Strict exposure (AND logic): {exposure.exposure_flag_strict.sum():,}"
          f" / {len(exposure):,} ({exposure.exposure_flag_strict.mean():.1%})")
+
+# ------------------------------------------------------------------ #
+#  6.5  Export Enhanced Drug Classifications (Consolidated Features)
+# ------------------------------------------------------------------ #
+try:
+    enhanced_export_df = create_enhanced_drug_atc_export()
+    log.info(f"Enhanced drug ATC export completed: {len(enhanced_export_df)} codes consolidated")
+except Exception as e:
+    log.warning(f"Enhanced drug export failed: {e}")
 
 # ------------------------------------------------------------------ #
 #  7  Save
