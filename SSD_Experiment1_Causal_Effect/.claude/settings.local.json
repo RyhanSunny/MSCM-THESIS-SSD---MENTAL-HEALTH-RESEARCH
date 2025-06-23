@@ -62,7 +62,10 @@
       "Bash(cp:*)",
       "Bash(git reset:*)",
       "mcp__serena-local__think_about_whether_you_are_done",
-      "mcp__serena-local__summarize_changes"
+      "mcp__serena-local__summarize_changes",
+      "Bash(mv:*)",
+      "mcp__serena-local__find_referencing_symbols",
+      "mcp__serena-local__insert_before_symbol"
     ],
     "deny": []
   },
