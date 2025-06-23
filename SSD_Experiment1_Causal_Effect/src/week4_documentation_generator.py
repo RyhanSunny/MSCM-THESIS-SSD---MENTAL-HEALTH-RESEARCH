@@ -753,7 +753,7 @@ def _generate_cohort_enhancement_section() -> str:
     return """## 1. Mental Health Cohort Enhancement
 
 ### 1.1 Population Definition
-The study cohort has been refined to focus specifically on mental health patients using ICD diagnosis codes:
+The study cohort consists of pre-filtered mental health patients from the CPCSSN database extraction:
 
 **Inclusion Criteria:**
 - ICD-10: F32-F48 (depressive, anxiety, stress-related, somatoform disorders)

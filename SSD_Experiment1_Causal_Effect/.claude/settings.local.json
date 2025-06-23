@@ -65,7 +65,9 @@
       "mcp__serena-local__summarize_changes",
       "Bash(mv:*)",
       "mcp__serena-local__find_referencing_symbols",
-      "mcp__serena-local__insert_before_symbol"
+      "mcp__serena-local__insert_before_symbol",
+      "WebFetch(domain:creator-launch-7eoo.vercel.app)",
+      "Bash(docker:*)"
     ],
     "deny": []
   },

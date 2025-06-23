@@ -416,7 +416,7 @@ lockfile-verify:
 .PHONY: docker-run
 docker-run:
 	@echo "Running pipeline in Docker..."
-	docker run -v $(PWD):/app ssd-pipeline:1.1 make all
+	docker run -v $(PWD):/app ssd-pipeline:1.1 conda run -n ssd-causal make all
 
 .PHONY: validate
 validate: master

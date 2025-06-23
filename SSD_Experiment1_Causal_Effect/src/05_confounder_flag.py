@@ -196,13 +196,9 @@ confounders["baseline_high_utilizer"] = (
 ).astype(int)
 
 # 2. Pre-existing Mental Health Conditions
-log.info("Identifying pre-existing mental health conditions...")
-mental_health_codes = ['296', '300', '311', 'F32', 'F33', 'F40', 'F41', 'F43']
-mh_pattern = '|'.join([f'^{code}' for code in mental_health_codes])
-mh_patients = health_condition[
-    health_condition.DiagnosisCode_calc.str.match(mh_pattern, na=False)
-]['Patient_ID'].unique()
-confounders['mental_health_dx'] = confounders.Patient_ID.isin(mh_patients).astype(int)
+log.info("All patients are mental health patients (data pre-filtered)")
+# Since cohort is pre-filtered for MH patients, all patients have MH diagnosis
+confounders['mental_health_dx'] = 1
 
 # Depression specifically
 depression_codes = ['296.2', '296.3', '311', 'F32', 'F33']

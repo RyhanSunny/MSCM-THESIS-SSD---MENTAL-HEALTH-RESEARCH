@@ -299,40 +299,6 @@ except Exception as e:
 # ------------------------------------------------------------------ #
 #  NYD Enhancement Functions (Dr. Felipe's Suggestions)
 # ------------------------------------------------------------------ #
-# ================================================================
-# Mental Health Patient Filtering
-# ================================================================
-def is_mental_health_diagnosis(diagnosis_code):
-    """
-    Check if diagnosis code indicates mental health condition
-    Consolidated from mh_cohort_builder.py for mental health cohort requirement
-    
-    Parameters:
-    -----------
-    diagnosis_code : str
-        ICD-9 or ICD-10 diagnosis code
-        
-    Returns:
-    --------
-    bool
-        True if code indicates mental health condition
-    """
-    if pd.isna(diagnosis_code):
-        return False
-        
-    code = str(diagnosis_code).strip().upper()
-    
-    # ICD-10 Mental Health codes (F00-F99)
-    if re.match(r'^F\d{2}', code):
-        return True
-    
-    # ICD-9 Mental Health codes 
-    # 290-319: Mental disorders
-    if re.match(r'^(29[0-9]|3[0-1][0-9])', code):
-        return True
-        
-    return False
-
 def create_nyd_body_part_mapping():
     """
     Create validated NYD ICD code to body part mapping
@@ -615,29 +581,6 @@ for col in enhanced_cols_out:
         enhanced_cohort[col] = 0
 
 final_cohort = enhanced_cohort[enhanced_cols_out]
-
-# ================================================================
-# Filter to Mental Health Patients Only (Research Requirement)
-# ================================================================
-log.info("Filtering cohort to mental health patients only...")
-
-# Check if health_condition data is available
-mh_patient_ids = set()
-if 'health_condition' in locals() and len(health_condition) > 0:
-    # Find all patients with mental health diagnoses
-    mh_diagnoses = health_condition[
-        health_condition['DiagnosisCode_calc'].apply(is_mental_health_diagnosis)
-    ]
-    mh_patient_ids = set(mh_diagnoses['Patient_ID'].unique())
-    log.info(f"Found {len(mh_patient_ids):,} patients with mental health diagnoses")
-    
-    # Filter final cohort to MH patients only
-    pre_filter_count = len(final_cohort)
-    final_cohort = final_cohort[final_cohort['Patient_ID'].isin(mh_patient_ids)]
-    log.info(f"Mental health filtering: {pre_filter_count:,} → {len(final_cohort):,} patients")
-    log.info(f"Retention rate: {len(final_cohort)/pre_filter_count*100:.1f}%")
-else:
-    log.warning("No health_condition data available for MH filtering - using full cohort")
 
 log.info(f"Writing ENHANCED cohort -> {OUT_FILE}  ({len(final_cohort):,} rows)")
 final_cohort.to_parquet(OUT_FILE, index=False, compression="snappy")
