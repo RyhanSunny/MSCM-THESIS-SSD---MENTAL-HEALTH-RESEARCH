@@ -21,6 +21,21 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 
 
+class ArtefactTracker:
+    """Simple ArtefactTracker class for pipeline compatibility"""
+    
+    def __init__(self, script_name: str):
+        self.script_name = script_name
+    
+    def track(self, file_path: str, description: str = "", **kwargs):
+        """Track artefact creation"""
+        print(f"[{self.script_name}] Created: {file_path} - {description}")
+    
+    def log_metric(self, name: str, value: Any):
+        """Log a metric"""
+        print(f"[{self.script_name}] Metric {name}: {value}")
+
+
 def create_artefact_metadata(
     artefact_path: str | Path,
     script_name: str,

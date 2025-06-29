@@ -1,0 +1,29 @@
+{
+  "outcome": "total_encounters",
+  "estimates": [
+    {
+      "method": "TMLE",
+      "estimate": 1.6173598502849347,
+      "se": 0.03515438744266482,
+      "ci_lower": 1.5484572508973116,
+      "ci_upper": 1.6862624496725578,
+      "n": 250025,
+      "clustered": false
+    },
+    {
+      "method": "Double ML",
+      "estimate": 1.741278244354819,
+      "ci_lower": 1.5638093580104315,
+      "ci_upper": 1.9187471306992052,
+      "n": 250025
+    },
+    {
+      "method": "Causal Forest",
+      "estimate": 1.6622550661425752,
+      "ci_lower": 0.7782596547136837,
+      "ci_upper": 2.546250477571465,
+      "n": 250025
+    }
+  ],
+  "timestamp": "2025-06-29T15:16:42.449384"
+}

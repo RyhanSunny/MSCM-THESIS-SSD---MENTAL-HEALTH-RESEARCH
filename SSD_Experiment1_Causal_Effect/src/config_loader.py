@@ -152,6 +152,39 @@ def get_random_state() -> int:
     return get_config('random_state.global_seed', 42)
 
 
+def set_global_seeds(seed: int = None) -> None:
+    """
+    Set global random seeds for reproducibility
+    
+    Args:
+        seed: Random seed value. If None, uses config value.
+    """
+    if seed is None:
+        seed = get_random_state()
+    
+    import random
+    import numpy as np
+    
+    random.seed(seed)
+    np.random.seed(seed)
+    
+    # Set TensorFlow seed if available
+    try:
+        import tensorflow as tf
+        tf.random.set_seed(seed)
+    except ImportError:
+        pass
+    
+    # Set PyTorch seed if available
+    try:
+        import torch
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+    except ImportError:
+        pass
+
+
 if __name__ == "__main__":
     # Test configuration loading
     config = load_config()
