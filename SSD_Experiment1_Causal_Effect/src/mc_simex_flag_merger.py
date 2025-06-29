@@ -68,8 +68,8 @@ def merge_bias_corrected_flag(
     if 'ssd_flag_adj' not in corrected_df.columns:
         raise KeyError("ssd_flag_adj column not found in bias-corrected file")
     
-    if 'patient_id' not in master_df.columns or 'patient_id' not in corrected_df.columns:
-        raise KeyError("patient_id column required in both files for alignment")
+    if 'Patient_ID' not in master_df.columns or 'Patient_ID' not in corrected_df.columns:
+        raise KeyError("Patient_ID column required in both files for alignment")
     
     # Validate patient ID alignment
     master_ids = set(master_df['patient_id'])
@@ -94,15 +94,15 @@ def merge_bias_corrected_flag(
     # Merge ssd_flag_adj column
     logger.info("Merging ssd_flag_adj column...")
     
-    # Sort both dataframes by patient_id for reliable merge
+    # Sort both dataframes by Patient_ID for reliable merge
     master_df = master_df.sort_values('patient_id').reset_index(drop=True)
     corrected_df = corrected_df.sort_values('patient_id').reset_index(drop=True)
     
-    # Extract just the ssd_flag_adj column with patient_id for merge
+    # Extract just the ssd_flag_adj column with Patient_ID for merge
     adj_flags = corrected_df[['patient_id', 'ssd_flag_adj']].copy()
     
     # Merge on patient_id
-    merged_df = master_df.merge(adj_flags, on='patient_id', how='left', validate='one_to_one')
+    merged_df = master_df.merge(adj_flags, on='Patient_ID', how='left', validate='one_to_one')
     
     # Validate merge results
     assert len(merged_df) == initial_rows, f"Row count changed: {initial_rows} -> {len(merged_df)}"

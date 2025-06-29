@@ -403,6 +403,9 @@ def main():
     # Load configuration
     config = load_config()
     
+    # Initialize tracker
+    tracker = ArtefactTracker()
+    
     # Log script start
     logger.info("Starting propensity score matching script")
     
