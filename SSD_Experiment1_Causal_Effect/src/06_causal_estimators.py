@@ -241,6 +241,62 @@ class SimplifiedTMLE:
         
         return self
 
+
+def apply_weight_trimming(weights, trim_threshold=10, method='crump'):
+    """
+    Apply weight trimming following Crump et al. (2009) rule.
+    
+    Parameters:
+    -----------
+    weights : array-like
+        Propensity score weights
+    trim_threshold : float, default 10
+        Maximum allowed weight (weights > threshold are set to threshold)
+    method : str, default 'crump'
+        Trimming method ('crump' or 'percentile')
+        
+    Returns:
+    --------
+    trimmed_weights : np.ndarray
+        Trimmed weights
+    trim_info : dict
+        Information about trimming
+    """
+    weights = np.asarray(weights)
+    original_n = len(weights)
+    
+    if method == 'crump':
+        # Crump et al. (2009) rule: trim weights > threshold
+        trimmed_weights = np.minimum(weights, trim_threshold)
+        n_trimmed = np.sum(weights > trim_threshold)
+        
+    elif method == 'percentile':
+        # Trim top and bottom percentiles
+        lower = np.percentile(weights, 1)
+        upper = np.percentile(weights, 99)
+        trimmed_weights = np.clip(weights, lower, upper)
+        n_trimmed = np.sum((weights < lower) | (weights > upper))
+    
+    else:
+        raise ValueError(f"Unknown trimming method: {method}")
+    
+    trim_info = {
+        'method': method,
+        'threshold': trim_threshold,
+        'n_trimmed': int(n_trimmed),
+        'percent_trimmed': 100.0 * n_trimmed / original_n,
+        'max_weight_original': float(np.max(weights)),
+        'max_weight_trimmed': float(np.max(trimmed_weights)),
+        'ess_original': float((np.sum(weights)**2) / np.sum(weights**2)),
+        'ess_trimmed': float((np.sum(trimmed_weights)**2) / np.sum(trimmed_weights**2))
+    }
+    
+    logger.info(f"Weight trimming: {n_trimmed} weights ({trim_info['percent_trimmed']:.1f}%) trimmed")
+    logger.info(f"ESS improved from {trim_info['ess_original']:.0f} to {trim_info['ess_trimmed']:.0f}")
+    
+    return trimmed_weights, trim_info
+
+
 def run_tmle(df, outcome_col, treatment_col, covariate_cols, weights=None, cluster_col=None):
     """Run TMLE estimation with optional cluster-robust SE"""
     logger.info("Running TMLE estimation")
@@ -590,8 +646,14 @@ def main():
                        help='Outcome variable to analyze')
     parser.add_argument('--treatment-col', default='ssd_flag', help='Treatment column name (default: ssd_flag)')
     parser.add_argument('--cluster-col', default='site_id', help='Cluster column for robust SE (default: site_id)')
+    parser.add_argument('--input-file', default='data_derived/ps_weighted.parquet',
+                       help='Input data file path (default: data_derived/ps_weighted.parquet)')
+    parser.add_argument('--output-file', default='results/ate_estimates.json',
+                       help='Output results file path (default: results/ate_estimates.json)')
     parser.add_argument('--dry-run', action='store_true',
                        help='Run without saving outputs')
+    parser.add_argument('--trim-weights', type=float, default=None,
+                       help='Trim weights above this threshold (e.g., 10 for Crump rule)')
     args = parser.parse_args()
     
     # Set random seeds
@@ -604,9 +666,9 @@ def main():
     logger.info("Starting causal inference estimation script")
     
     # Load data
-    data_path = Path("data_derived/ps_weighted.parquet")
+    data_path = Path(args.input_file)
     if not data_path.exists():
-        logger.error(f"PS weighted data not found at {data_path}")
+        logger.error(f"Input data not found at {data_path}")
         return
     
     logger.info(f"Loading data from {data_path}")
@@ -639,6 +701,22 @@ def main():
     
     if is_count_outcome:
         logger.info(f"Detected count outcome: {outcome_col}. Will use Poisson/NB regression.")
+    
+    # Apply weight trimming if requested
+    trim_info = None
+    if args.trim_weights is not None and 'iptw' in df.columns:
+        logger.info(f"Applying weight trimming with threshold {args.trim_weights}")
+        original_weights = df['iptw'].values
+        trimmed_weights, trim_info = apply_weight_trimming(
+            original_weights, 
+            trim_threshold=args.trim_weights,
+            method='crump'
+        )
+        df['iptw'] = trimmed_weights
+        
+        # Re-check balance after trimming
+        if 'ps_weight' in df.columns:
+            df['ps_weight'] = trimmed_weights
     
     # Run different estimators
     ate_estimates = []
@@ -694,7 +772,11 @@ def main():
             'timestamp': datetime.now().isoformat()
         }
         
-        results_path = Path("results/ate_estimates.json")
+        # Add weight trimming info if applicable
+        if trim_info is not None:
+            ate_results['weight_trimming'] = trim_info
+        
+        results_path = Path(args.output_file)
         results_path.parent.mkdir(exist_ok=True)
         with open(results_path, 'w') as f:
             json.dump(ate_results, f, indent=2)

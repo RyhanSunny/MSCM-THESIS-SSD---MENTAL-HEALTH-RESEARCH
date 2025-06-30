@@ -1,0 +1,268 @@
+data_validation:
+  EncounterDiagnosis_prepared.csv:
+    columns:
+    - EncounterDiagnosis_ID
+    - Network_ID
+    - Site_ID
+    - Patient_ID
+    - Encounter_ID
+    - Cycle_ID
+    - DiagnosisText_orig
+    - DiagnosisText_calc
+    - DiagnosisCodeType_orig
+    - DiagnosisCodeType_calc
+    - DiagnosisCode_orig
+    - DiagnosisCode_calc
+    - DateCreated
+    last_modified: '2025-02-20 18:43:45'
+    size_mb: 504.88
+    status: Available
+  Encounter_prepared.csv:
+    columns:
+    - Encounter_ID
+    - Network_ID
+    - Site_ID
+    - Patient_ID
+    - Provider_ID
+    - Cycle_ID
+    - EncounterDate
+    - Reason_orig
+    - Reason_calc
+    - EncounterType
+    - DateCreated
+    last_modified: '2025-02-20 18:43:33'
+    size_mb: 390.9
+    status: Available
+  Lab_prepared.csv:
+    columns:
+    - Lab_ID
+    - Network_ID
+    - Site_ID
+    - Patient_ID
+    - Encounter_ID
+    - Cycle_ID
+    - PerformedDate
+    - Name_orig
+    - Name_calc
+    - CodeType_orig
+    - CodeType_calc
+    - Code_orig
+    - Code_calc
+    - TestResult_orig
+    - TestResult_calc
+    - UpperNormal
+    - LowerNormal
+    - NormalRange
+    - UnitOfMeasure_orig
+    - UnitOfMeasure_calc
+    - DateCreated
+    last_modified: '2025-02-20 18:43:49'
+    size_mb: 0.16
+    status: Available
+  PatientDemographic_merged_prepared.csv:
+    columns:
+    - PatientDemographic_ID
+    - Network_ID
+    - Site_ID
+    - Patient_ID
+    - Cycle_ID
+    - Occupation
+    - HighestEducation
+    - HousingStatus
+    - ResidencePostalCode
+    - PatientStatus_orig
+    - PatientStatus_calc
+    - Language
+    - Ethnicity
+    - DeceasedYear
+    - DateCreated
+    - BirthYear
+    - BirthMonth
+    - OptedOut
+    - OptOutDate
+    - Sex
+    last_modified: '2025-02-20 19:36:06'
+    size_mb: 11.35
+    status: Available
+environment:
+  execution_date: '20250224_024401'
+  key_packages:
+    matplotlib: 3.9.2
+    numpy: 1.26.4
+    pandas: 2.2.2
+  python_version: 3.12.3 | packaged by conda-forge | (main, Apr 15 2024, 18:20:11)
+    [MSC v.1938 64 bit (AMD64)]
+power_analysis:
+  parameters:
+    alpha: 0.05
+    attrition_adjustment: 20%
+    power: 0.9
+    relative_risk: 1.05
+    effect_size_derived: 0.05
+    effect_size_note: Derived from RR=1.05
+    last_sync: '2025-06-17 15:30:07'
+    sync_source: blueprint_narrative
+  required_n: 235
+protocol:
+  date: '2025-02-24'
+  study_id: SSD-CPCSSN-2025-001
+  temporal_windows:
+    baseline: 2015-01-01 to 2015-06-30
+    outcome: 2016-07-01 to 2020-06-30
+    treatment: 2015-07-01 to 2016-06-30
+  title: Causal Effect of Negative Lab Tests on Healthcare Utilization
+  variables:
+    mediator:
+      components:
+      - 'Symptom code frequency (ICD-9: 780-789)'
+      - Visit patterns for unexplained symptoms
+      - Anxiety/depression indicators
+      name: SSD Severity Score
+      type: continuous (0-100)
+    outcome:
+      metrics:
+      - Total encounters
+      - ED visits
+      - Specialist referrals
+      name: Healthcare Utilization
+      type: count
+    treatment:
+      definition: "\u22653 normal lab results in 12 months"
+      name: Negative Lab Cascade
+      source: Lab_prepared.csv
+      type: binary
+  version: '1.0'
+license: MIT
+deterministic_random_state: 'true'
+cohort_rows: 250025
+selection_diagram_pdf: figs/selection_diagram.pdf
+weight_diag_notebook: figs/weights.html
+death_rates_table: reports/death_rates_table.csv
+ices_margins_file: external/ices_margins_2015_2017.csv
+docker_tag: ssd-pipeline:1.1
+log:
+- timestamp: '20250524_200628'
+  step: Docker build 1.1
+- timestamp: '20250524_201139'
+  step: Global seeds util added
+- timestamp: '20250524_201323'
+  step: MIT LICENSE and CITATION.cff added
+- timestamp: '20250524_201649'
+  step: Release lock script implemented
+- timestamp: '20250525_040659'
+  step: Cohort eligibility completed
+- timestamp: '20250525_081550'
+  step: Exposure flag generated
+- timestamp: '20250525_124838'
+  step: Mediator autoencoder completed
+- timestamp: '20250525_125142'
+  step: Outcome flags generated
+- timestamp: '20250525_125948'
+  step: Exposure flag generated
+- timestamp: '20250525_132527'
+  step: Confounder matrix generated
+- timestamp: '20250525_133505'
+  step: Lab sensitivity flags generated
+- timestamp: '20250615_194337'
+  step: Referral sequence analysis completed
+- timestamp: '20250615_194501'
+  step: Patient master table created
+- timestamp: '20250615_195017'
+  step: Unified data table creation completed
+- timestamp: '20250615_232831'
+  step: Cohort eligibility completed
+- timestamp: '20250615_233113'
+  step: Patient master table created
+- timestamp: '20250615_233221'
+  step: Confounder matrix generated
+- timestamp: '20250615_233238'
+  step: Patient master table created
+- timestamp: '20250616_004006'
+  step: Cohort eligibility completed
+- timestamp: '20250616_005830'
+  step: Cohort eligibility completed
+- timestamp: '20250616_010939'
+  step: Exposure flag generated
+- timestamp: '20250616_011411'
+  step: Mediator autoencoder completed
+- timestamp: '20250616_011500'
+  step: Outcome flags generated
+- timestamp: '20250616_011621'
+  step: Lab sensitivity flags generated
+- timestamp: '20250616_011825'
+  step: Referral sequence analysis completed
+- timestamp: '20250616_011859'
+  step: Patient master table created
+- timestamp: '20250616_012239'
+  step: Cohort eligibility completed
+- timestamp: '20250616_013724'
+  step: Exposure flag generated
+- timestamp: '20250616_070342'
+  step: Cohort eligibility completed
+- timestamp: '20250616_070732'
+  step: Cohort eligibility completed
+- timestamp: '20250616_072702'
+  step: Cohort eligibility completed
+- timestamp: '20250617_083708'
+  step: Cohort eligibility completed
+- timestamp: '20250621_130219'
+  step: Cohort eligibility completed
+- timestamp: '20250621_133959'
+  step: Cohort eligibility completed
+- timestamp: '20250621_134223'
+  step: Cohort eligibility completed
+- timestamp: '20250621_185024'
+  step: Cohort eligibility completed
+- timestamp: '20250621_194132'
+  step: Cohort eligibility completed
+- timestamp: '20250621_194301'
+  step: Cohort eligibility completed
+- timestamp: '20250621_194710'
+  step: Cohort eligibility completed
+- timestamp: '20250621_195230'
+  step: Exposure flag generated
+- timestamp: '20250621_195704'
+  step: Mediator autoencoder completed
+- timestamp: '20250621_195749'
+  step: Outcome flags generated
+- timestamp: '20250621_195839'
+  step: Confounder matrix generated
+- timestamp: '20250621_200008'
+  step: Lab sensitivity flags generated
+- timestamp: '20250621_201419'
+  step: Referral sequence analysis completed
+- timestamp: '20250621_201643'
+  step: Missing data imputation completed
+- timestamp: '20250621_201733'
+  step: Patient master table created
+- timestamp: '20250622_023055'
+  step: Cohort eligibility completed
+- timestamp: '20250623_072454'
+  step: Cohort eligibility completed
+- timestamp: '20250623_163547'
+  step: Cohort eligibility completed
+- timestamp: '20250623_164005'
+  step: Cohort eligibility completed
+- timestamp: '20250623_170037'
+  step: Cohort eligibility completed
+- timestamp: '20250629_135202'
+  step: Cohort eligibility completed
+- timestamp: '20250629_135305'
+  step: Cohort eligibility completed
+- timestamp: '20250629_151109'
+  step: Patient master table created
+- timestamp: '20250629_153831'
+  step: Cohort eligibility completed
+- timestamp: '20250629_154850'
+  step: Exposure flag generated
+- timestamp: '20250629_155529'
+  step: Mediator autoencoder completed
+- timestamp: '20250629_155611'
+  step: Outcome flags generated
+- timestamp: '20250629_155655'
+  step: Confounder matrix generated
+- timestamp: '20250629_155806'
+  step: Lab sensitivity flags generated
+release_lock_script: present
+script: 02_exposure_flag.py
+status: implemented

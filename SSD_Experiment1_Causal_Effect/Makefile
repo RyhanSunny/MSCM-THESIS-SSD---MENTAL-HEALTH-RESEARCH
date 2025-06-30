@@ -1,6 +1,10 @@
 # SSD Causal Analysis Pipeline Makefile
 # Author: Ryhan Suny
 # Date: 2025-05-24
+# Enhanced: 2025-06-29 with comprehensive logging integration
+
+# Force bash for better logging support
+SHELL := /bin/bash
 
 # Variables
 PYTHON = python3
@@ -9,12 +13,23 @@ DATA_DIR = data_derived
 RESULTS_DIR = results
 NOTEBOOKS_DIR = Notebooks
 REPORTS_DIR = reports
+LOGS_DIR = logs
 # Column name for treatment; override at make runtime e.g. `make causal TREATMENT_COL=ssd_flag_strict`
 TREATMENT_COL ?= ssd_flag
 
+# Logging setup - create logs directory if it doesn't exist
+$(shell mkdir -p $(LOGS_DIR))
+
+# Logging utility function
+define log_command
+	@echo "[$(shell date '+%Y-%m-%d %H:%M:%S')] Starting: $(1)"
+	@$(PYTHON) $(SRC_DIR)/$(2) $(3) 2>&1 | tee $(LOGS_DIR)/$(1)_$(shell date '+%Y%m%d_%H%M%S').log
+	@echo "[$(shell date '+%Y-%m-%d %H:%M:%S')] Completed: $(1)"
+endef
+
 # Default target - Enhanced with Dr. Felipe's suggestions integrated
 .PHONY: all
-all: cohort exposure mediator outcomes confounders lab referral missing misclassification master sequential ps causal mediation temporal evalue competing-risk death-rates robustness week1-validation week2-all week3-all week4-all week5-validation
+all: cohort exposure mediator outcomes confounders lab referral pre-imputation-master missing-master misclassification master sequential ps causal-mi pool-mi mediation temporal evalue competing-risk death-rates robustness week1-validation week2-all week3-all week4-all week5-validation
 	@echo "✓ Complete SSD analysis pipeline with Felipe enhancements finished!"
 	@echo "Enhancements applied:"
 	@echo "  - NYD body part mapping (780-789 ICD codes)"
@@ -25,21 +40,18 @@ all: cohort exposure mediator outcomes confounders lab referral missing misclass
 # Data pipeline targets
 .PHONY: cohort
 cohort:
-	@echo "Building cohort..."
-	$(PYTHON) $(SRC_DIR)/01_cohort_builder.py
+	$(call log_command,cohort,01_cohort_builder.py,)
 
 # ------------------------------------------------------------------ #
 #  Exposure Logic Targets
 # ------------------------------------------------------------------ #
 .PHONY: exposure_or
 exposure_or: cohort
-	@echo "Generating exposure flags (OR logic)..."
-	$(PYTHON) $(SRC_DIR)/02_exposure_flag.py --logic or
+	$(call log_command,exposure_or,02_exposure_flag.py,--logic or)
 
 .PHONY: exposure_and
 exposure_and: cohort
-	@echo "Generating exposure flags (AND logic)..."
-	$(PYTHON) $(SRC_DIR)/02_exposure_flag.py --logic and
+	$(call log_command,exposure_and,02_exposure_flag.py,--logic and)
 
 # Backwards-compat default
 .PHONY: exposure
@@ -75,6 +87,16 @@ missing: cohort
 	@echo "Handling missing data..."
 	$(PYTHON) $(SRC_DIR)/07_missing_data.py
 
+.PHONY: pre-imputation-master
+pre-imputation-master: cohort exposure mediator outcomes confounders
+	@echo "Creating pre-imputation master table..."
+	$(PYTHON) $(SRC_DIR)/pre_imputation_master.py
+
+.PHONY: missing-master
+missing-master: pre-imputation-master
+	@echo "Imputing master table with m=30..."
+	$(PYTHON) $(SRC_DIR)/07b_missing_data_master.py
+
 .PHONY: misclassification
 misclassification: exposure
 	@echo "Adjusting for misclassification..."
@@ -94,14 +116,14 @@ clean-ses-data:
 #  Master Table Targets (OR vs AND)
 # ------------------------------------------------------------------ #
 .PHONY: master_or
-master_or: cohort exposure_or mediator outcomes confounders lab referral missing misclassification
+master_or: missing-master misclassification
 	@echo "Creating patient master table (OR logic)..."
 	$(PYTHON) $(SRC_DIR)/08_patient_master_table.py --exposure_file exposure_or.parquet --output_file patient_master_or.parquet
-	@# maintain legacy filename
-	@cp data_derived/patient_master_or.parquet data_derived/patient_master.parquet
+	@echo "Copying patient_master_or.parquet to patient_master.parquet for legacy compatibility"
+	@bash -c "cp data_derived/patient_master_or.parquet data_derived/patient_master.parquet"
 
 .PHONY: master_and
-master_and: cohort exposure_and mediator outcomes confounders lab referral missing misclassification
+master_and: missing-master misclassification
 	@echo "Creating patient master table (AND logic)..."
 	$(PYTHON) $(SRC_DIR)/08_patient_master_table.py --exposure_file exposure_and.parquet --output_file patient_master_and.parquet
 
@@ -117,13 +139,22 @@ sequential: master
 # Causal analysis targets
 .PHONY: ps
 ps: master
-	@echo "Running propensity score matching..."
-	$(PYTHON) $(SRC_DIR)/05_ps_match.py --treatment-col $(TREATMENT_COL)
+	$(call log_command,ps_matching,05_ps_match.py,--treatment-col $(TREATMENT_COL))
 
 .PHONY: causal
 causal: ps
-	@echo "Running causal estimators..."
-	$(PYTHON) $(SRC_DIR)/06_causal_estimators.py --treatment-col $(TREATMENT_COL) --cluster-col site_id
+	$(call log_command,causal_estimators,06_causal_estimators.py,--treatment-col $(TREATMENT_COL) --cluster-col site_id)
+
+# Multiple imputation causal analysis with Rubin's Rules
+.PHONY: causal-mi
+causal-mi: ps
+	@echo "Running causal estimation on multiple imputed datasets..."
+	$(call log_command,causal_mi_estimation,imputed_causal_pipeline.py,--treatment-col $(TREATMENT_COL) --cluster-col site_id)
+
+.PHONY: pool-mi
+pool-mi: causal-mi
+	@echo "Pooling MI results using Rubin's Rules..."
+	$(call log_command,rubins_pooling,rubins_pooling_engine.py,--results-dir $(RESULTS_DIR) --output-file $(RESULTS_DIR)/pooled_causal_estimates.json)
 
 # Week 2 targets - H1-H3 hypothesis analysis
 .PHONY: hypotheses

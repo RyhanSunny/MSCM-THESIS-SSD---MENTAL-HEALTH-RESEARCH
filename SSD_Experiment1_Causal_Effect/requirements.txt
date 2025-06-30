@@ -4,3 +4,7 @@ pyarrow
 scikit-learn
 pytest
 pyyaml
+matplotlib
+seaborn
+scipy
+statsmodels

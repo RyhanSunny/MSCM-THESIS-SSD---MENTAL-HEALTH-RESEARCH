@@ -1,0 +1,24 @@
+{
+  "artefact": {
+    "filename": "cohort_bias_corrected.parquet",
+    "path": "data_derived\\cohort_bias_corrected.parquet",
+    "checksum": "d17cfe082cc3b496284f17ec77ebd81f",
+    "size_bytes": 10838102
+  },
+  "provenance": {
+    "script": "07a_misclassification_adjust.py",
+    "timestamp": "2025-06-29T18:43:55.116760",
+    "hypotheses": [
+      "H1",
+      "H2",
+      "H3"
+    ],
+    "description": "MC-SIMEX bias-corrected cohort with ssd_flag_adj"
+  },
+  "inputs": {},
+  "metrics": {
+    "rows": 250025,
+    "se_reduction": -1.6412784177487465,
+    "adjustment_factor": 1.38855516133116
+  }
+}

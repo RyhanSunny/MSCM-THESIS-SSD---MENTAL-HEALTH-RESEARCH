@@ -72,7 +72,7 @@ long_covid:
   - long COVID
   - post COVID
 autoencoder:
-  input_features: 56
+  input_features: 24  # Adjusted to actual data availability from EHR checkpoint
   encoding_dim: 16
   hidden_dim: 32
   regularization: 1.0e-05
@@ -170,3 +170,8 @@ qc:
   min_cohort_size: 200000
   max_smd_weighted: 0.1
   min_effective_sample_size: 100000
+imputation:
+  n_imputations: 30  # Updated from 5 to match 28% missing (Rubin's recommendation)
+  method: auto  # Will use miceforest if available, sklearn otherwise
+  save_all_imputations: true
+  random_seed_base: 42

@@ -6,60 +6,62 @@ channels:
   - r
 
 dependencies:
-  # Python dependencies
-  - python=3.12
-  - pandas=2.2.3
-  - numpy=1.26.0
-  - scikit-learn=1.3.0
-  - statsmodels=0.14.0
-  - matplotlib=3.8.0
-  - seaborn=0.13.0
-  - xgboost=2.0.0
-  - lightgbm=4.1.0
-  - pytest=7.4.0
-  - jupyter=1.0.0
-  - ipykernel=6.25.0
-  - papermill=2.4.0
-  - pyyaml=6.0.1
-  - openpyxl=3.1.2
-  - pyarrow=13.0.0
-  - tabulate=0.9.0
-  - tqdm=4.66.0
+  # Python dependencies - using 3.11 for better R compatibility
+  - python=3.11
+  - pandas>=2.0
+  - numpy>=1.24
+  - scikit-learn>=1.3
+  - statsmodels>=0.14
+  - matplotlib>=3.7
+  - seaborn>=0.12
+  - lightgbm>=3.3
+  - pytest>=7.0
+  - jupyter>=1.0
+  - ipykernel>=6.0
+  - papermill>=2.4
+  - pyyaml>=6.0
+  - openpyxl>=3.1
+  - pyarrow>=12.0
+  - tabulate>=0.9
+  - tqdm>=4.65
   
-  # R dependencies  
-  - r-base=4.3.0
-  - r-tidyverse=2.0.0
-  - r-MatchIt=4.5.0
-  - r-survey=4.2.0
-  - r-grf=2.3.0
-  - r-tmle=2.0.0
-  - r-SuperLearner=2.0.28
-  - r-glmnet=4.1.0
-  - r-ranger=0.15.0
-  - r-xgboost=1.7.0
-  - r-mice=3.16.0
-  - r-sandwich=3.0.0
-  - r-lmtest=0.9.0
-  - r-car=3.1.0
-  - r-boot=1.3.0
-  - r-survival=3.5.0
-  - r-cmprsk=2.2.0
+  # R dependencies - using flexible versions
+  - r-base=4.3.*
+  - r-tidyverse
+  - r-MatchIt
+  - r-survey
+  - r-grf
+  - r-tmle
+  - r-SuperLearner
+  - r-glmnet
+  - r-ranger
+  - r-xgboost
+  - r-mice
+  - r-sandwich
+  - r-lmtest
+  - r-car
+  - r-boot
+  - r-survival
+  - r-cmprsk
   
   # Mixed language support
-  - rpy2=3.5.0
+  - rpy2>=3.4
   
   # Additional pip packages
+  - pip
   - pip:
-    - miceforest==5.6.3
-    - causalml==0.14.0
-    - EconML==0.14.0
-    - dowhy==0.11.1
-    - graphviz==0.20.0
-    - python-dotenv==1.0.0
-    - click==8.1.0
-    - rich==13.5.0
+    - miceforest>=5.6
+    - causalml>=0.14
+    - EconML>=0.14
+    - dowhy>=0.11
+    - graphviz>=0.20
+    - python-dotenv>=1.0
+    - click>=8.1
+    - rich>=13.0
+    - xgboost>=1.7
     
 # Environment metadata
 # Created: 2025-06-17
 # Purpose: SSD Causal Inference Pipeline - Combined Python/R environment
 # Maintainer: Ryhan Suny <sunnyrayhan2@gmail.com>
+# Fixed: Compatibility issues resolved for Docker deployment

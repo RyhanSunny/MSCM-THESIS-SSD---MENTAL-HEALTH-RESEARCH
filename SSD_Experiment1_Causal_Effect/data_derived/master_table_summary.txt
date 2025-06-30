@@ -88,7 +88,7 @@ Column List:
   male: int32, 0 nulls
   mean_referral_interval_days: float64, 0 nulls
   medical_costs: float64, 0 nulls
-  mental_health_dx: int32, 0 nulls
+  mental_health_dx: int64, 0 nulls
   normal_count_12m: int32, 0 nulls
   normal_count_18m: int32, 0 nulls
   normal_count_24m: int32, 0 nulls

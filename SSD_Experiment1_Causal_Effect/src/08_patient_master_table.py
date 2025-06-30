@@ -116,61 +116,80 @@ if missing_required:
 
 # Start with cohort as base
 log.info("\nMerging datasets...")
-master = datasets['cohort.parquet'].copy()
-initial_rows = len(master)
-log.info(f"Starting with cohort: {initial_rows:,} patients")
+# Check if imputed master data exists
+imputed_master_dir = DERIVED / 'imputed_master'
+imputed_master_path = imputed_master_dir / 'master_imputed_1.parquet'
 
-# Track merge statistics
-merge_stats = []
+if imputed_master_path.exists():
+    log.info("\nFound imputed master data - using imputed version")
+    master = pd.read_parquet(imputed_master_path)
+    initial_rows = len(master)
+    log.info(f"Loaded imputed master: {initial_rows:,} patients with {len(master.columns)} columns")
+    
+    # Since this is already the merged master, we can skip most merges
+    # But we still need to merge misclassification data if it exists
+    merge_stats = []
+else:
+    # Original merging logic
+    log.info("\nNo imputed data found - using original merging approach")
+    log.info("Merging datasets...")
+    master = datasets['cohort.parquet'].copy()
+    initial_rows = len(master)
+    log.info(f"Starting with cohort: {initial_rows:,} patients")
 
-# Merge each dataset
-for filename, df in datasets.items():
-    if filename == 'cohort.parquet':
-        continue  # Skip base dataset
+# Only do merging if we're not using imputed data
+if not imputed_master_path.exists():
+    # Track merge statistics
+    merge_stats = []
     
-    # Remove duplicates if any
-    if df['Patient_ID'].duplicated().any():
-        log.warning(f"  Found {df['Patient_ID'].duplicated().sum()} duplicate Patient_IDs in {filename}")
-        df = df.drop_duplicates(subset='Patient_ID', keep='first')
-        log.info(f"  After deduplication: {len(df)} rows")
-    
-    # Determine columns to merge (exclude Patient_ID and overlapping columns)
-    merge_cols = [col for col in df.columns if col != 'Patient_ID']
-    
-    # Check for overlapping columns and exclude them from merge
-    overlap = set(master.columns) & set(merge_cols)
-    if overlap:
-        log.warning(f"  Overlapping columns with {filename}: {overlap}")
-        log.info(f"  Excluding overlapping columns from merge")
-        merge_cols = [col for col in merge_cols if col not in overlap]
-    
-    if not merge_cols:
-        log.warning(f"  No columns to merge from {filename} after removing overlaps")
-        continue
+    # Merge each dataset
+    for filename, df in datasets.items():
+        if filename == 'cohort.parquet':
+            continue  # Skip base dataset
         
-    # Perform merge
-    log.info(f"  Merging {filename} ({len(merge_cols)} columns)")
-    master = master.merge(df[['Patient_ID'] + merge_cols], 
-                         on='Patient_ID', 
-                         how='left', 
-                         validate='one_to_one')
-    
-    # Track statistics
-    rows_after = len(master)
-    if rows_after != initial_rows:
-        log.error(f"    Row count changed! Before: {initial_rows}, After: {rows_after}")
-        raise ValueError("Merge resulted in row count change")
-    
-    # Check for successful merge
-    null_count = master[merge_cols].isnull().sum().sum()
-    merge_stats.append({
-        'file': filename,
-        'columns_added': len(merge_cols),
-        'null_values': null_count,
-        'null_pct': null_count / (len(master) * len(merge_cols)) * 100
-    })
-    
-    log.info(f"    Added {len(merge_cols)} columns, {null_count:,} null values ({merge_stats[-1]['null_pct']:.1f}%)")
+        # Remove duplicates if any
+        if df['Patient_ID'].duplicated().any():
+            log.warning(f"  Found {df['Patient_ID'].duplicated().sum()} duplicate Patient_IDs in {filename}")
+            df = df.drop_duplicates(subset='Patient_ID', keep='first')
+            log.info(f"  After deduplication: {len(df)} rows")
+        
+        # Determine columns to merge (exclude Patient_ID and overlapping columns)
+        merge_cols = [col for col in df.columns if col != 'Patient_ID']
+        
+        # Check for overlapping columns and exclude them from merge
+        overlap = set(master.columns) & set(merge_cols)
+        if overlap:
+            log.warning(f"  Overlapping columns with {filename}: {overlap}")
+            log.info(f"  Excluding overlapping columns from merge")
+            merge_cols = [col for col in merge_cols if col not in overlap]
+        
+        if not merge_cols:
+            log.warning(f"  No columns to merge from {filename} after removing overlaps")
+            continue
+            
+        # Perform merge
+        log.info(f"  Merging {filename} ({len(merge_cols)} columns)")
+        master = master.merge(df[['Patient_ID'] + merge_cols], 
+                             on='Patient_ID', 
+                             how='left', 
+                             validate='one_to_one')
+        
+        # Track statistics
+        rows_after = len(master)
+        if rows_after != initial_rows:
+            log.error(f"    Row count changed! Before: {initial_rows}, After: {rows_after}")
+            raise ValueError("Merge resulted in row count change")
+        
+        # Check for successful merge
+        null_count = master[merge_cols].isnull().sum().sum()
+        merge_stats.append({
+            'file': filename,
+            'columns_added': len(merge_cols),
+            'null_values': null_count,
+            'null_pct': null_count / (len(master) * len(merge_cols)) * 100
+        })
+        
+        log.info(f"    Added {len(merge_cols)} columns, {null_count:,} null values ({merge_stats[-1]['null_pct']:.1f}%)")
 
 # Verify final shape
 log.info(f"\nFinal master table shape: {master.shape}")

@@ -857,7 +857,7 @@ def main():
                 print(f"\nOVERALL MH FRAMEWORK SUPPORT: {'YES' if interp.get('overall_mh_framework_support', False) else 'NO'}")
                 print(f"CLINICAL ACTIONABILITY: {'YES' if interp.get('clinical_actionability', False) else 'NO'}")
         
-        print("\n✅ Mental Health analysis completed successfully!")
+        print("\nMental Health analysis completed successfully!")
         
     except Exception as e:
         logger.error(f"Mediation analysis failed: {str(e)}", exc_info=True)

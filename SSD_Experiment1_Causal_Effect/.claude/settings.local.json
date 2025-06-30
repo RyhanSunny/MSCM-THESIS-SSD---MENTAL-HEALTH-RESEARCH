@@ -67,7 +67,16 @@
       "mcp__serena-local__find_referencing_symbols",
       "mcp__serena-local__insert_before_symbol",
       "WebFetch(domain:creator-launch-7eoo.vercel.app)",
-      "Bash(docker:*)"
+      "Bash(docker:*)",
+      "mcp__serena-local__get_current_config",
+      "Bash(/mnt/c/Users/ProjectC4M/anaconda3/Scripts/conda.exe activate base)",
+      "Bash(/mnt/c/Users/ProjectC4M/anaconda3/Scripts/pip.exe install econml)",
+      "Bash(/mnt/c/Users/ProjectC4M/anaconda3/Scripts/pip.exe install econml --no-deps)",
+      "Bash(/mnt/c/Users/ProjectC4M/anaconda3/Scripts/pip.exe install sparse)",
+      "Bash(git config:*)",
+      "Bash(cat:*)",
+      "Bash(conda install:*)",
+      "mcp__serena-local__replace_symbol_body"
     ],
     "deny": []
   },
