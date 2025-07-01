@@ -11,9 +11,9 @@ Follow these rules at all times @C:\Users\ProjectC4M\Documents\MSCM THESIS SSD\M
   5. Ask before implementing unclear features
 MANDATORY Documents (Lines 28-35):
     - Must read data_details.md ✅
-    - Must read SSD THESIS final METHODOLOGIES blueprint ✅
+    - Must read SSD THESIS final METHODOLOGIES blueprint - UPDATED ✅
+    - must read rules.md
     - Must read ANALYSIS_RULES.md ✅
-    - Must read both Final 3.1 plan versions ✅
     - Must read FELIPE_ENHANCEMENT_TODO.md ✅
   2. Development Philosophy (Lines 41-56):
     - TDD is MANDATORY - Tests first, then code
@@ -34,13 +34,19 @@ MANDATORY Documents (Lines 28-35):
 
 - Fun any python execution/run use conda base env
 
-- Author Details:
-  - Name: Ryhan Suny
-  - Affiliation: Toronto Metropolitan University
-  - Research Team: Car4Mind, University of Toronto
-  - Supervisor: Dr. Aziz Guergachi
-  - Email: sajibrayhan.suny@torontomu.ca
-  - Location: Toronto, ON, Canada
+-## Author Context
+- **Primary Author Name**: Ryhan Suny, MSc¹
+- Co-Authors: ; Dr. Aziz Guergachi, PhD¹; Dr. Karim Keshavjee, MD²;  Dr. Felipe Cepeda, MD²
+
+ ¹Toronto Metropolitan University, ²University of Toronto 
+
+- **Affiliation**: Toronto Metropolitan University
+- **Research Team**: Car4Mind, University of Toronto
+- **Supervisor**: Dr. Aziz Guergachi
+- **Location**: Toronto, ON, Canada
+- **Environment**: Windows machine (use Windows-compatible commands)
+- **Python**: Use conda base environment for all executions
+  - Primary author Email: sajibrayhan.suny@torontomu.ca
 
 - Data Source Checkpoint: 'c:\Users\ProjectC4M\Documents\MSCM THESIS SSD\MSCM-THESIS-SSD---MENTAL-HEALTH-RESEARCH\SSD_Experiment1_Causal_Effect\Notebooks\data\interim\checkpoint_1_20250318_024427'
 - Data Column Details: 

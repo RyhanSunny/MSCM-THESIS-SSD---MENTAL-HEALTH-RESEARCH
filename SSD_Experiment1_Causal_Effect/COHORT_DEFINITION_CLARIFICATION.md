@@ -41,7 +41,7 @@ This query specifically selected patients with encounter diagnoses matching ICD-
 - **Population Type**: Mental health patients with somatic symptom presentations
 - **Key Insight**: "There's a bit more than just mental health, but mental health features commonly in those physical systems"
 
-## Important Clarifications
+## Important Clarifications 
 
 1. **NOT General Primary Care**: While CPCSSN is a primary care database, our cohort was specifically extracted based on mental health and related diagnostic criteria.
 

@@ -7,7 +7,7 @@
 SHELL := /bin/bash
 
 # Variables
-PYTHON = python3
+PYTHON = /home/roject4/miniconda3/bin/python3
 SRC_DIR = src
 DATA_DIR = data_derived
 RESULTS_DIR = results
