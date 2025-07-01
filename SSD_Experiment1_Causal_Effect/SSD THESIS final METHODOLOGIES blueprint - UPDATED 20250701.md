@@ -1,19 +1,43 @@
 # **SSD Study: Research Question, Hypotheses, and Pipeline–Hypothesis Mapping**
-# **UPDATED July 1, 2025 - Publication Enhancement Scripts Added**
+# *UPDATED July 1, 2025*
 
-## Research Question (RQ) - Mental Health Population
-**In a cohort of mental health patients (n=256,746), does exposure to somatic symptom disorder (SSD) patterns—characterized by repeated normal diagnostic results, unresolved specialist referrals, and persistent psychotropic medication use—causally increase mental health service utilization and emergency department visits, and can a composite SSD severity index mediate this relationship within this homogeneous mental health population?**
+## Research Question (RQ)
+**In a cohort of mental health patients (n=256,746), does exposure to somatic symptom disorder (SSD) patterns—characterized by repeated normal diagnostic results, unresolved specialist referrals, and persistent psychotropic medication use—causally increase healthcare utilization, and can a composite SSD severity index mediate this relationship within this homogeneous mental health population?**
 
 ## Detailed Hypothesis Suite
 
 | ID | Statement | Key Variables | Expected Direction / Effect Size | Planned Test | Implementation Status |
 |----|-----------|--------------|-------------------------------|--------------|-----------------------|
-| **H1 — MH Diagnostic Cascade** | In MH patients, ≥3 normal lab panels within 12-month exposure window causally increase subsequent healthcare encounters (primary care + mental health visits) over 24 months. | Exposure: binary flag for normal-lab cascade (n=112,134, 43.7%); Outcome: count of all healthcare encounters (Poisson) | IRR ≈ 1.35–1.50 | Poisson/negative-binomial regression after 1:1 PS-matching; over-dispersion check (α). | ✅ Ready with Rubin's pooling |
-| **H2 — MH Specialist Referral Loop** | In MH patients, ≥2 unresolved specialist referrals (NYD status) predict mental health crisis services or psychiatric emergency visits within 6 months. | Exposure: referral loop flag (n=1,536, 0.6%); Outcome: MH crisis/psychiatric ED visits (binary) | OR ≈ 1.60–1.90 | PS-matched logistic regression; falsification with resolved referrals as negative control. | ❌ No MH crisis/psychiatric ED identification |
-| **H3 — MH Medication Persistence** | In MH patients, >90 consecutive days of psychotropic medications (anxiolytic/antidepressant/hypnotic) predict emergency department visits in next year. | Exposure: psychotropic persistence (n=51,218, 19.9%); Outcome: any ED visit (binary) | aOR ≈ 1.40–1.70 | Multivariable logistic model with IPW; E-value for unmeasured confounding. | ✅ Ready with weight trimming |
+| **H1 — Diagnostic Cascade** | In MH patients, ≥3 normal lab panels within 12-month exposure window causally increase subsequent healthcare encounters over 24 months. | Exposure: binary flag for normal-lab cascade (n=112,134, 43.7%); Outcome: count of all healthcare encounters (Poisson) | IRR ≈ 1.35–1.50 | Poisson/negative-binomial regression after 1:1 PS-matching; over-dispersion check (α). | ✅ Ready with Rubin's pooling |
+| **H2 — Specialist Referral Loop** | In MH patients, ≥2 unresolved specialist referrals (proxy: repeated referrals) predict increased healthcare utilization within 6 months. | Exposure: referral loop flag (n=1,536, 0.6%); Outcome: healthcare utilization + ED visits (binary) | OR ≈ 1.60–1.90 | PS-matched logistic regression; falsification with resolved referrals as negative control. | ⚠️ MISALIGNED - IN PROGRESS |
+| **H3 — MH Medication Persistence** | In MH patients, >180 consecutive days of psychotropic medications (anxiolytic/antidepressant/hypnotic) predict HEALTHCARE UTILIZATION in next year. | Exposure: psychotropic persistence (n=51,218, 19.9%); Outcome: healthcare utilization + ED visits (binary) | aOR ≈ 1.40–1.70 | Multivariable logistic model with IPW; E-value for unmeasured confounding. | ✅ Ready with weight trimming |
 | **H4 — MH SSD Severity Mediation** | In MH patients, the SSDSI (range 0-100, mean=0.80) mediates ≥55% of total causal effect of H1-H3 exposures on healthcare utilization costs (proxy estimates based on encounter counts) at 24 months. | Mediator: continuous SSDSI in MH population; Outcome: total healthcare costs (proxy estimates) (gamma GLM) | Proportion mediated ≥0.55 | Causal mediation (DoWhy) with 5K bootstraps; sensitivity to sequential ignorability. | ✅ Framework implemented |
 | **H5 — MH Effect Modification** | The causal effect of SSD-pattern exposure on healthcare utilization differs across predefined high‐risk MH subgroups (anxiety, age < 40, female sex, high baseline utilization); at least two subgroups will show a statistically stronger effect (interaction p < 0.05). | Subgroups: binary flags in master table; Outcome: interaction term in weighted regression | ≥2 significant β_interaction terms (FDR < 0.05) | Interaction analysis in `06_causal_estimators.py` + FDR correction | ✅ Ready with ESS monitoring |
 | **H6 — MH Clinical Intervention** | In high-SSDSI MH patients, integrated care with somatization-focused interventions reduces predicted utilization by ≥25% vs. usual mental health care. | Intervention: integrated MH-PC care; Outcome: predicted utilization reduction | Δ ≥ -25% (95% CI excludes 0) | G-computation using validated SSDSI + published effect sizes for integrated MH care. | ✅ Framework implemented |
+
+**⚠️ H2 Implementation Note:**
+Dr. Karim's suggested causal chain specifies: NYD → referred to specialist → "no diagnosis of that body part"
+
+**NYD Pattern Identification Strategy:**
+We identify "Not Yet Diagnosed" (NYD) patterns using ICD-9 codes 780-799 (symptoms, signs, and ill-defined conditions), which represent diagnostic uncertainty regardless of referral outcomes. Our data shows:
+- Code 799 (symptoms/signs): 177,653 codes (1.42%) in 58,285 patients
+- Codes 780-789 (symptom range): 867,700 codes (6.96%) in 214,774 patients (60.99%)
+
+**Data Considerations:**
+1. While we cannot directly verify "unresolved" status in referrals, we can track diagnostic uncertainty through:
+   - Repeated referrals to same specialty (proxy for unresolved issues)
+   - Persistence of symptom codes (780-799) after referrals
+   - Continued normal lab patterns indicating no organic findings
+2. Primary care data - cannot identify MH-specific crisis services or psychiatric ED visits
+3. Can only identify generic ED visits via EncounterType field
+
+**Solution**: Three-tier proxy implementation:
+- Tier 1: Current - Any specialist referrals with symptom codes 
+- Tier 2: Enhanced - NYD codes (780-799) + specialist referrals 
+- Tier 3: Full proxy - NYD + ≥3 normal labs + repeated specialist referrals 
+
+Outcome: General healthcare utilization and ED visits (not MH-specific)
+Reference: Rosendal et al. (2017) validates repeated referrals as diagnostic uncertainty proxy.
 
 **Conceptual Flow for Mental Health Population:**
 1. Pre-existing mental health vulnerability → enhanced somatic awareness and health anxiety
@@ -36,7 +60,7 @@
 
 > **Note:** This blueprint has been updated June 30, 2025 following reviewer feedback. All improvements have been implemented and tested.
 
-## Implementation Tracker (Living Table) - UPDATED June 30, 2025
+## Implementation Tracker (Living Table) - UPDATED July 1, 2025
 
 | Step/Module                        | Status        | Last Updated | Notes/Link to Code/Results         |
 |------------------------------------|--------------|--------------|---------------------------------------|
@@ -84,39 +108,33 @@
 - **Solution**: Updated to m=30 imputations in config
 - **Impact**: Better uncertainty quantification following Rubin's recommendation
 
-### 4. ✅ **Function Length Compliance**
-- **Problem**: Functions exceeding 50-line CLAUDE.md limit
-- **Solution**: Refactored into helper modules (`rubins_pooling_helper.py`, `rubins_validation_helper.py`)
-- **Impact**: Improved code maintainability and testability
 
-### 5. ✅ **ESS (Effective Sample Size) Formula Correction**
+
+### 4. ✅ **ESS (Effective Sample Size) Formula Correction**
 - **Problem**: Incorrect ESS formula with erroneous n× factor
 - **Solution**: Corrected to ESS = sum(w)² / sum(w²) in `weight_diagnostics_visualizer.py`
 - **Impact**: Accurate weight diagnostics and instability detection
 
-### 6. ✅ **Weight Trimming Implementation**
+### 5. ✅ **Weight Trimming Implementation**
 - **Problem**: No handling of extreme propensity scores
 - **Solution**: Implemented Crump et al. (2009) rule in `06_causal_estimators.py`
 - **Impact**: Improved stability of weighted analyses
 
-### 7. ✅ **MC-SIMEX Variance Limitation Documentation**
+### 6. ✅ **MC-SIMEX Variance Limitation Documentation**
 - **Problem**: No warning about MC-SIMEX not integrating with MI variance
 - **Solution**: Created `docs/STATISTICAL_LIMITATIONS.md`
 - **Impact**: Transparent documentation of statistical limitations
 
-### 8. ✅ **Git SHA + Timestamp in Results**
+### 7. ✅ **Git SHA + Timestamp in Results**
 - **Problem**: Missing version control information in outputs
 - **Solution**: Added git metadata to all YAML outputs via `git_utils.py`
 - **Impact**: Full reproducibility and audit trail
 
-### 9. ✅ **CI Environment Dependencies**
-- **Problem**: Missing matplotlib and other packages
-- **Solution**: Updated `requirements.txt` and `environment.yml`
-- **Impact**: CI/CD pipeline runs successfully
+
 
 ## **Publication Enhancement Scripts (July 1, 2025)**
 
-### 📝 **New Scripts for Reviewer Requirements**
+### 📝 **New Scripts**
 
 Following reviewer feedback about missing publication components, we've added 6 new scripts:
 
@@ -167,25 +185,13 @@ make negative-control conceptual-framework target-trial strobe-checklist positiv
 make all
 ```
 
-### 📊 **Gap Analysis Resolution**
-
-| Reviewer Gap | Solution Script | Status |
-|--------------|----------------|---------|
-| "No conceptual framework diagram" | conceptual_framework_generator.py | ✅ Implemented |
-| "Target trial emulation missing" | target_trial_emulation.py | ✅ Implemented |
-| "No negative controls" | negative_control_analysis.py | ✅ Implemented |
-| "STROBE checklist absent" | strobe_checklist_generator.py | ✅ Implemented |
-| "Positivity not documented" | positivity_diagnostics.py | ✅ Implemented |
-| "Tables lack causal language" | causal_table_enhancer.py | ✅ Implemented |
-
 ## **Current Implementation Status (July 1, 2025)**
 
 ### 📊 **Progress Summary** 
 - **Completed**: 100% of pipeline implemented including publication enhancements
 - **Data Quality**: Excellent (256,746 patients with <28% missing data)
 - **Key Achievement**: Full multiple imputation pipeline with Rubin's Rules pooling
-- **Statistical Rigor**: All reviewer feedback addressed with 6 new publication scripts
-- **Publication Ready**: All gaps identified by reviewers have been filled
+
 
 ### 🔧 **Technical Environment**
 - Python 3.11+ with full scientific stack
@@ -294,10 +300,11 @@ make all
 
 ## **Known Limitations and Future Work**
 
-1. **MC-SIMEX + MI Variance**: Currently uses single imputation variance. Future: two-level variance approach
-2. **MH-specific Outcomes**: Current implementation tracks all encounters. Future: filter by provider type
-3. **Causal Forest Memory**: Limited to 10k subsample on 6GB GPU. Future: distributed implementation
-4. **Long COVID**: Zero cases in pre-pandemic data. Future: 2020+ data analysis
+1. **H2 Hypothesis Misalignment**: Cannot directly measure "unresolved" referrals due to missing Status/Resolution fields in CPCSSN referral table. Using repeated referrals as proxy (Rosendal et al., 2017).
+2. **MC-SIMEX + MI Variance**: Currently uses single imputation variance. Future: two-level variance approach
+3. **MH-specific Outcomes**: Current implementation tracks all encounters. Future: filter by provider type  
+4. **Causal Forest Memory**: Limited to 10k subsample on 6GB GPU. Future: distributed implementation
+5. **Long COVID**: Zero cases in pre-pandemic data. Future: 2020+ data analysis
 
 ---
 
