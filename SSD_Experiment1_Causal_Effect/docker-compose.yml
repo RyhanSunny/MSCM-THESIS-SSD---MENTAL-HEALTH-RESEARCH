@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  ssd-pipeline:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ssd-pipeline:latest
+    container_name: ssd-causal-analysis
+    
+    environment:
+      # Reproducibility
+      - PYTHONHASHSEED=42
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+      
+      # Pipeline configuration
+      - SSD_DATA_DIR=/app/Notebooks/data/interim/checkpoint_1_20250318_024427
+      - SSD_DERIVED_DIR=/app/data_derived
+      - SSD_RESULTS_DIR=/app/results
+      
+    volumes:
+      # Mount source code and configuration
+      - ./src:/app/src:ro
+      - ./Makefile:/app/Makefile:ro
+      - ./environment.yml:/app/environment.yml:ro
+      - ./*.md:/app/:ro
+      
+      # Mount data directories
+      - ./Notebooks/data/interim:/app/Notebooks/data/interim:ro
+      - ./data_derived:/app/data_derived
+      - ./results:/app/results
+      - ./logs:/app/logs
+      - ./figures:/app/figures
+      - ./tables:/app/tables
+      - ./reports:/app/reports
+      
+    working_dir: /app
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 16G
+          cpus: '8.0'
+        reservations:
+          memory: 8G
+          cpus: '4.0'
+    
+    # Keep container running for debugging
+    stdin_open: true
+    tty: true
+    
+    # Default command - run full pipeline
+    command: ["make", "all"]
+
+  # Service for running specific pipeline stages
+  ssd-stage:
+    extends: ssd-pipeline
+    container_name: ssd-stage-runner
+    # Override command - user specifies stage
+    command: ["bash"]
+
+  # Service for validation and testing
+  ssd-validator:
+    extends: ssd-pipeline
+    container_name: ssd-validator
+    command: ["make", "validate-quick"]
+
+# Networks
+networks:
+  default:
+    name: ssd-network

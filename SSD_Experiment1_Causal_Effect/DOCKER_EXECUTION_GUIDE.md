@@ -4,7 +4,8 @@
 
 This guide provides step-by-step instructions for running the Somatic Symptom Disorder (SSD) causal analysis pipeline using Docker. The pipeline processes 256,746 mental health patients to test causal hypotheses about healthcare utilization.
 
-**Pipeline Status**: ✅ **Production Ready** (Validated June 16, 2025)
+**Pipeline Status**: ✅ **Production Ready** (Updated July 1, 2025)
+**Docker Version**: 2.0 (Enhanced for full reproducibility)
 
 ## 🔧 **Prerequisites**
 
@@ -37,6 +38,18 @@ docker build -t ssd-pipeline:latest .
 ```
 
 ### 3. Run Complete Pipeline
+
+#### Option A: Using docker-compose (Recommended)
+```bash
+# Run full pipeline with docker-compose
+docker-compose up ssd-pipeline
+
+# Or run in background
+docker-compose up -d ssd-pipeline
+docker-compose logs -f ssd-pipeline  # Follow logs
+```
+
+#### Option B: Using docker run
 ```bash
 # Execute full OR-logic pipeline (takes ~2-3 hours)
 docker run -it \
@@ -62,6 +75,7 @@ docker run --rm -v "$PWD:/app" ssd-pipeline:latest ls -la data_derived/
 | **Outcomes** | `04_outcome_flag.py` | `outcomes.parquet` | Healthcare utilization |
 | **Master** | `08_patient_master_table.py` | `patient_master_or.parquet` | Unified dataset (79 vars) |
 | **Analysis** | `06_causal_estimators.py` | `causal_results.parquet` | TMLE/DML/Forest estimates |
+| **Enhancements** | Multiple new scripts | Various outputs | Publication-ready artifacts |
 
 ### Execution Flow
 ```mermaid
@@ -90,6 +104,17 @@ docker run -it \
 ```
 
 ### Option 2: Stage-by-Stage Execution
+
+#### Using docker-compose
+```bash
+# Run specific stages
+docker-compose run --rm ssd-stage make cohort
+docker-compose run --rm ssd-stage make exposure
+docker-compose run --rm ssd-stage make master
+docker-compose run --rm ssd-stage make causal
+```
+
+#### Using docker run
 ```bash
 # Run individual stages for debugging
 docker run -it -v "$PWD:/app" ssd-pipeline:latest make cohort
@@ -99,18 +124,26 @@ docker run -it -v "$PWD:/app" ssd-pipeline:latest make causal
 ```
 
 ### Option 3: Interactive Development
+
+#### Using docker-compose
 ```bash
 # Enter container for debugging/development
-docker run -it \
-  -v "$PWD:/app" \
-  -v "$PWD/data_derived:/app/data_derived" \
-  ssd-pipeline:latest bash
+docker-compose run --rm ssd-stage bash
 
 # Inside container:
 make help                    # View all targets
 make cohort                 # Run specific stage
 python src/02_exposure_flag.py --logic both  # Manual execution
 exit                        # Leave container
+```
+
+#### Using docker run
+```bash
+# Enter container for debugging/development
+docker run -it \
+  -v "$PWD:/app" \
+  -v "$PWD/data_derived:/app/data_derived" \
+  ssd-pipeline:latest bash
 ```
 
 ## 📈 **Expected Results**
@@ -123,10 +156,16 @@ exit                        # Leave container
 | `exposure_and.parquet` | 256,746 | 8 | AND logic exposure (0.08% exposed) |
 | `patient_master_or.parquet` | 256,746 | 79 | Complete analysis dataset |
 | `causal_results.yaml` | - | - | ATE estimates + diagnostics |
+| `conceptual_framework.svg` | - | - | Publication diagram (NEW) |
+| `negative_control_results.json` | - | - | Falsification tests (NEW) |
+| `strobe_checklist.json` | - | - | STROBE compliance (NEW) |
 
 ### Success Indicators
 ```bash
 # Check pipeline completion
+docker-compose run --rm ssd-validator
+
+# Or using docker run
 docker run --rm -v "$PWD:/app" ssd-pipeline:latest make validate-quick
 
 # Expected output:
@@ -168,6 +207,9 @@ docker run -it -v "$PWD:/app" ssd-pipeline:latest make compare_logic
 ```bash
 # Solution: Rebuild with clean context
 rm -rf venv __pycache__ .pytest_cache
+docker-compose build --no-cache
+
+# Or manually
 docker build -t ssd-pipeline:latest . --no-cache
 ```
 
@@ -198,11 +240,14 @@ docker run --rm -v "$PWD:/app" ssd-pipeline:latest ls -la Notebooks/data/interim
 
 #### Monitor Progress
 ```bash
-# Watch logs in real-time
-docker run -it -v "$PWD:/app" ssd-pipeline:latest tail -f *.log
+# Watch logs in real-time with docker-compose
+docker-compose logs -f ssd-pipeline
 
 # Check memory usage
 docker stats
+
+# Or manually
+docker run -it -v "$PWD:/app" ssd-pipeline:latest tail -f logs/*.log
 ```
 
 #### Test Individual Components
@@ -307,6 +352,7 @@ For issues or questions:
 3. Validate Docker installation and resources
 4. Consult the methodology blueprint for context
 
-**Pipeline validated**: June 16, 2025  
+**Pipeline validated**: July 1, 2025  
+**Docker enhanced**: Full reproducibility with conda base environment  
 **Author**: Ryhan Suny, Toronto Metropolitan University  
 **Supervisor**: Dr. Aziz Guergachi 

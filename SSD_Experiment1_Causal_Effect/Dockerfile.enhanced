@@ -1,0 +1,106 @@
+# Enhanced Dockerfile for SSD Causal Analysis Pipeline
+# Multi-stage build for optimal size and reproducibility
+# Author: Ryhan Suny
+# Version: 2.0
+# Updated: 2025-07-01
+
+# Stage 1: Base environment setup
+FROM continuumio/miniconda3:23.10.0-1 AS base
+
+# Set environment for reproducibility
+ENV PYTHONHASHSEED=42 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    CONDA_DEFAULT_ENV=ssd-causal \
+    PATH=/opt/conda/envs/ssd-causal/bin:$PATH \
+    DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    git \
+    curl \
+    ca-certificates \
+    make \
+    wget \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    libglu1-mesa \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Stage 2: Conda environment builder
+FROM base AS conda-builder
+
+WORKDIR /tmp
+
+# Copy environment file and create conda environment
+COPY environment.yml /tmp/
+RUN conda env create -f environment.yml && \
+    conda clean -afy && \
+    find /opt/conda -follow -type f -name '*.a' -delete && \
+    find /opt/conda -follow -type f -name '*.pyc' -delete && \
+    find /opt/conda -follow -type f -name '*.js.map' -delete
+
+# Install additional R packages that might be missing
+RUN conda run -n ssd-causal R -e "install.packages(c('dagitty', 'pbapply', 'doParallel'), repos='https://cloud.r-project.org/', dependencies=TRUE)"
+
+# Stage 3: Final runtime image
+FROM base AS runtime
+
+# Copy conda environment from builder
+COPY --from=conda-builder /opt/conda/envs/ssd-causal /opt/conda/envs/ssd-causal
+
+# Set working directory
+WORKDIR /app
+
+# Create necessary directories
+RUN mkdir -p /app/data_derived \
+    /app/results \
+    /app/logs \
+    /app/figures \
+    /app/tables \
+    /app/reports \
+    /app/Notebooks/data/interim
+
+# Copy project files (excluding data)
+COPY Makefile requirements.txt CLAUDE.md ./
+COPY src/ ./src/
+COPY tests/ ./tests/
+COPY scripts/ ./scripts/
+COPY analysis/ ./analysis/
+COPY *.md ./
+COPY *.yml ./
+
+# Verify environment setup
+RUN echo "=== Verifying Python packages ===" && \
+    conda run -n ssd-causal python -c "import pandas, numpy, sklearn, statsmodels, matplotlib; print('✓ Core Python packages verified')" && \
+    conda run -n ssd-causal python -c "import dowhy, econml, rpy2; print('✓ Causal packages verified')" && \
+    echo "=== Verifying R packages ===" && \
+    conda run -n ssd-causal R -e "library(survival); library(grf); library(tmle); cat('✓ R packages verified\n')" && \
+    echo "=== Verifying rpy2 bridge ===" && \
+    conda run -n ssd-causal python -c "import rpy2.robjects as ro; ro.r('library(survival)'); print('✓ rpy2 bridge verified')"
+
+# Set up entrypoint script for proper conda activation
+RUN echo '#!/bin/bash\n\
+set -e\n\
+source /opt/conda/etc/profile.d/conda.sh\n\
+conda activate ssd-causal\n\
+exec "$@"' > /entrypoint.sh && \
+    chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["bash"]
+
+# Metadata
+LABEL maintainer="Ryhan Suny <sajibrayhan.suny@torontomu.ca>" \
+      description="SSD Mental Health Causal Analysis Pipeline" \
+      version="2.0" \
+      git.repo="https://github.com/yourusername/ssd-causal-pipeline"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD conda run -n ssd-causal python -c "import pandas; print('healthy')" || exit 1

@@ -1,10 +1,12 @@
 # Dockerfile for SSD Causal Analysis Pipeline
 
-# Use official Python base image
-FROM python:3.12-slim
+# Use official Python base image matching environment.yml
+FROM python:3.11-slim
 
 # Set reproducibility
-ENV PYTHONHASHSEED=42
+ENV PYTHONHASHSEED=42 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 # Set environment hash for lockfile verification
 COPY environment.yml /tmp/environment.yml
@@ -36,24 +38,26 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
     rm /tmp/miniconda.sh
 ENV PATH="/opt/conda/bin:$PATH"
 
-# Install dependencies from environment.yml
-RUN conda env create -f environment.yml && \
+# Update conda base environment with dependencies from environment.yml
+# This matches your local setup using base environment
+RUN conda update -n base conda && \
+    conda env update -n base -f environment.yml && \
     conda clean -afy
-ENV PATH="/opt/conda/envs/ssd-causal/bin:$PATH"
 
-# Activate the environment for subsequent commands
-SHELL ["conda", "run", "-n", "ssd-causal", "/bin/bash", "-c"]
+# Use base environment (no activation needed)
+SHELL ["/bin/bash", "-c"]
 
 # Install critical R packages for survival analysis and causal inference
-RUN R -e "install.packages(c('survival', 'cmprsk', 'grf', 'tmle', 'dagitty', 'MatchIt', 'sandwich', 'lmtest'), repos='https://cloud.r-project.org/', dependencies=TRUE)"
+# Add missing packages from environment.yml
+RUN R -e "install.packages(c('survival', 'cmprsk', 'grf', 'tmle', 'dagitty', 'MatchIt', 'sandwich', 'lmtest', 'pbapply', 'doParallel'), repos='https://cloud.r-project.org/', dependencies=TRUE)"
 
 # Comprehensive dependency verification
 RUN echo "=== Verifying Python packages ===" && \
-    conda run -n ssd-causal python -c "import pandas, numpy, sklearn, statsmodels, matplotlib, dowhy, econml, rpy2; print('✓ Core Python packages verified')" && \
+    python -c "import pandas, numpy, sklearn, statsmodels, matplotlib, dowhy, econml, rpy2; print('✓ Core Python packages verified')" && \
     echo "=== Verifying R packages ===" && \
-    conda run -n ssd-causal R -e "library(survival); library(cmprsk); library(grf); library(tmle); cat('✓ R packages verified\n')" && \
+    R -e "library(survival); library(cmprsk); library(grf); library(tmle); cat('✓ R packages verified\n')" && \
     echo "=== Verifying rpy2 bridge ===" && \
-    conda run -n ssd-causal python -c "import rpy2.robjects as ro; ro.r('library(survival)'); print('✓ rpy2 bridge verified')" && \
+    python -c "import rpy2.robjects as ro; ro.r('library(survival)'); print('✓ rpy2 bridge verified')" && \
     echo "=== All dependencies verified successfully ==="
 
 # For full reproducibility, set random seeds in your Python scripts:
@@ -63,5 +67,8 @@ RUN echo "=== Verifying Python packages ===" && \
 # Expose Jupyter port
 EXPOSE 8888
 
-# Default command: start a shell with conda environment activated
-CMD ["conda", "run", "-n", "ssd-causal", "/bin/bash"] 
+# Create directories for data volumes
+RUN mkdir -p /app/data_derived /app/results /app/logs /app/figures /app/tables /app/reports
+
+# Default command: use bash in base environment
+CMD ["/bin/bash"] 

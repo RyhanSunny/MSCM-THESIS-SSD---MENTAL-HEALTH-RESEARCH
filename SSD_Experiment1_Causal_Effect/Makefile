@@ -7,7 +7,8 @@
 SHELL := /bin/bash
 
 # Variables
-PYTHON = /home/roject4/miniconda3/bin/python3
+# Use python from PATH (works in both local and Docker environments)
+PYTHON = python
 SRC_DIR = src
 DATA_DIR = data_derived
 RESULTS_DIR = results
@@ -29,13 +30,15 @@ endef
 
 # Default target - Enhanced with Dr. Felipe's suggestions integrated
 .PHONY: all
-all: cohort exposure mediator outcomes confounders lab referral pre-imputation-master missing-master misclassification master sequential ps causal-mi pool-mi mediation temporal evalue competing-risk death-rates robustness week1-validation week2-all week3-all week4-all week5-validation
+all: cohort exposure mediator outcomes confounders lab referral pre-imputation-master missing-master misclassification master sequential ps causal-mi pool-mi mediation temporal evalue competing-risk death-rates robustness negative-control conceptual-framework target-trial strobe-checklist positivity-diagnostics causal-tables week1-validation week2-all week3-all week4-all week5-validation
 	@echo "✓ Complete SSD analysis pipeline with Felipe enhancements finished!"
 	@echo "Enhancements applied:"
 	@echo "  - NYD body part mapping (780-789 ICD codes)"
 	@echo "  - 180-day drug persistence threshold"
 	@echo "  - Enhanced psychiatric referral pathway analysis"
 	@echo "  - All modules use REAL patient data"
+	@echo "  - NEW: Conceptual framework, target trial, negative controls"
+	@echo "  - NEW: STROBE checklist, positivity diagnostics, causal tables"
 
 # Data pipeline targets
 .PHONY: cohort
@@ -204,6 +207,37 @@ robustness: master
 	@echo "Running robustness checks..."
 	$(PYTHON) $(SRC_DIR)/14_placebo_tests.py --treatment-col $(TREATMENT_COL)
 	$(PYTHON) $(SRC_DIR)/15_robustness.py --treatment-col $(TREATMENT_COL)
+
+# New targets for publication enhancements
+.PHONY: negative-control
+negative-control: master
+	@echo "Running negative control outcome analysis..."
+	$(call log_command,negative_control,negative_control_analysis.py,)
+
+.PHONY: conceptual-framework
+conceptual-framework:
+	@echo "Generating conceptual framework diagram..."
+	$(call log_command,conceptual_framework,conceptual_framework_generator.py,)
+
+.PHONY: target-trial
+target-trial:
+	@echo "Creating target trial emulation protocol..."
+	$(call log_command,target_trial,target_trial_emulation.py,)
+
+.PHONY: strobe-checklist
+strobe-checklist:
+	@echo "Generating STROBE reporting checklist..."
+	$(call log_command,strobe_checklist,strobe_checklist_generator.py,)
+
+.PHONY: positivity-diagnostics
+positivity-diagnostics: ps
+	@echo "Analyzing positivity violations and common support..."
+	$(call log_command,positivity_diagnostics,positivity_diagnostics.py,)
+
+.PHONY: causal-tables
+causal-tables: week2-tables
+	@echo "Enhancing tables with causal language..."
+	$(call log_command,causal_tables,causal_table_enhancer.py,)
 
 # Reporting targets
 .PHONY: qc
