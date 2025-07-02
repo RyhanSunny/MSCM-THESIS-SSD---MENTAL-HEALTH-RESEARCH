@@ -151,8 +151,16 @@ if medical_procedure is not None:
     medical_procedure = medical_procedure[medical_procedure.Patient_ID.isin(patient_ids)]
 
 # Define baseline period (-12 to -6 months before index date)
-cohort["baseline_start"] = cohort.IndexDate_lab - pd.Timedelta(days=365)
-cohort["baseline_end"] = cohort.IndexDate_lab - pd.Timedelta(days=180)
+# Use unified index date from hierarchical implementation (addresses 28.3% missing lab dates)
+if "IndexDate_unified" in cohort.columns:
+    cohort["baseline_start"] = cohort.IndexDate_unified - pd.Timedelta(days=365)
+    cohort["baseline_end"] = cohort.IndexDate_unified - pd.Timedelta(days=180)
+    log.info("Using IndexDate_unified for baseline period (hierarchical implementation)")
+else:
+    # Fallback to lab index for backward compatibility
+    cohort["baseline_start"] = cohort.IndexDate_lab - pd.Timedelta(days=365)
+    cohort["baseline_end"] = cohort.IndexDate_lab - pd.Timedelta(days=180)
+    log.warning("IndexDate_unified not found, falling back to IndexDate_lab")
 
 # Initialize confounder dataframe with existing cohort variables
 log.info("Building confounder matrix...")

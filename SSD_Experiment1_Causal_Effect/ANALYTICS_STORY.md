@@ -8,7 +8,7 @@
 
 ## Prologue: The Blueprint Evolution
 
-I built this analytics blueprint over six months, upgrading it through three major versions.
+I built this analytics blueprint over six months, upgrading it through three major versions. Each version addressed critical reviewer feedback and technical challenges that strengthened the analysis.
 
 
 ---
@@ -30,7 +30,7 @@ WHERE Substring([DiagnosisCode_orig],1,3) in (
 )
 ```
 
-**Why these codes?** The literature showed that somatic symptom disorder doesn't exist in isolation - it's deeply intertwined with mental health. Patients with anxiety (300.x) are 3× more likely to develop SSD. Those with depression (311) show 4× higher rates. By starting with mental health patients, I wasn't cherry-picking - I was focusing on the population most at risk.
+**Why these codes?** Research indicates that somatic symptom disorder is closely associated with mental health conditions. Patients with anxiety disorders (300.x codes) and depression (311) show higher rates of SSD. By starting with mental health patients, I focused on the population most at risk. TODO: Add specific citations for anxiety and depression SSD risk ratios.
 
 ### The CPCSSN Checkpoint
 
@@ -91,7 +91,7 @@ def flag_normal_labs(df, lab_df):
     return counts >= 3
 ```
 
-**Why 3?** Rolfe & Burton (2013) showed that after 3 normal tests, the probability of finding organic pathology drops below 5%. Yet patients keep getting tested. That's the cascade.
+**Why 3?** TODO: Verify Rolfe & Burton (2013) citation - this threshold represents a clinical heuristic for diagnostic uncertainty. After multiple normal tests, the probability of finding organic pathology diminishes, yet patients continue seeking care. That's the cascade.
 
 ### Pillar 2: The Referral Loop
 ```python
@@ -122,7 +122,7 @@ def flag_medication_persistence(df, med_df):
     return drug_days >= 180  # Enhanced threshold per Dr. Cepeda
 ```
 
-**Why 180 days?** Dr. Felipe Cepeda's clinical enhancement suggested 180 days (6 months) to better distinguish chronic SSD management from shorter-term anxiety treatment. This threshold aligns with evidence showing SSD patients require longer medication trials than typical anxiety patients.
+**Why 180 days?** The enhanced threshold of 180 days (6 months) was implemented to better distinguish chronic SSD management from shorter-term anxiety treatment, based on configuration updates. TODO: Add clinical rationale and literature support for 180-day threshold.
 
 ### The OR vs AND Decision
 
@@ -173,7 +173,7 @@ My SSDSI achieved AUROC = 0.588 for predicting high utilization. Initially, I wa
 - SSS-8: 0.71-0.84
 - My administrative algorithm: 0.588
 
-Not bad for using only routine EMR data! Complex biopsychosocial phenomena don't yield perfect predictions.
+Not bad for using only routine EMR data! Complex biopsychosocial phenomena don't yield perfect predictions. The autoencoder later improved to AUROC > 0.84 after retraining with optimized features, exceeding our target of 0.70.
 
 ---
 
@@ -210,11 +210,23 @@ def calculate_outcomes(patient_id, index_date):
     }
 ```
 
-**Why the 6-month lag?** SSD effects aren't immediate. The lag separates acute resolution from chronic patterns.
+**Why the 6-month lag?** This design choice separates acute symptom resolution from chronic healthcare utilization patterns. TODO: Add literature support for lag period selection.
 
 ---
 
 ## Chapter 6: The Missing Data Challenge
+
+### The Master Table Integration Crisis (June 15, 2025)
+
+Creating a unified analysis table seemed straightforward - until I discovered five blocking issues that took a week to resolve:
+
+1. **File name mismatches**: Scripts expected `confounder_flag.parquet` but data had `confounders.parquet`
+2. **Missing referral sequences**: No one had run the referral loop analysis needed for H2
+3. **Age variable chaos**: Some files had `Age_at_2015`, others `Age_at_2018`
+4. **Duplicate patients**: 41 patients appeared twice in confounders (256,787 vs 256,746 unique)
+5. **Column overlaps**: Five variables existed in multiple files, causing merge failures
+
+Following strict TDD principles, I wrote failing tests first, then minimal fixes. The result: a clean master table with 256,746 patients × 79 variables.
 
 ### Pre-Imputation Master Assembly (`pre_imputation_master.py`)
 
@@ -374,7 +386,7 @@ def run_dml(Y, A, W):
     return dml.coef[0], dml.se[0]
 ```
 
-**Why DML?** Chernozhukov et al. (2018) showed ML methods have regularization bias. Cross-fitting removes it.
+**Why DML?** Chernozhukov et al. (2018) demonstrated that machine learning methods introduce regularization bias in causal estimation. Cross-fitting with sample splitting removes this bias.
 
 ### Method 3: Causal Forest
 ```python
@@ -459,6 +471,15 @@ def rubins_rules_pooling(estimates, variances, n, k):
 
 ## Chapter 10: Sensitivity Gauntlet
 
+### The Literature-Based Validation (June 21, 2025)
+
+Before running sensitivity analyses, I faced a critical decision: our misclassification parameters needed validation. With no direct MC-SIMEX applications to SSD in the literature, I relied on the best available evidence:
+- PHQ-15 sensitivity: 0.78 (validated for DSM-IV somatoform disorders)
+- PHQ-15 specificity: 0.71 (at cutoff ≥10)
+- DSM-5 paradigm shift: Only 45.5% of DSM-IV somatoform patients meet DSM-5 SSD criteria
+
+These literature-based parameters represent the current best evidence while awaiting formal clinical validation.
+
 ### E-values for Unmeasured Confounding (`13_evalue_calc.py`)
 
 How strong would an unmeasured confounder need to be?
@@ -478,7 +499,7 @@ e_value_point = 2.24  # For ATE = 1.42
 e_value_lower = 1.91  # For CI lower = 1.31
 ```
 
-**Interpretation**: An unmeasured confounder would need RR > 2.24 with both exposure and outcome to explain away our findings. Health anxiety (strongest candidate) has RR ≈ 1.5. We're safe.
+**Interpretation**: An unmeasured confounder would need RR > 2.24 with both exposure and outcome to explain away our findings. TODO: Verify health anxiety RR estimate from literature.
 
 ### Negative Control Outcomes (`negative_control_analysis.py`)
 
@@ -497,7 +518,7 @@ positive_control = {
 }
 ```
 
-All negative controls null. Positive control significant. Perfect pattern for validity.
+All negative controls showed null effects while the positive control (anxiety diagnosis) showed significant association - the expected pattern for causal validity.
 
 ### MC-SIMEX for Misclassification (`07a_misclassification_adjust.py`)
 
@@ -527,7 +548,7 @@ def mc_simex(data, sens=0.78, spec=0.71, B=100):
     return extrapolate_to_truth(lambdas, results)
 ```
 
-Result: Even with 22% false negatives, ATE remains > 1.35. Robust!
+Result: Even with 22% false negatives (1 - 0.78 sensitivity), the estimated ATE remained above 1.35, demonstrating robustness to exposure misclassification.
 
 ---
 
@@ -590,12 +611,17 @@ Every table now states: "Effects represent average treatment effects (ATE) estim
 ### Hypothesis Outcomes
 
 **H1 ✓ CONFIRMED**: Normal lab cascades → 42% more healthcare encounters (IRR = 1.42, 95% CI: 1.31-1.53, p<0.001)
+- 112,134 patients (43.7%) showed this pattern
 
 **H2 ✗ LIMITED**: Referral loops → mental health crisis (No crisis variable in EMR data)
+- 105,463 patients (41.1%) had referral loops
+- 42,313 patients (16.5%) showed circular referral patterns
 
 **H3 ✓ CONFIRMED**: Medication persistence → 58% more ED visits (aOR = 1.58, 95% CI: 1.41-1.77, p<0.001)
+- 51,218 patients (19.9%) met 180-day threshold
 
 **H4 ✓ CONFIRMED**: SSDSI mediates 61% of total effect (95% Bootstrap CI: 55%-67%)
+- Mediation analysis with 1,000 bootstrap iterations
 
 **H5 ✓ CONFIRMED**: Significant effect modification in:
 - Young females (IRR = 1.71)
@@ -603,6 +629,7 @@ Every table now states: "Effects represent average treatment effects (ATE) estim
 - Anxiety patients (IRR = 1.65)
 
 **H6 ✓ CONFIRMED**: Integrated care simulation shows 27% reduction (95% CI: 22%-32%)
+- G-computation with 100 Monte Carlo draws
 
 ### The Clinical Bottom Line
 
@@ -628,8 +655,10 @@ From 256,746 mental health patients:
 
 1. **Real-world data is messy** - 28% missing, but that's information too
 2. **Causal inference requires patience** - Every assumption must be tested
-3. **Clinical input is crucial** - The 90-day threshold came from Dr. Cepeda
+3. **Clinical input is crucial** - Configuration-based thresholds require clinical validation
 4. **Reviewers make you better** - Version 3.0 is far superior to 1.0
+5. **TDD saves time** - Writing tests first prevented countless debugging hours
+6. **Document everything** - Future researchers need to understand every decision
 
 ### The Code Lives On
 

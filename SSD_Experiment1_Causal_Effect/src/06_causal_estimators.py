@@ -544,10 +544,13 @@ def analyze_heterogeneity(df, cate, covariate_cols):
     """Analyze heterogeneous treatment effects"""
     logger.info("Analyzing treatment effect heterogeneity")
     
+    # Handle both 'age' and 'Age_at_2015' columns for compatibility
+    age_col = 'age' if 'age' in df.columns else 'Age_at_2015'
+    
     # Define subgroups - extended as per plan specification
     subgroups = {
-        'age_young': df['age'] < 40,
-        'age_old': df['age'] >= 65,
+        'age_young': df[age_col] < 40,
+        'age_old': df[age_col] >= 65,
         'female': df['sex_M'] == 0,
         'male': df['sex_M'] == 1,
         'high_charlson': df['charlson_score'] >= 3,
@@ -611,7 +614,13 @@ def create_cate_plot(df, cate, output_path):
     ax1.legend()
     
     # CATE by age groups
-    age_groups = pd.cut(df['age'], bins=[0, 40, 60, 100], 
+    # Handle both 'age' and 'Age_at_2015' columns for compatibility
+    age_col = 'age' if 'age' in df.columns else 'Age_at_2015'
+    if age_col not in df.columns:
+        logger.warning(f"Neither 'age' nor 'Age_at_2015' found in dataframe. Skipping age-based CATE analysis.")
+        return
+    
+    age_groups = pd.cut(df[age_col], bins=[0, 40, 60, 100], 
                        labels=['<40', '40-60', '>60'])
     
     cate_by_age = []
@@ -662,6 +671,9 @@ def main():
     # Load configuration
     config = load_config()
     
+    # Initialize tracker
+    tracker = ArtefactTracker("06_causal_estimators")
+    
     # Log script start
     logger.info("Starting causal inference estimation script")
     
@@ -681,10 +693,14 @@ def main():
     TREATMENT_COL = get_treatment_column(df, config, default_treatment_col)
     cluster_col = args.cluster_col if args.cluster_col in df.columns else None
     
-    # Define covariates
-    covariate_cols = [col for col in df.columns if col.endswith('_conf') or 
-                     col in ['age', 'sex_M', 'charlson_score', 
-                            'baseline_encounters', 'baseline_high_utilizer']]
+    # Define covariates - handle both 'age' and 'Age_at_2015'
+    age_col = 'age' if 'age' in df.columns else 'Age_at_2015'
+    base_covariates = ['sex_M', 'charlson_score', 'baseline_encounters', 'baseline_high_utilizer']
+    # Add age column if it exists
+    if age_col in df.columns:
+        base_covariates.insert(0, age_col)
+    
+    covariate_cols = [col for col in df.columns if col.endswith('_conf') or col in base_covariates]
     covariate_cols = [col for col in covariate_cols if col in df.columns]
     
     logger.info(f"Using {len(covariate_cols)} covariates")

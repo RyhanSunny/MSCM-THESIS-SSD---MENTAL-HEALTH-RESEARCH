@@ -143,13 +143,11 @@ Create `src/02c_h2_diagnostic_uncertainty.py` for cleaner implementation
 
 ## References
 
-1. Keshavjee, K., Maunder, R., & Guergachi, A. (2019). Diagnostic uncertainty and healthcare utilization in patients with medically unexplained symptoms. Canadian Family Physician, 65(4), e141-e148.
+1. Dr. Karim Keshavjee: Discussion on potential causal chains in SSD (personal communication)
 
-2. Rosendal, M., et al. (2017). "Medically unexplained" symptoms and symptom disorders in primary care. BMC Family Practice, 18(1), 18.
+2. DSM-5-TR. (2022). Somatic Symptom and Related Disorders. American Psychiatric Association.
 
-3. DSM-5-TR. (2022). Somatic Symptom and Related Disorders. American Psychiatric Association.
-
-4. Henningsen, P., et al. (2018). Management of functional somatic syndromes and bodily distress. Psychotherapy and Psychosomatics, 87(1), 12-31.
+3. Internal project documentation and CPCSSN data analysis
 
 ## Appendix: NYD Code Distribution
 

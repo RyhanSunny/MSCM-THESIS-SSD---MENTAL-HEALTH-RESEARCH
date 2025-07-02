@@ -1,8 +1,8 @@
 # Statistical Limitations Documentation
 
-**Date**: June 30, 2025  
+**Date**: July 1, 2025  
 **Author**: Ryhan Suny  
-**Version**: 1.0.0  
+**Version**: 1.1.0  
 
 ## Overview
 
@@ -58,11 +58,38 @@ Limited sensitivity analyses for unmeasured confounding.
 ### Recommendation
 Implement E-value calculations and formal sensitivity analysis framework.
 
+## 4. H2 Hypothesis Implementation Limitation
+
+### Current Implementation
+The H2 hypothesis as specified by Dr. Karim requires tracking patients with "unresolved" specialist referrals (NYD → referred to specialist → "no diagnosis of that body part"). However, the CPCSSN referral table lacks Status/Resolution fields necessary to verify whether referrals were resolved.
+
+### Statistical Impact
+- **Measurement Error**: Current implementation counts ANY specialist referrals with symptom codes (ICD-9: 780-799), not specifically unresolved ones
+- **Sample Size**: Only 1,536 patients (0.6%) meet current criteria vs potentially 500-2,000 with enhanced criteria
+- **Validity**: May include resolved referrals, diluting the effect estimate
+
+### Current Workaround
+Three-tier proxy implementation available:
+- **Tier 1 (Basic)**: ≥2 referrals with symptom codes (current implementation)
+- **Tier 2 (Enhanced)**: NYD codes (780-799) + ≥2 specialist referrals  
+- **Tier 3 (Full Proxy)**: NYD + ≥3 normal labs + repeated same-specialty referrals
+
+### Recommendation
+1. Report all three tiers in sensitivity analysis
+2. Use Tier 2 as primary analysis (balances validity and sample size)
+3. Advocate for Status/Resolution fields in future CPCSSN updates
+4. Consider linking to specialist EMR data for outcome tracking
+
+### References
+- Dr. Karim Keshavjee: Discussion on potential causal chains in SSD (personal communication)
+- DSM-5-TR (2022): Somatic Symptom and Related Disorders criteria
+
 ## Version Control
 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0.0 | 2025-06-30 | Initial documentation of MC-SIMEX limitation |
+| 1.1.0 | 2025-07-01 | Added H2 hypothesis implementation limitation |
 
 ---
 *Note: This document should be updated as limitations are addressed or new ones are discovered.*

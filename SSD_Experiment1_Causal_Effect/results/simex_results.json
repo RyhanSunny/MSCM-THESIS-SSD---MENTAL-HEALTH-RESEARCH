@@ -1,0 +1,10 @@
+{
+  "sensitivity": 0.82,
+  "specificity": 0.82,
+  "simex_B": 100,
+  "naive_coefficient": 0.7371618807134575,
+  "corrected_coefficient": 2.2031206075101224,
+  "adjustment_factor": 2.9886523776539367,
+  "se_reduction_percent": -184.0278825109247,
+  "timestamp": "2025-07-01T14:03:01.839493"
+}

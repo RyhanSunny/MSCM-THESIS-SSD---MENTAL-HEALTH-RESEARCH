@@ -1,0 +1,10 @@
+The 'imputed/' directory has been archived to prevent confusion.
+
+The old imputation approach was incomplete (only 5 imputations, only 19 columns).
+
+Please use: data_derived/imputed_master/
+- Contains 30 imputations
+- Full 73-column master table
+- Correct pipeline approach
+
+Archived to: archived_old_imputed_20250701/

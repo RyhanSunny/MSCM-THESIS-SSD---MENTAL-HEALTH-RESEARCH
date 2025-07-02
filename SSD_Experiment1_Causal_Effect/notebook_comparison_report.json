@@ -1,0 +1,76 @@
+{
+  "metadata": {},
+  "cells": {
+    "added": [],
+    "removed": [],
+    "modified": [
+      {
+        "index": 10,
+        "id": "cell_10",
+        "type": "code",
+        "change_type": "source_modified",
+        "backup_preview": "# STEP 1: Cohort Construction\n\nprint(\"=\"*80)\nprint(\"STEP 1: Building cohort from CPCSSN data\")\nprint...",
+        "current_preview": "# STEP 1: Cohort Construction\n\nprint(\"=\"*80)\nprint(\"STEP 1: Building cohort from CPCSSN data\")\nprint...",
+        "diff_summary": "--- backup\n+++ current\n@@ -27,4 +27,16 @@\n else:\n     raise FileNotFoundError(f\"Cohort file not found at {cohort_path}\")\n     \n-print(\"\\nSTEP 1 COMPLETE \u2713\")+print(\"\\nSTEP 1 COMPLETE \u2713\")\n+\n+# Validate hierarchical index dates\n+cohort_path = DATA_DERIVED / \"cohort.parquet\"\n+if cohort_path.exists():\n+    cohort = pd.read_parquet(cohort_path)\n+    if 'IndexDate_unified' in cohort.columns:\n+        print(f\"\\n\u2713 Hierarchical index dates implemented\")\n+        print(f\"  - Lab index: {cohort['index_date_source'].eq('Laboratory').sum():,} ({cohort['index_date_source'].eq('Laboratory').mean():.1%})\")\n+        print(f\"  - MH encounter: {cohort['index_date_source'].eq('Mental_Health_Encounter').sum():,}\")\n+        print(f\"  - Psychotropic: {cohort['index_date_source'].eq('Psychotropic_Medication').sum():,}\")\n+        if 'lab_utilization_phenotype' in cohort.columns:\n+            print(f\"  - Phenotypes: Avoidant={cohort['lab_utilization_phenotype'].eq('Avoidant_SSD').sum():,}, Test-seeking={cohort['lab_utilization_phenotype'].eq('Test_Seeking_SSD').sum():,}\")\n"
+      },
+      {
+        "index": 11,
+        "id": "cell_11",
+        "type": "code",
+        "change_type": "source_modified",
+        "backup_preview": "# STEP 2: Exposure Flags (OR logic as primary)\n\nprint(\"\\n\" + \"=\"*80)\nprint(\"STEP 2: Generating expos...",
+        "current_preview": "# STEP 2: Exposure Flags (OR logic as primary)\n\nprint(\"\\n\" + \"=\"*80)\nprint(\"STEP 2: Generating expos...",
+        "diff_summary": "--- backup\n+++ current\n@@ -22,6 +22,15 @@\n     pct_exposed = n_exposed / len(exposure_df) * 100\n     print(f\"\\n\u2713 Exposure flags created: {n_exposed:,} exposed ({pct_exposed:.1f}%)\")\n     \n+    # Validate H2 tiers\n+    if 'h2_tier1' in exposure_df.columns:\n+        print(f\"\\n\u2713 H2 three-tier implementation validated\")\n+        print(f\"  - Tier 1 (Basic): {exposure_df['h2_tier1'].sum():,} patients\")\n+        print(f\"  - Tier 2 (Enhanced): {exposure_df['h2_tier2'].sum():,} patients\")\n+        print(f\"  - Tier 3 (Full Proxy): {exposure_df['h2_tier3'].sum():,} patients\")\n+        if 'h2_any_tier' in exposure_df.columns:\n+            print(f\"  - Any tier: {exposure_df['h2_any_tier'].sum():,} patients\")\n+            \n     # Store actual values for documentation\n     exposure_summary = {\n         'n_exposed': int(n_exposed),\n"
+      },
+      {
+        "index": 16,
+        "id": "cell_16",
+        "type": "code",
+        "change_type": "source_modified",
+        "backup_preview": "# STEP 9: Multiple Imputation with m=30\n# EXECUTION TIME WARNING: ~45-60 minutes\n\nprint(\"\\n\" + \"=\"*8...",
+        "current_preview": "# STEP 9: Multiple Imputation with m=30\n# EXECUTION TIME WARNING: ~45-60 minutes\n\nprint(\"\\n\" + \"=\"*8...",
+        "diff_summary": "--- backup\n+++ current\n@@ -40,4 +40,7 @@\n else:\n     raise FileNotFoundError(f\"Imputed master directory not found at {imputed_dir}\")\n \n-print(\"\\nSTEP 9 COMPLETE \u2713\")+print(\"\\nSTEP 9 COMPLETE \u2713\")\n+\n+# Confirm datetime exclusion\n+print(\"\\n\u2713 Datetime columns excluded from imputation (per evidence-based solutions)\")\n"
+      },
+      {
+        "index": 28,
+        "id": "cell_28",
+        "type": "code",
+        "change_type": "source_modified",
+        "backup_preview": "# STEP 15: Rubin's Rules Pooling\n# CRITICAL: This now has proper small-sample df adjustment!\n\nprint(...",
+        "current_preview": "# STEP 15: Rubin's Rules Pooling\n# CRITICAL: This now has proper small-sample df adjustment!\n\nprint(...",
+        "diff_summary": "--- backup\n+++ current\n@@ -8,6 +8,7 @@\n \n # Run Rubin's pooling engine\n result = run_pipeline_script(\"rubins_pooling_engine.py\",\n+                           args=\"--pattern causal_results_imp*.json\",\n                            description=\"Rubin's Pooling with Barnard-Rubin\")\n \n # VALIDATE: Pooled estimates with correct df\n"
+      },
+      {
+        "index": 32,
+        "id": "cell_32",
+        "type": "code",
+        "change_type": "source_modified",
+        "backup_preview": "# STEPS 17-21: Sensitivity Analyses\n\nsensitivity_steps = [\n    {\n        'num': 17,\n        'script'...",
+        "current_preview": "# STEPS 17-21: Sensitivity Analyses\n\nsensitivity_steps = [\n    {\n        'num': 17,\n        'script'...",
+        "diff_summary": "--- backup\n+++ current\n@@ -15,7 +15,7 @@\n     },\n     {\n         'num': 19,\n-        'script': 'competing_risk_analysis.py',\n+        'script': 'death_rates_analysis.py',\n         'description': 'Competing Risk Analysis (Death)',\n         'validate': lambda: print(\"\u2713 Fine-Gray model for death as competing event\")\n     },\n"
+      },
+      {
+        "index": 48,
+        "id": "cell_48",
+        "type": "code",
+        "change_type": "source_modified",
+        "backup_preview": "# Tables for Manuscript\n\nprint(\"=\"*80)\nprint(\"PHASE 11: Generating Manuscript Tables\")\nprint(\"=\"*80)...",
+        "current_preview": "# Tables for Manuscript\n\nprint(\"=\"*80)\nprint(\"PHASE 11: Generating Manuscript Tables\")\nprint(\"=\"*80)...",
+        "diff_summary": "--- backup\n+++ current\n@@ -309,7 +309,7 @@\n         imputation_data.append({'Variable': 'Number of imputations', 'Value': str(config['imputation']['n_imputations'])})\n         \n     # Get actual missingness from pre-imputation data\n-    pre_imp_path = DATA_DERIVED / \"pre_imputation_master.parquet\"\n+    pre_imp_path = DATA_DERIVED / \"master_with_missing.parquet\"\n     if pre_imp_path.exists():\n         pre_imp_df = pd.read_parquet(pre_imp_path)\n         avg_missing = (pre_imp_df.isnull().sum() / len(pre_imp_df) * 100).mean()\n"
+      },
+      {
+        "index": 53,
+        "id": "cell_53",
+        "type": "code",
+        "change_type": "source_modified",
+        "backup_preview": "# Archive Creation\n\nprint(\"\\n\" + \"-\"*60)\nprint(\"Creating Archive\")\nprint(\"-\"*60)\n\n# Load actual exec...",
+        "current_preview": "# Archive Creation\n\nprint(\"\\n\" + \"-\"*60)\nprint(\"Creating Archive\")\nprint(\"-\"*60)\n\n# Load actual exec...",
+        "diff_summary": "--- backup\n+++ current\n@@ -7,7 +7,7 @@\n # Load actual execution data for dynamic values\n cohort_path = DATA_DERIVED / \"cohort.parquet\"\n exposure_path = DATA_DERIVED / \"exposure.parquet\"\n-pre_imp_path = DATA_DERIVED / \"pre_imputation_master.parquet\"\n+pre_imp_path = DATA_DERIVED / \"master_with_missing.parquet\"\n \n # Get actual cohort size\n if cohort_path.exists():\n"
+      }
+    ]
+  },
+  "summary": {
+    "backup_cell_count": 58,
+    "current_cell_count": 58
+  }
+}

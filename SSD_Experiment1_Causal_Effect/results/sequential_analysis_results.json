@@ -1,0 +1,19 @@
+{
+  "analysis_type": "Sequential Pathway Analysis",
+  "total_patients": 250025,
+  "complete_pathways": 0,
+  "pathway_completion_rate": 0.0,
+  "stage_bottlenecks": {
+    "0": 250025
+  },
+  "avg_nyd_to_ssd_days": null,
+  "stage_names": {
+    "0": "No NYD diagnosis",
+    "1": "NYD but <3 normal labs",
+    "2": "Normal labs but no specialist referral",
+    "3": "Specialist referral but no anxiety/depression",
+    "4": "Anxiety/depression but no psychiatrist referral",
+    "5": "Psychiatrist referral but no SSD diagnosis",
+    "6": "Complete pathway to SSD"
+  }
+}

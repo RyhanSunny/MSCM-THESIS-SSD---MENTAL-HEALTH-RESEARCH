@@ -148,6 +148,7 @@ lab      = load("lab",      ["PerformedDate"])
 referral = load("referral", ["CompletedDate", "DateCreated"])
 med      = load("medication", ["StartDate", "StopDate"])
 enc_diag = load("encounter_diagnosis")
+health_condition = load("health_condition")  # Added for H2 enhanced tiers
 
 #  Keep only cohort patients in every table (speed)
 keep = set(cohort.Patient_ID)
@@ -155,6 +156,7 @@ lab      = lab[lab.Patient_ID.isin(keep)]
 referral = referral[referral.Patient_ID.isin(keep)]
 med      = med[med.Patient_ID.isin(keep)]
 enc_diag = enc_diag[enc_diag.Patient_ID.isin(keep)]
+health_condition = health_condition[health_condition.Patient_ID.isin(keep)]
 
 # ------------------------------------------------------------------ #
 #  2  Window boundaries
@@ -164,8 +166,16 @@ exp_window_start = pd.Timestamp(get_config("temporal.exposure_window_start"))
 exp_window_end = pd.Timestamp(get_config("temporal.exposure_window_end"))
 
 # For each patient, exposure window is relative to their index date
-cohort["exp_start"] = cohort.IndexDate_lab
-cohort["exp_end"]   = cohort.IndexDate_lab + pd.Timedelta(days=365)
+# Use unified index date from hierarchical implementation (addresses 28.3% missing lab dates)
+if "IndexDate_unified" in cohort.columns:
+    cohort["exp_start"] = cohort.IndexDate_unified
+    cohort["exp_end"]   = cohort.IndexDate_unified + pd.Timedelta(days=365)
+    log.info("Using IndexDate_unified for exposure window (hierarchical implementation)")
+else:
+    # Fallback to lab index for backward compatibility
+    cohort["exp_start"] = cohort.IndexDate_lab
+    cohort["exp_end"]   = cohort.IndexDate_lab + pd.Timedelta(days=365)
+    log.warning("IndexDate_unified not found, falling back to IndexDate_lab")
 
 log.info(f"Exposure window: {exp_window_start} to {exp_window_end} (relative to index date)")
 
@@ -273,6 +283,66 @@ def process_referral_chunks(referral_df, enc_diag_filtered, cohort):
 ref_count = process_referral_chunks(referral, enc_diag_filtered, cohort)
 crit2 = ref_count >= MIN_SYMPTOM_REFERRALS
 log.info(f"Patients meeting ≥{MIN_SYMPTOM_REFERRALS} symptom-referral rule: {crit2.sum():,}")
+
+# ------------------------------------------------------------------ #
+#  4b  Enhanced H2 Tiers - Aligned with Dr. Karim's Causal Chain
+# ------------------------------------------------------------------ #
+# References:
+# - Keshavjee et al. (2019): Diagnostic uncertainty loops in SSD
+# - Rosendal et al. (2017): Repeated referrals indicate diagnostic uncertainty
+# - DSM-5-TR (2022): "Excessive health-related behaviors" criterion
+
+log.info("Computing enhanced H2 tiers for sensitivity analysis")
+
+# Tier 1: Basic (already computed above as crit2)
+h2_tier1_basic = crit2
+
+# Tier 2: NYD + referrals
+# Identify NYD patients from health_condition (ICD-9: 780-799)
+nyd_pattern = re.compile(r"^(78[0-9]|799)")
+nyd_patients = set(health_condition[
+    health_condition.DiagnosisCode_calc.str.match(nyd_pattern, na=False)
+]["Patient_ID"].unique())
+log.info(f"Identified {len(nyd_patients):,} patients with NYD codes (780-799)")
+
+# Get total referral counts (not just symptom-associated)
+total_refs = referral[referral.is_specialist].groupby("Patient_ID").size()
+patients_with_2plus_refs = set(total_refs[total_refs >= 2].index)
+
+h2_tier2_enhanced = pd.Series(
+    cohort.Patient_ID.isin(nyd_patients & patients_with_2plus_refs),
+    index=cohort.Patient_ID
+).rename("h2_tier2_enhanced")
+log.info(f"H2 Tier 2 (NYD + ≥2 referrals): {h2_tier2_enhanced.sum():,} patients")
+
+# Tier 3: Full proxy - NYD + normal labs + repeated same-specialty referrals
+# Check for repeated same-specialty referrals (diagnostic uncertainty proxy)
+same_spec_refs = referral[referral.is_specialist].groupby(
+    ["Patient_ID", "Name_calc"]
+).size()
+patients_with_repeat_specs = set(
+    same_spec_refs[same_spec_refs >= 2].reset_index()["Patient_ID"].unique()
+)
+log.info(f"Patients with repeated same-specialty referrals: {len(patients_with_repeat_specs):,}")
+
+# Reuse normal lab counts from H1
+patients_with_3plus_normal_labs = set(
+    norm_count[norm_count >= 3].index
+)
+
+h2_tier3_full = pd.Series(
+    cohort.Patient_ID.isin(
+        nyd_patients & patients_with_3plus_normal_labs & patients_with_repeat_specs
+    ),
+    index=cohort.Patient_ID
+).rename("h2_tier3_full")
+log.info(f"H2 Tier 3 (NYD + ≥3 normal labs + repeated referrals): {h2_tier3_full.sum():,} patients")
+
+# Log tier comparison
+log.info("H2 Tier Summary:")
+log.info(f"  Tier 1 (Basic symptom referrals): {h2_tier1_basic.sum():,} ({h2_tier1_basic.mean()*100:.1f}%)")
+log.info(f"  Tier 2 (NYD + referrals): {h2_tier2_enhanced.sum():,} ({h2_tier2_enhanced.mean()*100:.1f}%)")
+log.info(f"  Tier 3 (Full diagnostic uncertainty): {h2_tier3_full.sum():,} ({h2_tier3_full.mean()*100:.1f}%)")
 
 del referral, enc_diag_filtered
 import gc
@@ -529,6 +599,8 @@ exposure = (exposure
             .merge(norm_count,              left_on="Patient_ID", right_index=True, how="left")
             .merge(ref_count,               left_on="Patient_ID", right_index=True, how="left")
             .merge(drug_days,               left_on="Patient_ID", right_index=True, how="left")
+            .merge(h2_tier2_enhanced.to_frame(), left_on="Patient_ID", right_index=True, how="left")
+            .merge(h2_tier3_full.to_frame(),     left_on="Patient_ID", right_index=True, how="left")
             .fillna(0))
 
 exposure["crit1_normal_labs"]   = exposure.normal_lab_count   >= MIN_NORMAL_LABS
@@ -585,7 +657,9 @@ cols_keep = ["Patient_ID",
              "H3_drug_persistence",
              "normal_lab_count",
              "symptom_referral_n",
-             "drug_days_in_window"]
+             "drug_days_in_window",
+             "h2_tier2_enhanced",
+             "h2_tier3_full"]
 
 if ARGS.logic in {"or", "both"}:
     out_or = DERIVED / "exposure_or.parquet"

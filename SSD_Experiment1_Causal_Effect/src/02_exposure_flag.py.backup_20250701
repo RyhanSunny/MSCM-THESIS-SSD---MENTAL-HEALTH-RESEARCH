@@ -1,0 +1,630 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+02_exposure_flag.py  – "SSD-pattern" treatment indicator
+
+The flag is **1** if ALL of the following are true in the 12-month *exposure*
+window (index-date → index-date + 365 d):
+
+1. ≥ 3 laboratory results within normal limits  
+2. ≥ 2 specialist referrals whose *final* diagnosis remains in ICD-9 780–789  
+3. ≥ 90 consecutive days of prescription coverage for
+   • anxiolytic (ATC N05B / N05C) OR
+   • non-opioid analgesic (N02B) OR
+   • non-benzo hypnotic (N05CH, e.g. z-drugs)
+
+Outputs  
+`data_derived/exposure.parquet`
+
+HYPOTHESIS MAPPING:
+This script directly supports:
+- H1, H2, H3: The exposure flag identifies patients with SSD patterns which are
+  the treatment group for testing effects on healthcare utilization and costs
+- H4, H5, H6: Provides the exposure variable for mediation analyses through
+  psychological factors, health anxiety, and physician factors
+"""
+
+from __future__ import annotations
+import sys, logging, re, argparse
+from pathlib import Path
+from datetime import timedelta
+import locale
+
+import pandas as pd
+import numpy  as np
+
+# Set locale to UTF-8
+try:
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+except locale.Error:
+    try:
+        locale.setlocale(locale.LC_ALL, 'C.UTF-8')
+    except locale.Error:
+        pass
+
+# Add src and utils to path
+SRC = (Path(__file__).resolve().parents[1] / "src").as_posix()
+if SRC not in sys.path:
+    sys.path.insert(0, SRC)
+
+UTILS = (Path(__file__).resolve().parents[1] / "utils").as_posix()
+if UTILS not in sys.path:
+    sys.path.insert(0, UTILS)
+
+# ------------------------------------------------------------------ #
+#  Logging
+# ------------------------------------------------------------------ #
+# Configure logging with UTF-8 encoding
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s  %(levelname)-8s  %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("02_exposure_flag.log", mode="w", encoding='utf-8')
+    ])
+log = logging.getLogger("exposure")
+
+# Import and set global seeds
+try:
+    from global_seeds import set_global_seeds
+    set_global_seeds()
+    log.info("Global seeds set for reproducibility")
+except ImportError:
+    log.warning("Could not import global_seeds utility")
+
+# Import configuration
+try:
+    from config_loader import load_config, get_config
+    config = load_config()
+    log.info("Configuration loaded successfully")
+except Exception as e:
+    log.error(f"Could not load configuration: {e}")
+    raise
+
+# Import lab utilities
+try:
+    from helpers.lab_utils import is_normal_lab, add_normal_flags
+    log.info("Lab utilities imported successfully")
+except ImportError as e:
+    log.warning(f"Could not import lab utilities: {e} - will use existing is_normal column")
+
+# ------------------------------------------------------------------ #
+#  Project paths
+# ------------------------------------------------------------------ #
+ROOT        = Path(__file__).resolve().parents[1]
+DERIVED     = ROOT / "data_derived"
+CHECKPOINTS = ROOT / "Notebooks" / "data" / "interim"
+OUT_PATH    = DERIVED / "exposure.parquet"
+
+try:
+    DERIVED.mkdir(exist_ok=True, parents=True)
+except Exception as e:
+    log.error(f"Failed to create directory {DERIVED}: {e}")
+    sys.exit(1)
+
+# Latest checkpoint folder
+try:
+    CKPT = max(CHECKPOINTS.glob("checkpoint_*"), key=lambda p: p.stat().st_mtime)
+    log.info(f"Using checkpoint → {CKPT.name}")
+except Exception as e:
+    log.error(f"Failed to find checkpoint directory: {e}")
+    sys.exit(1)
+
+# ------------------------------------------------------------------ #
+#  CLI ARGUMENTS
+# ------------------------------------------------------------------ #
+parser = argparse.ArgumentParser(description="Generate SSD exposure flag with configurable logic")
+parser.add_argument("--logic", choices=["or", "and", "both"], default="or",
+                    help="Which exposure logic to save: 'or' (any pattern), 'and' (all patterns), or 'both'.")
+ARGS = parser.parse_args()
+
+# ------------------------------------------------------------------ #
+#  Helper – robust loader
+# ------------------------------------------------------------------ #
+def load(tbl: str, date_cols: list[str] | None = None) -> pd.DataFrame:
+    try:
+        pq = CKPT / f"{tbl}.parquet"
+        if pq.exists():
+            df = pd.read_parquet(pq)
+        else:
+            csv_path = CKPT / f"{tbl}.csv"
+            if not csv_path.exists():
+                raise FileNotFoundError(f"Neither {pq} nor {csv_path} exists")
+            df = pd.read_csv(csv_path, low_memory=False, encoding='utf-8')
+        if date_cols:
+            for c in date_cols:
+                if c in df.columns:
+                    df[c] = pd.to_datetime(df[c], errors="coerce")
+        return df
+    except Exception as e:
+        log.error(f"Failed to load {tbl}: {e}")
+        raise
+
+# ------------------------------------------------------------------ #
+#  1  Load cohort + source tables
+# ------------------------------------------------------------------ #
+cohort   = pd.read_parquet(DERIVED / "cohort.parquet")
+lab      = load("lab",      ["PerformedDate"])
+referral = load("referral", ["CompletedDate", "DateCreated"])
+med      = load("medication", ["StartDate", "StopDate"])
+enc_diag = load("encounter_diagnosis")
+
+#  Keep only cohort patients in every table (speed)
+keep = set(cohort.Patient_ID)
+lab      = lab[lab.Patient_ID.isin(keep)]
+referral = referral[referral.Patient_ID.isin(keep)]
+med      = med[med.Patient_ID.isin(keep)]
+enc_diag = enc_diag[enc_diag.Patient_ID.isin(keep)]
+
+# ------------------------------------------------------------------ #
+#  2  Window boundaries
+# ------------------------------------------------------------------ #
+# Use exposure window from config (2015-01-01 to 2016-01-01)
+exp_window_start = pd.Timestamp(get_config("temporal.exposure_window_start"))
+exp_window_end = pd.Timestamp(get_config("temporal.exposure_window_end"))
+
+# For each patient, exposure window is relative to their index date
+cohort["exp_start"] = cohort.IndexDate_lab
+cohort["exp_end"]   = cohort.IndexDate_lab + pd.Timedelta(days=365)
+
+log.info(f"Exposure window: {exp_window_start} to {exp_window_end} (relative to index date)")
+
+# ------------------------------------------------------------------ #
+#  3  Criterion 1 – ≥{config} normal labs
+# ------------------------------------------------------------------ #
+MIN_NORMAL_LABS = get_config("exposure.min_normal_labs", 3)
+
+# Normal-lab detection from Notebook 1
+if "is_normal" not in lab.columns:
+    raise RuntimeError("Column is_normal missing – run Notebook 1 first!")
+
+# Process lab data in chunks if it's a CSV
+if isinstance(lab, str) and lab.endswith('.csv'):
+    log.info("Processing lab data in chunks...")
+    chunk_size = 100000  # Adjust based on available memory
+    normal_counts = pd.Series(0, index=cohort.Patient_ID)
+    
+    for chunk in pd.read_csv(CKPT / "lab.csv", 
+                           chunksize=chunk_size,
+                           low_memory=False,
+                           encoding='utf-8'):
+        # Process each chunk
+        chunk = chunk.dropna(subset=["PerformedDate"])
+        chunk["PerformedDate"] = pd.to_datetime(chunk.PerformedDate, errors="coerce")
+        chunk = chunk.merge(cohort[["Patient_ID", "exp_start", "exp_end"]],
+                          on="Patient_ID", how="inner")
+        
+        chunk_in_window = chunk[(chunk.PerformedDate >= chunk.exp_start) &
+                              (chunk.PerformedDate <= chunk.exp_end)]
+        
+        if "is_normal" in chunk_in_window.columns:
+            chunk_counts = (chunk_in_window.groupby("Patient_ID")["is_normal"]
+                          .apply(lambda x: (x==True).sum()))
+            normal_counts = normal_counts.add(chunk_counts, fill_value=0)
+    
+    norm_count = normal_counts.rename("normal_lab_count")
+else:
+    # Original processing for parquet files
+    lab = lab.dropna(subset=["PerformedDate"])
+    lab = lab.merge(cohort[["Patient_ID", "exp_start", "exp_end"]],
+                   on="Patient_ID", how="inner")
+    lab_in_window = lab[(lab.PerformedDate >= lab.exp_start) &
+                       (lab.PerformedDate <= lab.exp_end)]
+    
+    norm_count = (lab_in_window.groupby("Patient_ID")["is_normal"]
+                 .apply(lambda x: (x==True).sum())
+                 .rename("normal_lab_count"))
+
+crit1 = norm_count >= MIN_NORMAL_LABS
+log.info(f"Patients meeting ≥{MIN_NORMAL_LABS} normal-lab rule: {crit1.sum():,}")
+
+# Clean up memory
+del lab
+import gc
+gc.collect()
+
+# ------------------------------------------------------------------ #
+#  4  Criterion 2 – ≥{config} symptom-referrals
+# ------------------------------------------------------------------ #
+MIN_SYMPTOM_REFERRALS = get_config("exposure.min_symptom_referrals", 2)
+SYMPTOM_RE = re.compile(get_config("exposure.symptom_code_regex", r"^(78[0-9]|799)"))
+
+# Step a: Filter encounter_diagnosis first to reduce memory usage
+enc_diag_filtered = enc_diag[enc_diag.DiagnosisCode_calc.str.match(SYMPTOM_RE, na=False)][["Encounter_ID", "DiagnosisCode_calc"]]
+enc_diag_filtered["DiagnosisCode_calc"] = enc_diag_filtered["DiagnosisCode_calc"].astype("category")
+log.info(f"Filtered encounter diagnoses to {len(enc_diag_filtered):,} rows")
+
+# Step b: Filter referral data before merge
+referral = referral.dropna(subset=["CompletedDate", "DateCreated"])
+referral["ReferralDate"] = pd.to_datetime(
+    referral.CompletedDate.fillna(referral.DateCreated), errors="coerce")
+referral = referral.dropna(subset=["ReferralDate"])
+referral = referral[["Patient_ID", "Encounter_ID", "Name_calc", "ReferralDate"]]
+referral["Name_calc"] = referral["Name_calc"].astype("category")
+
+# Map specialty (quick upper-case)
+spec = referral.Name_calc.str.upper().fillna("")
+referral["is_specialist"] = ~spec.str.contains("FAMILY|GENERAL PRACTICE|GP")
+
+# Process referral in chunks to avoid memory error
+def process_referral_chunks(referral_df, enc_diag_filtered, cohort):
+    chunk_size = 100000
+    results = []
+    for start in range(0, len(referral_df), chunk_size):
+        chunk = referral_df.iloc[start:start+chunk_size].copy()
+        chunk = chunk.merge(enc_diag_filtered, on="Encounter_ID", how="inner")
+        chunk["symptom_dx"] = chunk.DiagnosisCode_calc.str.match(SYMPTOM_RE, na=False)
+        chunk["qualifies"] = chunk.is_specialist & chunk.symptom_dx
+        chunk = chunk.merge(cohort[["Patient_ID", "exp_start", "exp_end"]], on="Patient_ID", how="inner")
+        in_win = chunk[(chunk.ReferralDate >= chunk.exp_start) &
+                       (chunk.ReferralDate <= chunk.exp_end) &
+                       (chunk.qualifies)]
+        results.append(in_win[["Patient_ID"]])
+        del chunk, in_win
+        import gc
+        gc.collect()
+    if results:
+        all_in_win = pd.concat(results, ignore_index=True)
+        ref_count = all_in_win.groupby("Patient_ID").size().rename("symptom_referral_n")
+    else:
+        ref_count = pd.Series(dtype=int, name="symptom_referral_n")
+    return ref_count
+
+ref_count = process_referral_chunks(referral, enc_diag_filtered, cohort)
+crit2 = ref_count >= MIN_SYMPTOM_REFERRALS
+log.info(f"Patients meeting ≥{MIN_SYMPTOM_REFERRALS} symptom-referral rule: {crit2.sum():,}")
+
+del referral, enc_diag_filtered
+import gc
+gc.collect()
+
+# ------------------------------------------------------------------ #
+#  5  Criterion 3 – ≥{config} d prescription coverage (Felipe Enhancement: 180 days)
+# ------------------------------------------------------------------ #
+MIN_DRUG_DAYS = get_config("exposure.min_drug_days", 180)  # Enhanced: Felipe's 180-day threshold
+
+# Load enhanced drug ATC codes (Felipe's suggestions: N06A, N03A, N05A)
+drug_atc_config = get_config("exposure.drug_atc_codes", {})
+all_atc_codes = []
+for drug_class, codes in drug_atc_config.items():
+    all_atc_codes.extend(codes)
+
+# Enhanced Drug Classifications - Clinically Validated
+# Clinical validation completed 2025-06-22 (see CLINICAL_VALIDATION_DRUG_CLASSES_ICD_CODES.md)
+# Evidence levels: STRONG (N06A), APPROPRIATE (N05B/N05C, N02B), LIMITED (N03A, N05A)
+# Source: Meta-analysis of 94 trials, DSM-5 criteria, APA guidelines
+
+felipe_enhanced_codes = [
+    # N06A - Antidepressants (STRONG EVIDENCE) 
+    # "Primary evidence-based treatment" - Meta-analysis NNT=3
+    'N06A', 'N06A1', 'N06A2', 'N06A3', 'N06A4', 'N06AB', 'N06AF', 'N06AX',
+    
+    # N03A - Anticonvulsants (LIMITED EVIDENCE)
+    # "Limited supporting evidence" but captures inappropriate prescribing patterns  
+    'N03A', 'N03A1', 'N03A2', 'N03AB', 'N03AC', 'N03AD', 'N03AE', 'N03AF', 'N03AG', 'N03AX',
+    
+    # N05A - Antipsychotics (LIMITED EVIDENCE) 
+    # "Little support" but "SSRI+atypical more effective than SSRI alone"
+    'N05A', 'N05A1', 'N05A2', 'N05A3', 'N05A4', 'N05AA', 'N05AB', 'N05AC', 'N05AD', 'N05AE', 'N05AF', 'N05AH', 'N05AL', 'N05AN'
+]
+
+def get_enhanced_drug_mapping():
+    """
+    Enhanced drug mapping unified from experimental and MH versions.
+    Incorporates psychiatric specificity with clinical evidence levels.
+    
+    Clinical Evidence Summary (validated 2025-06-22):
+    - N06A: Strong evidence (APA guidelines, meta-analysis NNT=3)
+    - N05B/N05C: Appropriate for anxiety/sleep in SSD (DSM-5 Criterion B)
+    - N02B: Appropriate for pain management (A-MUPS AUC=0.900)
+    - N03A: Limited evidence but research value for inappropriate prescribing
+    - N05A: Limited evidence but valuable for severe/augmentation cases
+    
+    Returns:
+        dict: ATC code to clinical classification mapping
+    """
+    return {
+        # Strong evidence - First-line treatments
+        'N06A': 'antidepressants_primary',
+        'N06AB': 'ssri_antidepressants',      # First-line, high persistence (60.9%)
+        'N06AC': 'tricyclic_antidepressants', # "Notable success" in trials
+        'N06AF': 'maoi_antidepressants',      # Specialized use
+        'N06AX': 'other_antidepressants',     # Alternative agents
+        
+        # Appropriate - Symptom management
+        'N05B': 'anxiolytics',               # DSM-5 Criterion B anxiety
+        'N05C': 'hypnotics',                 # Sleep disturbances
+        'N02B': 'analgesics_non_opioid',     # A-MUPS validated for pain
+        
+        # Limited evidence - Research value
+        'N03A': 'anticonvulsants_mood',      # Off-label mood/pain
+        'N03AE': 'anticonvulsants_gabapentin', # "Widespread prescribing not supported"
+        'N03AF': 'anticonvulsants_carbam',   # Carbamazepine derivatives
+        
+        'N05A': 'antipsychotics_augment',    # Augmentation therapy
+        'N05AA': 'antipsychotics_typical',   # Limited use
+        'N05AB': 'antipsychotics_atypical',  # "More effective with SSRI"
+        'N05AL': 'antipsychotics_modern',    # Newer atypicals
+        'N05AN': 'lithium_compounds',        # Mood stabilization
+    }
+
+def create_enhanced_drug_atc_export():
+    """
+    Create comprehensive ATC drug code mapping export with enhanced classifications.
+    Integrates experimental enhancements for mental health patient cohort.
+    
+    Returns:
+        pd.DataFrame: Enhanced ATC codes with clinical classifications
+    """
+    enhanced_codes = {
+        # Existing codes (maintain backward compatibility)
+        'N05B': 'anxiolytics',
+        'N05C': 'hypnotics', 
+        'N02B': 'analgesics_non_opioid',
+        
+        # Enhanced Psychiatric Medications - Mental Health Cohort Focus
+        'N06A1': 'antidepressants_tricyclic',
+        'N06A2': 'antidepressants_ssri',
+        'N06A3': 'antidepressants_snri', 
+        'N06A4': 'antidepressants_other',
+        'N06AB': 'antidepressants_ssri_specific',
+        'N06AF': 'antidepressants_maoi',
+        'N06AX': 'antidepressants_other_specific',
+        
+        'N03A1': 'anticonvulsants_phenytoin',
+        'N03A2': 'anticonvulsants_carbamazepine',
+        'N03AX': 'anticonvulsants_other',
+        'N03AB': 'anticonvulsants_succinimide',
+        'N03AC': 'anticonvulsants_oxazolidine',
+        'N03AD': 'anticonvulsants_succinimide_derivatives',
+        'N03AE': 'anticonvulsants_benzodiazepine',
+        'N03AF': 'anticonvulsants_carboxamide',
+        'N03AG': 'anticonvulsants_fatty_acid',
+        
+        'N05A1': 'antipsychotics_typical',
+        'N05A2': 'antipsychotics_atypical',
+        'N05A3': 'antipsychotics_lithium',
+        'N05A4': 'antipsychotics_other',
+        'N05AA': 'antipsychotics_phenothiazine',
+        'N05AB': 'antipsychotics_butyrophenone',
+        'N05AC': 'antipsychotics_benzisoxazole',
+        'N05AD': 'antipsychotics_substituted_benzamide',
+        'N05AE': 'antipsychotics_indole',
+        'N05AF': 'antipsychotics_thioxanthene',
+        'N05AH': 'antipsychotics_diazepine',
+        'N05AL': 'antipsychotics_benzothiazole',
+        'N05AN': 'antipsychotics_lithium'
+    }
+    
+    # Create comprehensive export DataFrame
+    export_data = []
+    for code, drug_class in enhanced_codes.items():
+        enhancement_status = 'consolidated' if code.startswith(('N06A', 'N03A', 'N05A')) else 'original'
+        evidence_level = 'STRONG' if code.startswith('N06A') else 'APPROPRIATE' if code.startswith(('N05B', 'N05C', 'N02B')) else 'LIMITED'
+        
+        export_data.append({
+            'atc_code': code,
+            'drug_class': drug_class,
+            'enhancement_status': enhancement_status,
+            'evidence_level': evidence_level,
+            'mental_health_relevance': 'HIGH' if code.startswith(('N06A', 'N05A')) else 'MEDIUM',
+            'consolidation_date': '2025-06-22'
+        })
+    
+    export_df = pd.DataFrame(export_data)
+    
+    # Save enhanced codes to CSV
+    codes_path = ROOT / "code_lists" / "drug_atc_enhanced_consolidated.csv"
+    export_df.to_csv(codes_path, index=False)
+    log.info(f"Enhanced ATC codes exported: {len(enhanced_codes)} total codes to {codes_path}")
+    
+    return export_df
+
+def export_unified_validation():
+    """
+    Export unified drug validation combining clinical evidence with code mapping.
+    Integrates findings from CLINICAL_VALIDATION_DRUG_CLASSES_ICD_CODES.md
+    """
+    try:
+        drug_mapping = get_enhanced_drug_mapping()
+        evidence_levels = {
+            'N06A': 'STRONG',     # Meta-analysis evidence
+            'N05B': 'APPROPRIATE', # DSM-5 criterion
+            'N05C': 'APPROPRIATE', # Sleep symptoms  
+            'N02B': 'APPROPRIATE', # A-MUPS validation
+            'N03A': 'LIMITED',    # Research value only
+            'N05A': 'LIMITED',    # Augmentation cases
+        }
+        
+        validation_data = []
+        for code in felipe_enhanced_codes:
+            prefix = code[:4] if len(code) >= 4 else code[:3]
+            evidence = evidence_levels.get(prefix, 'LIMITED')
+            classification = drug_mapping.get(code, 'general_psychotropic')
+            
+            validation_data.append({
+                'atc_code': code,
+                'drug_class': classification,
+                'evidence_level': evidence,
+                'validation_date': '2025-06-22',
+                'clinical_source': 'CLINICAL_VALIDATION_DRUG_CLASSES_ICD_CODES.md',
+                'integration_source': 'unified_experimental_mh_versions'
+            })
+        
+        # Save for validation workflow
+        validation_df = pd.DataFrame(validation_data)
+        validation_path = ROOT / 'validation' / 'unified_drug_classification.csv'
+        validation_path.parent.mkdir(exist_ok=True)
+        validation_df.to_csv(validation_path, index=False)
+        log.info(f"Unified drug validation exported: {len(validation_data)} codes to {validation_path}")
+        
+        return len(validation_data)
+        
+    except Exception as e:
+        log.warning(f"Validation export failed: {e}")
+        return 0
+all_atc_codes.extend(felipe_enhanced_codes)
+
+# Export unified validation data (combines experimental/MH enhancements with clinical evidence)
+validation_count = export_unified_validation()
+
+# Also load from drug_atc.csv if available
+drug_atc_path = ROOT / 'code_lists' / 'drug_atc.csv'
+if drug_atc_path.exists():
+    log.info(f"Loading drug ATC codes from {drug_atc_path}")
+    drug_atc_df = pd.read_csv(drug_atc_path)
+    # Add any codes from CSV that aren't in config
+    csv_codes = drug_atc_df['atc_code'].unique().tolist()
+    all_atc_codes.extend([code for code in csv_codes if code not in all_atc_codes])
+
+# Remove duplicates and log unified enhancements
+all_atc_codes = list(set(all_atc_codes))
+n06a_count = len([c for c in all_atc_codes if c.startswith('N06A')])
+n03a_count = len([c for c in all_atc_codes if c.startswith('N03A')])
+n05a_count = len([c for c in all_atc_codes if c.startswith('N05A')])
+
+log.info(f"UNIFIED Enhanced ATC codes: {len(all_atc_codes)} total codes")
+log.info(f"  - N06A Antidepressants: {n06a_count} codes (STRONG evidence)")
+log.info(f"  - N03A Anticonvulsants: {n03a_count} codes (LIMITED evidence - research value)")
+log.info(f"  - N05A Antipsychotics: {n05a_count} codes (LIMITED evidence - augmentation)")
+log.info(f"  - Clinical validation: {validation_count} codes validated 2025-06-22")
+log.info(f"  - Source: Unified experimental + MH versions with clinical evidence")
+
+# Drug name patterns from config
+drug_name_patterns = get_config("exposure.drug_name_patterns", [])
+drug_name_regex = "|".join(drug_name_patterns) if drug_name_patterns else None
+
+# Filter medications
+atc_conditions = [med.Code_calc.str.startswith(code, na=False) for code in all_atc_codes]
+ATC_KEEP = pd.concat(atc_conditions, axis=1).any(axis=1)
+
+if drug_name_regex:
+    ATC_KEEP = ATC_KEEP | med.Name_calc.str.contains(drug_name_regex, case=False, na=False)
+
+med = med[ATC_KEEP].copy()
+med["StartDate"] = pd.to_datetime(med.StartDate, errors="coerce")
+med["StopDate"]  = pd.to_datetime(med.StopDate,  errors="coerce")
+
+# Replace missing StopDate with StartDate+30 d (one refill)
+med["StopDate"] = med.StopDate.fillna(med.StartDate + pd.Timedelta(days=30))
+
+med = med.merge(cohort[["Patient_ID", "exp_start", "exp_end"]],
+                on="Patient_ID")
+
+# Clip to exposure window
+med["clip_start"] = med[["StartDate", "exp_start"]].max(axis=1)
+med["clip_stop"]  = med[["StopDate",  "exp_end"]].min(axis=1)
+med["days"] = (med.clip_stop - med.clip_start).dt.days.clip(lower=0)
+
+drug_days = (med.groupby("Patient_ID")["days"].sum()
+             .rename("drug_days_in_window"))
+crit3 = drug_days >= MIN_DRUG_DAYS
+log.info(f"Patients with ≥{MIN_DRUG_DAYS} d qualifying Rx: {crit3.sum():,}")
+
+# ------------------------------------------------------------------ #
+#  6  Put it together
+# ------------------------------------------------------------------ #
+exposure = cohort[["Patient_ID"]].copy()
+exposure = (exposure
+            .merge(norm_count,              left_on="Patient_ID", right_index=True, how="left")
+            .merge(ref_count,               left_on="Patient_ID", right_index=True, how="left")
+            .merge(drug_days,               left_on="Patient_ID", right_index=True, how="left")
+            .fillna(0))
+
+exposure["crit1_normal_labs"]   = exposure.normal_lab_count   >= MIN_NORMAL_LABS
+exposure["crit2_sympt_ref"]     = exposure.symptom_referral_n >= MIN_SYMPTOM_REFERRALS
+exposure["crit3_drug_90d"]      = exposure.drug_days_in_window >= MIN_DRUG_DAYS
+
+# Create separate exposure flags for each hypothesis
+exposure["H1_normal_labs"] = exposure.crit1_normal_labs
+exposure["H2_referral_loop"] = exposure.crit2_sympt_ref  
+exposure["H3_drug_persistence"] = exposure.crit3_drug_90d
+
+# Combined exposure flag - OR logic (any pattern qualifies)
+# Decision recorded in IMPLEMENTATION_STATUS_FINAL.md
+exposure["exposure_flag"] = (
+    exposure.crit1_normal_labs |
+    exposure.crit2_sympt_ref   |
+    exposure.crit3_drug_90d
+)
+
+# Also create AND version for comparison
+exposure["exposure_flag_strict"] = (
+    exposure.crit1_normal_labs &
+    exposure.crit2_sympt_ref   &
+    exposure.crit3_drug_90d
+)
+
+log.info(f"Individual criteria summary:")
+log.info(f"  H1 (≥{MIN_NORMAL_LABS} normal labs): {exposure.H1_normal_labs.sum():,} patients ({exposure.H1_normal_labs.mean():.1%})")
+log.info(f"  H2 (≥{MIN_SYMPTOM_REFERRALS} symptom referrals): {exposure.H2_referral_loop.sum():,} patients ({exposure.H2_referral_loop.mean():.1%})")
+log.info(f"  H3 (≥{MIN_DRUG_DAYS} drug days): {exposure.H3_drug_persistence.sum():,} patients ({exposure.H3_drug_persistence.mean():.1%})")
+
+log.info(f"Combined exposure (OR logic): {exposure.exposure_flag.sum():,}"
+         f" / {len(exposure):,} ({exposure.exposure_flag.mean():.1%})")
+log.info(f"Strict exposure (AND logic): {exposure.exposure_flag_strict.sum():,}"
+         f" / {len(exposure):,} ({exposure.exposure_flag_strict.mean():.1%})")
+
+# ------------------------------------------------------------------ #
+#  6.5  Export Enhanced Drug Classifications (Consolidated Features)
+# ------------------------------------------------------------------ #
+try:
+    enhanced_export_df = create_enhanced_drug_atc_export()
+    log.info(f"Enhanced drug ATC export completed: {len(enhanced_export_df)} codes consolidated")
+except Exception as e:
+    log.warning(f"Enhanced drug export failed: {e}")
+
+# ------------------------------------------------------------------ #
+#  7  Save
+# ------------------------------------------------------------------ #
+cols_keep = ["Patient_ID",
+             "exposure_flag",
+             "exposure_flag_strict", 
+             "H1_normal_labs",
+             "H2_referral_loop",
+             "H3_drug_persistence",
+             "normal_lab_count",
+             "symptom_referral_n",
+             "drug_days_in_window"]
+
+if ARGS.logic in {"or", "both"}:
+    out_or = DERIVED / "exposure_or.parquet"
+    exposure_to_save = exposure.copy()
+    exposure_to_save["exposure_flag"] = exposure_to_save["exposure_flag"]  # ensure correct column
+    exposure_to_save.to_parquet(out_or, index=False, compression="snappy")
+    log.info(f"Wrote {out_or}")
+    # Maintain backward-compat alias if OR is primary
+    if ARGS.logic == "or":
+        exposure_to_save.to_parquet(OUT_PATH, index=False, compression="snappy")
+
+if ARGS.logic in {"and", "both"}:
+    out_and = DERIVED / "exposure_and.parquet"
+    exposure_and = exposure.copy()
+    exposure_and["exposure_flag"] = exposure_and["exposure_flag_strict"]
+    exposure_and.to_parquet(out_and, index=False, compression="snappy")
+    log.info(f"Wrote {out_and}")
+
+    if ARGS.logic == "and":
+        exposure_and.to_parquet(OUT_PATH, index=False, compression="snappy")
+
+# ------------------------------------------------------------------ #
+#  8  Update study documentation
+# ------------------------------------------------------------------ #
+import subprocess
+try:
+    result = subprocess.run([
+        sys.executable, 
+        str(ROOT / "scripts" / "update_study_doc.py"),
+        "--step", "Exposure flag generated",
+        "--kv", f"artefact=exposure.parquet",
+        "--kv", f"n_exposed={exposure.exposure_flag.sum()}",
+        "--kv", f"pct_exposed={exposure.exposure_flag.mean():.2%}",
+        "--kv", "hypotheses=H1,H2,H3,H4,H5,H6",
+        "--kv", f"script=02_exposure_flag.py"
+    ], capture_output=True, text=True)
+    if result.returncode == 0:
+        log.info("Study documentation updated successfully")
+    else:
+        log.warning(f"Study doc update failed: {result.stderr}")
+except Exception as e:
+    log.warning(f"Could not update study doc: {e}")

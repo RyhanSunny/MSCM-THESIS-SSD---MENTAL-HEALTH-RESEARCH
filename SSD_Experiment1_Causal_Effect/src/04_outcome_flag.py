@@ -124,8 +124,16 @@ referral = referral[referral.Patient_ID.isin(patient_ids)]
 medication = medication[medication.Patient_ID.isin(patient_ids)]
 
 # For each patient, outcome window is relative to their index date
-cohort["outcome_start"] = cohort.IndexDate_lab + pd.Timedelta(days=365*1.5)  # 18 months after index
-cohort["outcome_end"] = cohort.IndexDate_lab + pd.Timedelta(days=365*3)  # 3 years after index
+# Use unified index date from hierarchical implementation (addresses 28.3% missing lab dates)
+if "IndexDate_unified" in cohort.columns:
+    cohort["outcome_start"] = cohort.IndexDate_unified + pd.Timedelta(days=365*1.5)  # 18 months after index
+    cohort["outcome_end"] = cohort.IndexDate_unified + pd.Timedelta(days=365*3)  # 3 years after index
+    log.info("Using IndexDate_unified for outcome window (hierarchical implementation)")
+else:
+    # Fallback to lab index for backward compatibility
+    cohort["outcome_start"] = cohort.IndexDate_lab + pd.Timedelta(days=365*1.5)  # 18 months after index
+    cohort["outcome_end"] = cohort.IndexDate_lab + pd.Timedelta(days=365*3)  # 3 years after index
+    log.warning("IndexDate_unified not found, falling back to IndexDate_lab")
 
 # Ensure outcome window doesn't exceed study period
 cohort["outcome_start"] = cohort["outcome_start"].clip(upper=OUTCOME_END)

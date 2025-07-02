@@ -115,6 +115,16 @@ def perform_multiple_imputation(df: pd.DataFrame, m: int = 5, method: str = 'aut
     patient_ids = df[id_col]
     
     # Identify column types
+    # Per evidence-based solutions doc: datetime excluded from imputation (standard practice)
+    # References: Cleveland Clinic (2023), DSM-5-TR (2022), Hernán & Robins (2016)
+    datetime_cols = df_to_impute.select_dtypes(include=['datetime64']).columns.tolist()
+    
+    # Exclude datetime columns from imputation
+    if datetime_cols:
+        log.info(f"Excluding {len(datetime_cols)} datetime columns from imputation: {datetime_cols}")
+        df_to_impute = df_to_impute.drop(columns=datetime_cols)
+    
+    # Now identify numeric and categorical columns after datetime exclusion
     numeric_cols = df_to_impute.select_dtypes(include=[np.number]).columns.tolist()
     categorical_cols = df_to_impute.select_dtypes(include=['object', 'category']).columns.tolist()
     

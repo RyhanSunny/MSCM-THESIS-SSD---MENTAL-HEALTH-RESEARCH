@@ -71,9 +71,28 @@ def merge_bias_corrected_flag(
     if 'Patient_ID' not in master_df.columns or 'Patient_ID' not in corrected_df.columns:
         raise KeyError("Patient_ID column required in both files for alignment")
     
+    # Check for duplicates in both dataframes
+    master_duplicates = master_df['Patient_ID'].duplicated().any()
+    corrected_duplicates = corrected_df['Patient_ID'].duplicated().any()
+    
+    if master_duplicates or corrected_duplicates:
+        logger.warning("Duplicate Patient_IDs detected - handling duplicates")
+        
+        # For master: keep first occurrence of each Patient_ID
+        if master_duplicates:
+            dup_count = master_df['Patient_ID'].duplicated().sum()
+            logger.info(f"Master file has {dup_count} duplicate rows - keeping first occurrence of each Patient_ID")
+            master_df = master_df.drop_duplicates(subset=['Patient_ID'], keep='first')
+        
+        # For corrected: keep first occurrence of each Patient_ID
+        if corrected_duplicates:
+            dup_count = corrected_df['Patient_ID'].duplicated().sum()
+            logger.info(f"Corrected file has {dup_count} duplicate rows - keeping first occurrence of each Patient_ID")
+            corrected_df = corrected_df.drop_duplicates(subset=['Patient_ID'], keep='first')
+    
     # Validate patient ID alignment
-    master_ids = set(master_df['patient_id'])
-    corrected_ids = set(corrected_df['patient_id'])
+    master_ids = set(master_df['Patient_ID'])
+    corrected_ids = set(corrected_df['Patient_ID'])
     
     if master_ids != corrected_ids:
         missing_in_corrected = master_ids - corrected_ids
@@ -89,23 +108,27 @@ def merge_bias_corrected_flag(
     if backup:
         backup_path = master_path.with_suffix('.parquet.backup')
         logger.info(f"Creating backup at {backup_path}")
-        master_df.to_parquet(backup_path, index=False)
+        # Backup the original file with duplicates
+        pd.read_parquet(master_path).to_parquet(backup_path, index=False)
     
     # Merge ssd_flag_adj column
     logger.info("Merging ssd_flag_adj column...")
     
     # Sort both dataframes by Patient_ID for reliable merge
-    master_df = master_df.sort_values('patient_id').reset_index(drop=True)
-    corrected_df = corrected_df.sort_values('patient_id').reset_index(drop=True)
+    master_df = master_df.sort_values('Patient_ID').reset_index(drop=True)
+    corrected_df = corrected_df.sort_values('Patient_ID').reset_index(drop=True)
     
     # Extract just the ssd_flag_adj column with Patient_ID for merge
-    adj_flags = corrected_df[['patient_id', 'ssd_flag_adj']].copy()
+    adj_flags = corrected_df[['Patient_ID', 'ssd_flag_adj']].copy()
     
     # Merge on patient_id
     merged_df = master_df.merge(adj_flags, on='Patient_ID', how='left', validate='one_to_one')
     
     # Validate merge results
-    assert len(merged_df) == initial_rows, f"Row count changed: {initial_rows} -> {len(merged_df)}"
+    if master_duplicates:
+        logger.info(f"Row count after deduplication: {initial_rows} -> {len(merged_df)}")
+    else:
+        assert len(merged_df) == initial_rows, f"Row count changed: {initial_rows} -> {len(merged_df)}"
     assert merged_df['ssd_flag_adj'].isna().sum() == 0, "Some ssd_flag_adj values are missing after merge"
     
     # Log summary statistics

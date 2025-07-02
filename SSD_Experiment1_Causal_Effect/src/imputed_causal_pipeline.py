@@ -76,14 +76,9 @@ def load_imputation_metadata(metadata_path: Path) -> Dict[str, Any]:
         if field not in metadata:
             raise ValueError(f"Missing required field in metadata: {field}")
     
-    # Convert Windows paths to Unix paths for WSL compatibility
-    if 'imputation_files' in metadata:
-        unix_paths = []
-        for path in metadata['imputation_files']:
-            # Convert Windows path to Unix path for WSL
-            unix_path = path.replace('C:\\', '/mnt/c/').replace('\\', '/')
-            unix_paths.append(unix_path)
-        metadata['imputation_files'] = unix_paths
+    # Keep paths as-is since we're running from Windows
+    # The metadata already has Windows paths which is what we need
+    # No conversion needed
     
     logger.info(f"Loaded metadata for {metadata['n_imputations']} imputations")
     return metadata
@@ -132,7 +127,7 @@ def run_causal_estimation_single_imputation(imputation_file: str,
         "src/06_causal_estimators.py",
         "--treatment-col", treatment_col,
         "--input-file", imputation_file,
-        "--output-file", str(results_dir / f"causal_estimates_imp{imputation_number}.json")
+        "--output-file", str(results_dir / f"causal_results_imp{imputation_number}.json")
     ]
     
     if cluster_col:
@@ -158,7 +153,7 @@ def run_causal_estimation_single_imputation(imputation_file: str,
             logger.warning(f"STDERR: {result.stderr}")
         
         # Load and return results
-        output_file = results_dir / f"causal_estimates_imp{imputation_number}.json"
+        output_file = results_dir / f"causal_results_imp{imputation_number}.json"
         if output_file.exists():
             with open(output_file, 'r') as f:
                 return json.load(f)
@@ -232,14 +227,14 @@ def main():
         description="Run causal estimation on multiple imputed datasets",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument('--treatment-col', default='ssd_flag',
+    parser.add_argument('--treatment-col', default='exposure_flag',
                        help='Treatment column name')
-    parser.add_argument('--cluster-col', default='site_id',
+    parser.add_argument('--cluster-col', default=None,
                        help='Cluster column for robust standard errors')
     parser.add_argument('--metadata-file', 
-                       default='data_derived/imputed/imputation_metadata.json',
+                       default='data_derived/imputed_master/imputation_metadata.json',
                        help='Path to imputation metadata')
-    parser.add_argument('--results-dir', default='results',
+    parser.add_argument('--results-dir', default='results/imputed_causal_results',
                        help='Results output directory')
     parser.add_argument('--max-imputations', type=int, default=None,
                        help='Maximum number of imputations to process (for testing)')
@@ -289,7 +284,7 @@ def main():
                     results_dir=Path(args.results_dir)
                 )
                 
-                output_file = f"causal_estimates_imp{i}.json"
+                output_file = f"causal_results_imp{i}.json"
                 results_summary['results_files'].append(output_file)
                 results_summary['successful_estimations'] += 1
                 

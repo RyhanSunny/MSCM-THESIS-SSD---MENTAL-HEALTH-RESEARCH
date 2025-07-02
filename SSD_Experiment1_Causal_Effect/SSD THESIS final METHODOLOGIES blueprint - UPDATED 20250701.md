@@ -64,14 +64,14 @@ Reference: Rosendal et al. (2017) validates repeated referrals as diagnostic unc
 
 | Step/Module                        | Status        | Last Updated | Notes/Link to Code/Results         |
 |------------------------------------|--------------|--------------|---------------------------------------|
-| 01_cohort_builder.py               | ✅ Executed   | 2025-05-25   | 256,746 patients from 352,161 (72.9% retention) |
-| 02_exposure_flag.py                | ✅ Executed   | 2025-05-25   | OR logic (143,579) vs AND spec (199) - OR confirmed as primary |
+| 01_cohort_builder.py               | ✅ Updated    | 2025-07-01   | Added hierarchical index dates for 28.3% missing labs |
+| 02_exposure_flag.py                | ✅ Updated    | 2025-07-01   | H2 three-tier implementation + IndexDate_unified usage |
 | 03_mediator_autoencoder.py         | ✅ Executed   | 2025-05-25   | AUROC 0.588, 24 features |
 | 04_outcome_flag.py                 | ✅ Executed   | 2025-05-25   | Healthcare utilization for all patients |
 | 05_confounder_flag.py              | ✅ Executed   | 2025-05-25   | Comprehensive confounders extracted |
 | 06_lab_flag.py                     | ✅ Executed   | 2025-05-25   | Lab sensitivity flags created |
 | **pre_imputation_master.py**       | ✅ Created    | 2025-06-30   | **NEW**: Merges all features BEFORE imputation (73 columns) |
-| **07b_missing_data_master.py**     | ✅ Created    | 2025-06-30   | **NEW**: Imputes full master table with m=30 |
+| **07b_missing_data_master.py**     | ✅ Updated    | 2025-07-01   | Fixed datetime exclusion from imputation |
 | 07_referral_sequence.py            | ✅ Executed   | 2025-06-15   | Referral patterns analyzed |
 | 07a_misclassification_adjust.py    | ✅ Ready      | 2025-06-30   | MC-SIMEX implementation ready |
 | 08_patient_master_table.py         | ✅ Updated    | 2025-06-30   | **UPDATED**: Now uses imputed master data |
@@ -90,6 +90,26 @@ Reference: Rosendal et al. (2017) validates repeated referrals as diagnostic unc
 | **strobe_checklist_generator.py**  | ✅ Created    | 2025-07-01   | **NEW**: STROBE reporting checklist |
 | **positivity_diagnostics.py**      | ✅ Created    | 2025-07-01   | **NEW**: PS overlap and weight diagnostics |
 | **causal_table_enhancer.py**       | ✅ Created    | 2025-07-01   | **NEW**: Adds causal language to tables |
+| **cluster_robust_se.py**           | ✅ Created    | 2025-06-30   | **ADVANCED**: Cameron & Miller (2015) cluster-robust SE |
+| **finegray_competing.py**          | ✅ Created    | 2025-06-30   | **ADVANCED**: Fine-Gray competing risk analysis |
+| **transport_weights.py**           | ✅ Created    | 2025-06-30   | **ADVANCED**: External validity weights |
+
+## **Key Improvements Implemented (July 1, 2025)**
+
+### ✅ **Missing Lab Index Date Solution**
+- **Problem**: 28.3% of patients have no lab records, causing missing IndexDate_lab
+- **Solution**: Hierarchical index dates in `01_cohort_builder.py` (lab → MH encounter → psychotropic)
+- **Impact**: All patients now have valid index dates; enables phenotype analysis
+
+### ✅ **H2 Hypothesis Alignment**
+- **Problem**: Current H2 tracks symptom referrals, not true "unresolved" status
+- **Solution**: Three-tier implementation in `02_exposure_flag.py` (basic, NYD+referrals, full proxy)
+- **Impact**: Better alignment with Dr. Karim's causal chain
+
+### ✅ **Datetime Imputation Fix**
+- **Problem**: Datetime columns causing imputation errors
+- **Solution**: Exclude datetime columns in `07b_missing_data_master.py`
+- **Impact**: Pipeline completes successfully
 
 ## **Key Improvements Implemented (June 30, 2025)**
 
@@ -242,7 +262,7 @@ make all
 3. **Estimation**: 
    - Primary: TMLE (doubly robust)
    - Secondary: DML, Causal Forest
-   - Sensitivity: BART, X-learner
+   - ❌ Not Implemented: BART, X-learner (mentioned but not coded)
 
 ### **Multiple Imputation with Rubin's Rules**
 1. **Imputation Model**: MICE with m=30 imputations
@@ -255,6 +275,12 @@ make all
 2. **Trimming Rule**: Crump et al. weights > 10
 3. **Balance Checks**: SMD < 0.1 for all covariates
 4. **Overlap Assessment**: Common support visualization
+
+### **Advanced Statistical Methods** (Not in original blueprint but implemented)
+1. **Cluster-Robust Standard Errors**: Cameron & Miller (2015) methods for within-practice correlation
+2. **Competing Risk Analysis**: Fine-Gray model for mortality as competing event
+3. **Transport Weights**: External validity assessment with ICES marginals
+4. **Sequential Pathway Analysis**: Temporal sequence validation for referral patterns
 
 ### **Sensitivity Analyses**
 1. **E-values**: For unmeasured confounding
@@ -300,15 +326,24 @@ make all
 
 ## **Known Limitations and Future Work**
 
-1. **H2 Hypothesis Misalignment**: Cannot directly measure "unresolved" referrals due to missing Status/Resolution fields in CPCSSN referral table. Using repeated referrals as proxy (Rosendal et al., 2017).
-2. **MC-SIMEX + MI Variance**: Currently uses single imputation variance. Future: two-level variance approach
-3. **MH-specific Outcomes**: Current implementation tracks all encounters. Future: filter by provider type  
-4. **Causal Forest Memory**: Limited to 10k subsample on 6GB GPU. Future: distributed implementation
-5. **Long COVID**: Zero cases in pre-pandemic data. Future: 2020+ data analysis
+1. **H2 Hypothesis Misalignment**: Cannot directly measure "unresolved" referrals due to missing Status/Resolution fields in CPCSSN referral table. Using repeated referrals as proxy (Rosendal et al., 2017). Enhanced three-tier implementation available in `02_exposure_flag_enhanced.py`.
+2. **BART and X-learner**: Mentioned in methods but not implemented. Current causal methods include TMLE, DML, and Causal Forest only.
+3. **MC-SIMEX + MI Variance**: Currently uses single imputation variance. Future: two-level variance approach
+4. **MH-specific Outcomes**: Current implementation tracks all encounters. Future: filter by provider type  
+5. **Causal Forest**: Currently runs on full dataset using CPU (all cores). Future: GPU acceleration for faster computation
+6. **Long COVID**: Zero cases in pre-pandemic data. Future: 2020+ data analysis
+7. **Missing Lab Index Dates**: 28.3% patients have no lab records. Addressed via hierarchical index dates (see `docs/FINAL_TODO_LIST_IndexDate_Implementation.md`)
 
 ---
 
+**Key References for Advanced Methods**:
+- Cameron, C. A., & Miller, D. L. (2015). A practitioner's guide to cluster-robust inference. Journal of Human Resources, 50(2), 317-372.
+- Fine, J. P., & Gray, R. J. (1999). A proportional hazards model for the subdistribution of a competing risk. Journal of the American Statistical Association, 94(446), 496-509.
+- Dahabreh, I. J., Robertson, S. E., Steingrimsson, J. A., Stuart, E. A., & Hernán, M. A. (2020). Extending inferences from a randomized trial to a new target population. Statistics in Medicine, 39(14), 1999-2014.
+
 **Author**: Ryhan Suny  
 **Last Updated**: July 1, 2025  
-**Version**: 2.1 (Publication Enhancements Added)  
-**Change Log**: Added 6 new scripts to address all reviewer gaps for publication readiness
+**Version**: 2.2 (Updated with actual implementations)  
+**Change Log**: 
+- v2.1: Added 6 new scripts to address all reviewer gaps for publication readiness
+- v2.2: Corrected to reflect actual implementations (removed BART/X-learner, added cluster-robust SE, competing risks, transport weights)

@@ -1,0 +1,31 @@
+{
+  "n_total": 250025,
+  "n_treated": 186,
+  "n_control": 249839,
+  "ps_model_auc": 0.8397478621393468,
+  "ess": 250024.82812619617,
+  "max_smd_before": 0.6999507581621912,
+  "max_smd_after": 0.6995693663276156,
+  "n_matched_pairs": 185,
+  "weight_diagnostics": {
+    "n_observations": 250025,
+    "ess": 250024.82812619617,
+    "ess_ratio": 0.9999993125735274,
+    "min_ess_ratio_threshold": 0.5,
+    "ess_check_passed": true,
+    "weight_check_passed": true,
+    "validation_passed": true,
+    "timestamp": "2025-07-01T16:30:57.570772",
+    "median_weight": 0.9998056292533875,
+    "max_weight": 1.003420114517212,
+    "min_weight": 0.9993147253990173,
+    "max_weight_ratio": 1.003615140914917,
+    "min_weight_ratio": 0.9995089769363403,
+    "n_extreme_high": 0,
+    "n_extreme_low": 0,
+    "n_extreme_weights": 0,
+    "has_extreme_weights": false,
+    "extreme_weight_pct": 0.0
+  },
+  "timestamp": "2025-07-01T16:31:01.200757"
+}

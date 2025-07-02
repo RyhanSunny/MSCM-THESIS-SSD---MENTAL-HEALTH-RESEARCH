@@ -1,0 +1,20 @@
+{
+  "outcome": "total_encounters",
+  "estimates": [
+    {
+      "method": "Double ML",
+      "estimate": 7.693230483704033,
+      "ci_lower": 5.142481598625477,
+      "ci_upper": 10.243979368782593,
+      "n": 250066
+    },
+    {
+      "method": "Causal Forest",
+      "estimate": 7.669407732399674,
+      "ci_lower": 5.2977135378217906,
+      "ci_upper": 10.041101926977568,
+      "n": 250066
+    }
+  ],
+  "timestamp": "2025-07-01T17:48:38.476004"
+}

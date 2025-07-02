@@ -1,0 +1,53 @@
+{
+  "n_imputations": 5,
+  "method": "sklearn",
+  "numeric_cols_imputed": [
+    "BirthYear",
+    "Age_at_2015",
+    "SpanMonths",
+    "Charlson",
+    "LongCOVID_flag",
+    "NYD_count",
+    "NYD_yn",
+    "NYD_general_yn",
+    "NYD_mental_yn",
+    "NYD_neuro_yn",
+    "NYD_cardio_yn",
+    "NYD_resp_yn",
+    "NYD_gi_yn",
+    "NYD_musculo_yn",
+    "NYD_derm_yn",
+    "NYD_gu_yn"
+  ],
+  "categorical_cols_imputed": [
+    "Sex"
+  ],
+  "original_missing_pct": {
+    "Patient_ID": 0.0,
+    "Sex": 0.0007999200079992,
+    "BirthYear": 0.0,
+    "Age_at_2015": 0.0,
+    "SpanMonths": 0.0,
+    "IndexDate_lab": 28.299170082991697,
+    "Charlson": 0.0,
+    "LongCOVID_flag": 0.0,
+    "NYD_count": 0.0,
+    "NYD_yn": 0.0,
+    "NYD_general_yn": 0.0,
+    "NYD_mental_yn": 0.0,
+    "NYD_neuro_yn": 0.0,
+    "NYD_cardio_yn": 0.0,
+    "NYD_resp_yn": 0.0,
+    "NYD_gi_yn": 0.0,
+    "NYD_musculo_yn": 0.0,
+    "NYD_derm_yn": 0.0,
+    "NYD_gu_yn": 0.0
+  },
+  "imputation_files": [
+    "C:\\Users\\ProjectC4M\\Documents\\MSCM THESIS SSD\\MSCM-THESIS-SSD---MENTAL-HEALTH-RESEARCH\\SSD_Experiment1_Causal_Effect\\data_derived\\imputed\\cohort_imputed_1.parquet",
+    "C:\\Users\\ProjectC4M\\Documents\\MSCM THESIS SSD\\MSCM-THESIS-SSD---MENTAL-HEALTH-RESEARCH\\SSD_Experiment1_Causal_Effect\\data_derived\\imputed\\cohort_imputed_2.parquet",
+    "C:\\Users\\ProjectC4M\\Documents\\MSCM THESIS SSD\\MSCM-THESIS-SSD---MENTAL-HEALTH-RESEARCH\\SSD_Experiment1_Causal_Effect\\data_derived\\imputed\\cohort_imputed_3.parquet",
+    "C:\\Users\\ProjectC4M\\Documents\\MSCM THESIS SSD\\MSCM-THESIS-SSD---MENTAL-HEALTH-RESEARCH\\SSD_Experiment1_Causal_Effect\\data_derived\\imputed\\cohort_imputed_4.parquet",
+    "C:\\Users\\ProjectC4M\\Documents\\MSCM THESIS SSD\\MSCM-THESIS-SSD---MENTAL-HEALTH-RESEARCH\\SSD_Experiment1_Causal_Effect\\data_derived\\imputed\\cohort_imputed_5.parquet"
+  ]
+}

@@ -134,6 +134,7 @@ encounter        = load("encounter",             date_cols=["DateCreated"])
 health_condition = load("health_condition",      date_cols=None)
 lab              = load("lab",                   date_cols=["PerformedDate"])
 enc_diag         = load("encounter_diagnosis",   date_cols=None)
+medication       = load("medication",            date_cols=["StartDate", "StopDate", "PrescriptionDate"])
 
 log.info("Tables loaded.\n"
          f"  patient             {len(patient):,}\n"
@@ -179,10 +180,94 @@ elig = elig[elig["SpanMonths"].fillna(0) >= SPAN_REQ_MONTHS]
 log.info(f">={SPAN_REQ_MONTHS} mo data: excluded {pre-len(elig):,}")
 
 # --------------------------------------------------------------------------- #
-# 4  Index date = first lab within span
+# 4  Hierarchical Index Dates - Addressing 28.3% missing lab dates
 # --------------------------------------------------------------------------- #
+# References:
+# - Cleveland Clinic (2023): "May avoid doctor... or seek repeated reassurance"
+# - DSM-5-TR (2022): Persistence >6 months requires temporal anchor
+# - Hernán & Robins (2016): Target trial emulation requires clear index event
+# - van der Feltz-Cornelis et al. (2022): Different phenotypes in SSD
+
+log.info("Creating hierarchical index dates for all patients")
+
+# 1. Lab index (primary for test-seeking phenotype)
 idx_lab = lab.groupby("Patient_ID")["PerformedDate"].min().rename("IndexDate_lab")
 elig = elig.merge(idx_lab, left_on="Patient_ID", right_index=True, how="left")
+
+# 2. First mental health encounter as alternative index
+mh_encounters = encounter[
+    encounter['Encounter_ID'].isin(
+        enc_diag[enc_diag.DiagnosisCode_calc.str.match(r'^(29[0-9]|3[0-3][0-9])', na=False)]['Encounter_ID']
+    )
+]
+idx_mh = mh_encounters.groupby('Patient_ID')['DateCreated'].min().rename('IndexDate_mh') 
+elig = elig.merge(idx_mh, left_on="Patient_ID", right_index=True, how="left")
+
+# 3. First psychotropic prescription ≥180 days (DSM-5 B-criteria proxy)
+psychotropic_atc = ['N05', 'N06']  # Anxiolytics, antidepressants
+psych_meds = medication[medication.Code_calc.str.startswith(tuple(psychotropic_atc), na=False)]
+
+# Calculate duration for each prescription
+psych_meds['duration_days'] = (
+    pd.to_datetime(psych_meds['StopDate'], errors='coerce') - 
+    pd.to_datetime(psych_meds['StartDate'], errors='coerce')
+).dt.days.fillna(30)  # Default 30 days if missing
+
+# Find patients with ≥180 days total psychotropic use
+psych_duration = psych_meds.groupby('Patient_ID')['duration_days'].sum()
+long_psych = psych_duration[psych_duration >= 180].index
+
+# Get first prescription date for qualifying patients
+first_psych = psych_meds[psych_meds.Patient_ID.isin(long_psych)].groupby('Patient_ID')['StartDate'].min()
+idx_psych = first_psych.rename('IndexDate_psych')
+elig = elig.merge(idx_psych, left_on="Patient_ID", right_index=True, how="left")
+
+# 4. Create unified index date using hierarchical logic
+elig['IndexDate_unified'] = elig['IndexDate_lab'].fillna(
+    elig['IndexDate_mh'].fillna(
+        elig['IndexDate_psych']
+    )
+)
+
+# 5. Track index date source
+elig['index_date_source'] = np.select(
+    [
+        elig['IndexDate_lab'].notna(),
+        elig['IndexDate_mh'].notna(), 
+        elig['IndexDate_psych'].notna()
+    ],
+    ['Laboratory', 'Mental_Health_Encounter', 'Psychotropic_Medication'],
+    default='No_Index'
+)
+
+# 6. Create phenotype indicators (van der Feltz-Cornelis et al., 2022)
+elig['lab_utilization_phenotype'] = np.where(
+    elig['IndexDate_lab'].isna(),
+    'Avoidant_SSD',      # Expected ~28.3%
+    'Test_Seeking_SSD'   # Expected ~71.7%
+)
+
+# Log distribution
+source_counts = elig['index_date_source'].value_counts()
+phenotype_counts = elig['lab_utilization_phenotype'].value_counts()
+
+log.info(f"Index date sources:")
+for source, count in source_counts.items():
+    log.info(f"  {source}: {count:,} ({count/len(elig)*100:.1f}%)")
+
+log.info(f"\nPhenotype distribution:")
+for phenotype, count in phenotype_counts.items():
+    log.info(f"  {phenotype}: {count:,} ({count/len(elig)*100:.1f}%)")
+
+# Ensure all patients have an index date
+no_index = elig[elig['index_date_source'] == 'No_Index']
+if len(no_index) > 0:
+    log.warning(f"WARNING: {len(no_index)} patients have no index date")
+    # For these patients, use first encounter as fallback
+    first_enc = encounter.groupby('Patient_ID')['DateCreated'].min()
+    elig.loc[elig['index_date_source'] == 'No_Index', 'IndexDate_unified'] = \
+        elig.loc[elig['index_date_source'] == 'No_Index', 'Patient_ID'].map(first_enc)
+    elig.loc[elig['index_date_source'] == 'No_Index', 'index_date_source'] = 'First_Encounter_Fallback'
 
 # --------------------------------------------------------------------------- #
 # 5  Charlson Comorbidity Index
@@ -568,8 +653,9 @@ enhanced_cohort = add_nyd_enhancements(elig)
 # Update the final cohort with enhanced columns
 age_col = f"Age_at_{REF_DATE.year}"
 enhanced_cols_out = ["Patient_ID", "Sex", "BirthYear", age_col,
-                    "SpanMonths", "IndexDate_lab", "Charlson", 
-                    "LongCOVID_flag", "NYD_count",
+                    "SpanMonths", "IndexDate_lab", "IndexDate_unified", 
+                    "index_date_source", "lab_utilization_phenotype",
+                    "Charlson", "LongCOVID_flag", "NYD_count",
                     "NYD_yn", "NYD_general_yn", "NYD_mental_yn", "NYD_neuro_yn", 
                     "NYD_cardio_yn", "NYD_resp_yn", "NYD_gi_yn", "NYD_musculo_yn", 
                     "NYD_derm_yn", "NYD_gu_yn"]
