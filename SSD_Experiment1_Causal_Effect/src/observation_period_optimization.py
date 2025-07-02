@@ -92,7 +92,7 @@ def load_cohort_eligibility_data(data_path: Optional[Path] = None) -> pd.DataFra
         Annals of Family Medicine, 12(4), 367-372.
     """
     if data_path is None:
-        data_path = Path("data/processed/cohort_eligibility_with_observation.parquet")
+        data_path = Path("data_derived/cohort.parquet")
     
     logger.info(f"Loading cohort eligibility data from {data_path}")
     
@@ -100,9 +100,14 @@ def load_cohort_eligibility_data(data_path: Optional[Path] = None) -> pd.DataFra
         cohort_data = pd.read_parquet(data_path)
         logger.info(f"Loaded {len(cohort_data):,} patients")
         
+        # Map existing columns to expected format
+        if 'SpanMonths' in cohort_data.columns:
+            cohort_data['observation_months'] = cohort_data['SpanMonths']
+            cohort_data['meets_30month_criteria'] = cohort_data['SpanMonths'] >= 30
+            logger.info("Mapped SpanMonths to observation_months")
+        
         # Ensure required columns exist
-        required_cols = ['Patient_ID', 'enrollment_start', 'enrollment_end', 
-                        'observation_months', 'meets_30month_criteria']
+        required_cols = ['Patient_ID', 'observation_months']
         
         missing_cols = [col for col in required_cols if col not in cohort_data.columns]
         if missing_cols:
@@ -477,15 +482,23 @@ def generate_optimization_recommendations(distribution_analysis: Dict[str, Any],
     # Optimal threshold recommendation
     recommended_months = optimal_threshold['recommended_months']
     if recommended_months < 30:
-        potential_gain = (
-            distribution_analysis['threshold_analysis'][f'{recommended_months}_months']['retention_rate'] -
-            distribution_analysis['threshold_analysis']['30_months']['retention_rate']
-        )
-        recommendations.append(
-            f"RECOMMENDED: Reduce observation period to {recommended_months} months. "
-            f"This would increase sample size by {potential_gain:.1f}% while maintaining "
-            f"clinical validity based on {optimal_threshold['recommended_threshold']} literature."
-        )
+        # Check if the recommended threshold exists in analysis
+        rec_key = f'{recommended_months}_months'
+        if rec_key in distribution_analysis['threshold_analysis']:
+            potential_gain = (
+                distribution_analysis['threshold_analysis'][rec_key]['retention_rate'] -
+                distribution_analysis['threshold_analysis']['30_months']['retention_rate']
+            )
+            recommendations.append(
+                f"RECOMMENDED: Reduce observation period to {recommended_months} months. "
+                f"This would increase sample size by {potential_gain:.1f}% while maintaining "
+                f"clinical validity based on {optimal_threshold['recommended_threshold']} literature."
+            )
+        else:
+            recommendations.append(
+                f"RECOMMENDED: Reduce observation period to {recommended_months} months "
+                f"based on {optimal_threshold['recommended_threshold']} literature support."
+            )
     
     # Clinical justification
     if recommended_months >= 12:
@@ -497,23 +510,26 @@ def generate_optimization_recommendations(distribution_analysis: Dict[str, Any],
     
     # Statistical power considerations
     total_patients = distribution_analysis['distribution_statistics']['total_patients']
-    retained_patients = distribution_analysis['threshold_analysis'][f'{recommended_months}_months']['eligible_patients']
+    rec_key = f'{recommended_months}_months'
     
-    if retained_patients >= 200000:
-        recommendations.append(
-            f"STATISTICAL POWER: Recommended threshold retains {retained_patients:,} patients, "
-            f"providing excellent power for rare outcome detection and subgroup analyses."
-        )
-    elif retained_patients >= 100000:
-        recommendations.append(
-            f"STATISTICAL POWER: Recommended threshold retains {retained_patients:,} patients, "
-            f"providing adequate power for primary analyses with some limitations for rare outcomes."
-        )
-    else:
-        recommendations.append(
-            f"POWER CONCERN: Recommended threshold retains only {retained_patients:,} patients. "
-            f"Consider further reducing threshold or extending study period to improve power."
-        )
+    if rec_key in distribution_analysis['threshold_analysis']:
+        retained_patients = distribution_analysis['threshold_analysis'][rec_key]['eligible_patients']
+        
+        if retained_patients >= 200000:
+            recommendations.append(
+                f"STATISTICAL POWER: Recommended threshold retains {retained_patients:,} patients, "
+                f"providing excellent power for rare outcome detection and subgroup analyses."
+            )
+        elif retained_patients >= 100000:
+            recommendations.append(
+                f"STATISTICAL POWER: Recommended threshold retains {retained_patients:,} patients, "
+                f"providing adequate power for primary analyses with some limitations for rare outcomes."
+            )
+        else:
+            recommendations.append(
+                f"POWER CONCERN: Recommended threshold retains only {retained_patients:,} patients. "
+                f"Consider further reducing threshold or extending study period to improve power."
+            )
     
     # Bias assessment
     significant_differences = []
