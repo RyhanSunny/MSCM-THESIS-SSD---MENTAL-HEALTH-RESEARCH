@@ -128,9 +128,10 @@ def apply_bias_correction(cohort_df, config, treatment_col='ssd_flag'):
     logger.info("Applying MC-SIMEX bias correction to SSD flag")
     
     # Get misclassification parameters from config
-    sensitivity = config.get('misclassification', {}).get('sensitivity', 0.82)
-    specificity = config.get('misclassification', {}).get('specificity', 0.82)
-    B = config.get('misclassification', {}).get('simex_B', 100)
+    mc_simex_config = config.get('mc_simex', {})
+    sensitivity = mc_simex_config.get('sensitivity', 0.78)
+    specificity = mc_simex_config.get('specificity', 0.71)
+    B = mc_simex_config.get('bootstrap_samples', 100)
     
     # Prepare data for SIMEX
     # Use healthcare utilization as outcome

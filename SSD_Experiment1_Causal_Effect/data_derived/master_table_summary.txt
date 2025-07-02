@@ -2,7 +2,7 @@ Patient Master Table Summary
 ==================================================
 
 Total patients: 250,066
-Total columns: 78
+Total columns: 83
 
 Merge Statistics:
 
@@ -17,6 +17,7 @@ Column List:
   H2_referral_loop: bool, 0 nulls
   H3_drug_persistence: bool, 0 nulls
   IndexDate_lab: datetime64[ns], 70762 nulls
+  IndexDate_unified: datetime64[ns], 0 nulls
   LongCOVID_flag: float64, 0 nulls
   LongCOVID_flag_confounders: float64, 0 nulls
   NYD_cardio_yn: float64, 0 nulls
@@ -63,12 +64,16 @@ Column List:
   exposure_flag_strict: bool, 0 nulls
   family_cancer: float64, 0 nulls
   family_mental_health: float64, 0 nulls
+  h2_tier2_enhanced: float64, 0 nulls
+  h2_tier3_full: float64, 0 nulls
   high_education: float64, 0 nulls
   high_procedure_use: float64, 0 nulls
   high_utilization: float64, 0 nulls
   housing_unstable: float64, 0 nulls
   hypertension: float64, 0 nulls
   inappropriate_meds: float64, 0 nulls
+  index_date_source: object, 0 nulls
+  lab_utilization_phenotype: object, 0 nulls
   language_barrier: float64, 0 nulls
   low_access: float64, 0 nulls
   male: float64, 0 nulls

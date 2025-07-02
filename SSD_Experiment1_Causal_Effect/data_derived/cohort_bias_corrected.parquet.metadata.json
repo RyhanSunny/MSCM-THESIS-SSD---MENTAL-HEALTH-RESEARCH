@@ -1,13 +1,13 @@
 {
   "artefact": {
     "filename": "cohort_bias_corrected.parquet",
-    "path": "data_derived/cohort_bias_corrected.parquet",
-    "checksum": "f1202423436c0ee28ec310573eccc159",
-    "size_bytes": 7581546
+    "path": "data_derived\\cohort_bias_corrected.parquet",
+    "checksum": "50d6163b0cea6652763798f031994b84",
+    "size_bytes": 8180671
   },
   "provenance": {
     "script": "07a_misclassification_adjust.py",
-    "timestamp": "2025-07-01T14:03:02.761757",
+    "timestamp": "2025-07-02T16:49:43.496802",
     "hypotheses": [
       "H1",
       "H2",
@@ -17,8 +17,8 @@
   },
   "inputs": {},
   "metrics": {
-    "rows": 250066,
-    "se_reduction": -184.0278825109247,
-    "adjustment_factor": 2.9886523776539367
+    "rows": 250025,
+    "se_reduction": -187.21650994472714,
+    "adjustment_factor": 3.038310710353268
   }
 }

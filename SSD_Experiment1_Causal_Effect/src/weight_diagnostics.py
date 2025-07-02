@@ -263,9 +263,13 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description="Check weight diagnostics validation")
-    parser.add_argument('--input', '-i', 
+    parser.add_argument('--matched-data', '-m',
+                       help='Path to matched cohort data with weights')
+    parser.add_argument('--output', '-o',
                        default="results/weight_diagnostics.json",
-                       help='Input diagnostics file')
+                       help='Output path for diagnostics JSON')
+    parser.add_argument('--input', '-i', 
+                       help='Input diagnostics file (for validation mode)')
     parser.add_argument('--ci', action='store_true',
                        help='CI mode - return exit code')
     
@@ -274,13 +278,56 @@ def main():
     if args.ci:
         exit_code = check_weight_diagnostics_ci()
         exit(exit_code)
-    else:
+    elif args.matched_data:
+        # Compute diagnostics from matched data
         try:
-            results = load_weight_diagnostics(args.input)
+            logger.info(f"Loading matched data from {args.matched_data}")
+            df = pd.read_parquet(args.matched_data)
+            
+            # Check for weight columns
+            weight_cols = [col for col in df.columns if 'weight' in col.lower() or col == 'ps_weight']
+            if not weight_cols:
+                raise ValueError("No weight columns found in matched data")
+            
+            weight_col = weight_cols[0]
+            logger.info(f"Using weight column: {weight_col}")
+            
+            weights = df[weight_col].values
+            
+            # Calculate diagnostics
+            diagnostics = validate_weight_diagnostics(weights)
+            
+            # Add metadata
+            diagnostics['metadata'] = {
+                'source_file': str(args.matched_data),
+                'weight_column': weight_col,
+                'n_observations': len(df),
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            # Save results
+            save_weight_diagnostics(diagnostics, args.output)
+            
+            # Print summary
+            print(f"\nWeight Diagnostics Summary:")
+            print(f"  ESS: {diagnostics['ess']:.2f} ({diagnostics['ess_ratio']*100:.1f}% of n={len(weights)})")
+            print(f"  Max weight: {diagnostics['max_weight']:.4f}")
+            print(f"  Extreme weights: {diagnostics['n_extreme_weights']} ({diagnostics['extreme_weight_pct']:.1f}%)")
+            print(f"  Validation passed: {diagnostics['validation_passed']}")
+            
+        except Exception as e:
+            logger.error(f"Error computing diagnostics: {e}")
+            raise
+    else:
+        # Default validation mode
+        input_file = args.input or "results/weight_diagnostics.json"
+        try:
+            results = load_weight_diagnostics(input_file)
             print(json.dumps(results, indent=2))
         except Exception as e:
             print(f"Error: {e}")
             exit(1)
+
 
 
 if __name__ == "__main__":

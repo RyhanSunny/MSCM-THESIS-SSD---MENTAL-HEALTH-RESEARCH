@@ -1,6 +1,6 @@
 feature,shap_importance
-age,0.8793604
-baseline_encounters,0.16641541
-charlson_score,0.09402657
-baseline_high_utilizer,0.068979025
+age,0.90522933
+baseline_encounters,0.14253855
+charlson_score,0.10015195
+baseline_high_utilizer,0.04155474
 sex_M,0.0

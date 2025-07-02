@@ -393,7 +393,8 @@ def load_imputed_causal_estimates(results_dir: Union[str, Path],
 
 def pool_multiple_imputation_results(results_dir: Union[str, Path],
                                    output_file: Union[str, Path],
-                                   alpha: float = 0.05) -> Dict[str, RubinsPooledResult]:
+                                   alpha: float = 0.05,
+                                   pattern: str = "causal_estimates_imp*.json") -> Dict[str, RubinsPooledResult]:
     """
     Pool all causal estimates using Rubin's Rules.
     
@@ -416,7 +417,7 @@ def pool_multiple_imputation_results(results_dir: Union[str, Path],
         Pooled results by outcome-method combination
     """
     # Load imputed results
-    data = load_imputed_causal_estimates(results_dir)
+    data = load_imputed_causal_estimates(results_dir, pattern)
     estimates = data["estimates"]
     standard_errors = data["standard_errors"]
     
@@ -512,7 +513,7 @@ def main():
     
     try:
         pooled_results = pool_multiple_imputation_results(
-            args.results_dir, args.output_file, args.alpha
+            args.results_dir, args.output_file, args.alpha, args.pattern
         )
         
         logger.info(f"SUCCESS: Pooled {len(pooled_results)} outcome-method combinations")

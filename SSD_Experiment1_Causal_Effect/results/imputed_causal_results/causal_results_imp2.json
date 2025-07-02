@@ -1,20 +1,31 @@
 {
-  "outcome": "total_encounters",
+  "imputation": 2,
+  "n_obs": 250066,
+  "n_treated": 186,
   "estimates": [
     {
+      "method": "TMLE",
+      "estimate": 0.0,
+      "se": 0.0,
+      "ci_lower": 0.0,
+      "ci_upper": 0.0,
+      "n": 250066
+    },
+    {
       "method": "Double ML",
-      "estimate": 7.693230483704033,
-      "ci_lower": 5.142481598625477,
-      "ci_upper": 10.243979368782593,
+      "estimate": 4.380648950049996,
+      "se": 0.5731441486201236,
+      "ci_lower": 3.2572864187545534,
+      "ci_upper": 5.504011481345438,
       "n": 250066
     },
     {
       "method": "Causal Forest",
-      "estimate": 7.669407732399675,
-      "ci_lower": 5.297713537821791,
-      "ci_upper": 10.041101926977568,
+      "estimate": 6.054901958326673,
+      "se": 0.010987107716307051,
+      "ci_lower": 6.033324534111923,
+      "ci_upper": 6.074199393631663,
       "n": 250066
     }
-  ],
-  "timestamp": "2025-07-01T17:08:20.244968"
+  ]
 }

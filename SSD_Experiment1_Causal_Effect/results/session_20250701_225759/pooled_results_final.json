@@ -1,0 +1,12 @@
+{
+  "_metadata": {
+    "pooling_method": "Rubin's Rules (1987) with Barnard-Rubin adjustment",
+    "total_outcomes_pooled": 0,
+    "timestamp": "2025-07-02T17:13:24.153625",
+    "references": [
+      "Rubin DB (1987). Multiple Imputation for Nonresponse in Surveys",
+      "Barnard J, Rubin DB (1999). Small-sample degrees of freedom",
+      "Little RJA, Rubin DB (2019). Statistical Analysis with Missing Data"
+    ]
+  }
+}

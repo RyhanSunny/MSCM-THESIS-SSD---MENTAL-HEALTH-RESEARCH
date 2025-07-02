@@ -21,6 +21,8 @@
     "normal_lab_count",
     "symptom_referral_n",
     "drug_days_in_window",
+    "h2_tier2_enhanced",
+    "h2_tier3_full",
     "SSD_severity_index",
     "total_encounters",
     "ed_visits",
@@ -66,7 +68,9 @@
     "charlson_age_interaction"
   ],
   "categorical_cols_imputed": [
-    "Sex"
+    "Sex",
+    "index_date_source",
+    "lab_utilization_phenotype"
   ],
   "original_missing_pct": {
     "Patient_ID": 0.0,
@@ -75,6 +79,9 @@
     "Age_at_2015": 0.0,
     "SpanMonths": 0.0,
     "IndexDate_lab": 28.297329505010676,
+    "IndexDate_unified": 0.0,
+    "index_date_source": 0.0,
+    "lab_utilization_phenotype": 0.0,
     "Charlson": 0.0,
     "LongCOVID_flag": 0.0,
     "NYD_count": 0.0,
@@ -91,6 +98,8 @@
     "normal_lab_count": 0.0,
     "symptom_referral_n": 0.0,
     "drug_days_in_window": 0.0,
+    "h2_tier2_enhanced": 0.0,
+    "h2_tier3_full": 0.0,
     "crit1_normal_labs": 0.0,
     "crit2_sympt_ref": 0.0,
     "crit3_drug_90d": 0.0,

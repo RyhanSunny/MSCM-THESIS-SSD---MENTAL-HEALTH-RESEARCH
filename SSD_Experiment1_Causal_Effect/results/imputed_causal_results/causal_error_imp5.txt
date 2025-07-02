@@ -1,0 +1,7 @@
+Error processing imputation 5:
+Invalid format specifier '.4f if isinstance(estimate, (int, float)) else estimate' for object of type 'float'
+Traceback (most recent call last):
+  File "c:\Users\ProjectC4M\Documents\MSCM THESIS SSD\MSCM-THESIS-SSD---MENTAL-HEALTH-RESEARCH\SSD_Experiment1_Causal_Effect\src\imputed_causal_pipeline_progress.py", line 81, in run_with_progress
+    print(f"    - {method}: {estimate:.4f if isinstance(estimate, (int, float)) else estimate}")
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: Invalid format specifier '.4f if isinstance(estimate, (int, float)) else estimate' for object of type 'float'

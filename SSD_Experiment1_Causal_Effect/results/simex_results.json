@@ -1,10 +1,10 @@
 {
-  "sensitivity": 0.82,
-  "specificity": 0.82,
+  "sensitivity": 0.78,
+  "specificity": 0.71,
   "simex_B": 100,
-  "naive_coefficient": 0.7371618807134575,
-  "corrected_coefficient": 2.2031206075101224,
-  "adjustment_factor": 2.9886523776539367,
-  "se_reduction_percent": -184.0278825109247,
-  "timestamp": "2025-07-01T14:03:01.839493"
+  "naive_coefficient": 0.5015089932970467,
+  "corrected_coefficient": 1.523740145672902,
+  "adjustment_factor": 3.038310710353268,
+  "se_reduction_percent": -187.21650994472714,
+  "timestamp": "2025-07-02T16:49:42.930953"
 }

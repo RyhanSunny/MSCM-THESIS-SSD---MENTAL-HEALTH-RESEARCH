@@ -81,7 +81,8 @@
       "Bash(conda list:*)",
       "Bash(/home/roject4/miniconda3/bin/python3 -c \"import pandas, tensorflow as tf; print('✓ Pandas:', pandas.__version__); print('✓ TensorFlow:', tf.__version__); print('✓ GPU available:', len(tf.config.list_physical_devices('GPU')) > 0)\")",
       "Bash(/home/roject4/miniconda3/bin/python3:*)",
-      "Bash(jupyter nbconvert:*)"
+      "Bash(jupyter nbconvert:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   },
