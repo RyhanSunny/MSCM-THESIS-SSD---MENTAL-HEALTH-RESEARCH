@@ -207,11 +207,17 @@ elig = elig.merge(idx_mh, left_on="Patient_ID", right_index=True, how="left")
 psychotropic_atc = ['N05', 'N06']  # Anxiolytics, antidepressants
 psych_meds = medication[medication.Code_calc.str.startswith(tuple(psychotropic_atc), na=False)]
 
-# Calculate duration for each prescription
-psych_meds['duration_days'] = (
+# Calculate duration for each prescription with data-driven default
+actual_durations = (
     pd.to_datetime(psych_meds['StopDate'], errors='coerce') - 
     pd.to_datetime(psych_meds['StartDate'], errors='coerce')
-).dt.days.fillna(30)  # Default 30 days if missing
+).dt.days
+
+# Use data-driven default: median of actual durations, fallback to 30 if insufficient data
+data_driven_default = actual_durations.median() if actual_durations.count() > 100 else 30
+print(f"Using medication duration default: {data_driven_default} days (based on {actual_durations.count()} actual durations)")
+
+psych_meds['duration_days'] = actual_durations.fillna(data_driven_default)
 
 # Find patients with ≥180 days total psychotropic use
 psych_duration = psych_meds.groupby('Patient_ID')['duration_days'].sum()
