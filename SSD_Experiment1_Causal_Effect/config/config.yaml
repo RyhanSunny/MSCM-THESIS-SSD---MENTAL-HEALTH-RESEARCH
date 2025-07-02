@@ -183,24 +183,6 @@ costs:
   # - CIHI. (2021). National Physician Database, 2020-2021. Canadian Institute for Health Information.
   # - CIHI Emergency department cost data (national average $628 CAD)
   # TODO: Obtain historical OHIP fee schedules for study period 2015-2017
-# LABORATORY REFERENCE RANGES - VALIDATED (Step 30)
-laboratory:
-  reference_range_validation:
-    use_cpcssn_population_ranges: true  # Evidence-based population-specific ranges
-    # Literature: CLSI EP28-A3c (2010), Kavsak et al. (2013) - Canadian lab standards
-    # Method: 2.5th-97.5th percentile (nonparametric) for non-normal distributions
-    validation_method: "nonparametric_95"  # Robust to distribution assumptions
-    # Impact on H1 hypothesis: Moderate impact on ≥3 normal labs classification
-    # Clinical justification: CPCSSN population characteristics differ from fixed ranges
-  reference_ranges:
-    # CPCSSN-derived ranges (replace fixed institutional ranges)
-    glucose_mmol_l: [3.8, 5.7]  # Updated from [3.9, 5.5] - population-specific
-    hemoglobin_g_l: [115, 165]  # Updated from [120, 160] - Canadian population
-    creatinine_umol_l: [55, 115]  # Updated from [60, 110] - age-adjusted
-    alt_u_l: [5, 60]  # Updated from [7, 56] - population-specific
-    tsh_miu_l: [0.3, 4.5]  # Updated from [0.4, 4.0] - CPCSSN validation
-    # Evidence: Williamson et al. (2014) - CPCSSN case definition validation
-    # Clinical impact: Improved accuracy for primary care population characteristics
 analysis:
   baseline_encounter_rate: null
   # High utilization threshold - EVIDENCE-BASED CORRECTION (Step 24)
@@ -234,16 +216,5 @@ qc:
 imputation:
   n_imputations: 30  # Updated from 5 to match 28% missing (Rubin's recommendation)
   method: auto  # Will use miceforest if available, sklearn otherwise
-  # MISSING DATA MECHANISM - VALIDATED (Step 22)
-  # Evidence: Missing data mechanism testing confirms MAR assumption validity
-  # Little's MCAR test results guide imputation strategy selection
-  # Dangerous fillna patterns systematically corrected (Step 17)
-  missing_data_strategy:
-    count_variables: conditional_mean  # Instead of fillna(0) - preserves utilization patterns
-    binary_variables: logistic_regression  # Instead of fillna(0.5) - clinically meaningful
-    cost_variables: predictive_mean_matching  # Instead of fillna(0) - preserves distribution
-    continuous_variables: mice  # Comprehensive multiple imputation approach
-  # Clinical justification: Zero healthcare utilization/costs clinically implausible
-  # Statistical justification: Arbitrary constants introduce systematic bias
   save_all_imputations: true
   random_seed_base: 42
