@@ -1,8 +1,8 @@
 {
-  "creation_timestamp": "2025-07-01T03:39:41.389613",
+  "creation_timestamp": "2025-07-01T23:50:30.512072",
   "shape": [
     250066,
-    73
+    78
   ],
   "columns": [
     "Patient_ID",
@@ -11,6 +11,9 @@
     "Age_at_2015",
     "SpanMonths",
     "IndexDate_lab",
+    "IndexDate_unified",
+    "index_date_source",
+    "lab_utilization_phenotype",
     "Charlson",
     "LongCOVID_flag",
     "NYD_count",
@@ -27,6 +30,8 @@
     "normal_lab_count",
     "symptom_referral_n",
     "drug_days_in_window",
+    "h2_tier2_enhanced",
+    "h2_tier3_full",
     "crit1_normal_labs",
     "crit2_sympt_ref",
     "crit3_drug_90d",
@@ -80,7 +85,7 @@
     "charlson_age_interaction"
   ],
   "missingness_report": {
-    "total_missing_pct": 0.39,
+    "total_missing_pct": 0.36,
     "columns_with_missing": [
       "Sex",
       "IndexDate_lab"
@@ -90,7 +95,7 @@
     },
     "max_missing_pct": 28.3,
     "n_complete_rows": 179302,
-    "n_complete_columns": 71
+    "n_complete_columns": 76
   },
   "validation_report": {
     "n_unique_patients": 250025,

@@ -354,8 +354,9 @@ log.info(f"Patients with NYD codes: {(elig['NYD_count'] > 0).sum():,}")
 # --------------------------------------------------------------------------- #
 age_col = f"Age_at_{REF_DATE.year}"
 cols_out = ["Patient_ID", "Sex", "BirthYear", age_col,
-            "SpanMonths", "IndexDate_lab", "Charlson", 
-            "LongCOVID_flag", "NYD_count"]
+            "SpanMonths", "IndexDate_lab", "IndexDate_unified", 
+            "index_date_source", "lab_utilization_phenotype",
+            "Charlson", "LongCOVID_flag", "NYD_count"]
 elig = elig[cols_out]
 
 # Original cohort building complete - now applying Felipe's enhancements
@@ -566,7 +567,8 @@ def add_nyd_enhancements(cohort_df):
     """
     log.info("Adding NYD enhancements to main cohort...")
     
-    enhanced_cohort = cohort_df.copy()
+    # Deep copy to preserve datetime columns
+    enhanced_cohort = cohort_df.copy(deep=True)
     
     # Load real NYD data
     nyd_data = load_real_nyd_data()
@@ -648,7 +650,11 @@ def add_nyd_enhancements(cohort_df):
 
 # Add Felipe's NYD enhancements to the existing cohort
 log.info("=== APPLYING FELIPE'S NYD ENHANCEMENTS ===")
+log.info(f"Columns in elig before enhancement: {list(elig.columns)}")
+log.info(f"IndexDate_unified dtype: {elig['IndexDate_unified'].dtype if 'IndexDate_unified' in elig.columns else 'NOT FOUND'}")
+log.info(f"Sample IndexDate_unified values: {elig['IndexDate_unified'].head() if 'IndexDate_unified' in elig.columns else 'NOT FOUND'}")
 enhanced_cohort = add_nyd_enhancements(elig)
+log.info(f"Columns in enhanced_cohort after enhancement: {list(enhanced_cohort.columns)}")
 
 # Update the final cohort with enhanced columns
 age_col = f"Age_at_{REF_DATE.year}"
@@ -660,11 +666,16 @@ enhanced_cols_out = ["Patient_ID", "Sex", "BirthYear", age_col,
                     "NYD_cardio_yn", "NYD_resp_yn", "NYD_gi_yn", "NYD_musculo_yn", 
                     "NYD_derm_yn", "NYD_gu_yn"]
 
-# Ensure all enhanced columns exist
+# Ensure all enhanced columns exist (except datetime columns)
+datetime_cols = ['IndexDate_lab', 'IndexDate_unified']
 for col in enhanced_cols_out:
     if col not in enhanced_cohort.columns:
-        log.warning(f"Column {col} not found, setting to 0")
-        enhanced_cohort[col] = 0
+        if col in datetime_cols:
+            log.error(f"CRITICAL: DateTime column {col} not found in enhanced cohort!")
+            raise ValueError(f"Missing required datetime column: {col}")
+        else:
+            log.warning(f"Column {col} not found, setting to 0")
+            enhanced_cohort[col] = 0
 
 final_cohort = enhanced_cohort[enhanced_cols_out]
 

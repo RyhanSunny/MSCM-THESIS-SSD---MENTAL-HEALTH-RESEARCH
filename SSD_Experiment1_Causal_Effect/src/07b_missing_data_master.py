@@ -147,6 +147,12 @@ def perform_multiple_imputation(df: pd.DataFrame, m: int = 5, method: str = 'aut
             
             # Add Patient_ID back
             imputed_df[id_col] = patient_ids
+            
+            # Add datetime columns back from original dataframe
+            if datetime_cols:
+                for col in datetime_cols:
+                    imputed_df[col] = df[col]
+            
             # Reorder columns to match original
             imputed_df = imputed_df[df.columns]
             
@@ -175,6 +181,12 @@ def perform_multiple_imputation(df: pd.DataFrame, m: int = 5, method: str = 'aut
             
             # Add Patient_ID back
             df_imputed[id_col] = patient_ids
+            
+            # Add datetime columns back from original dataframe
+            if datetime_cols:
+                for col in datetime_cols:
+                    df_imputed[col] = df[col]
+            
             # Reorder columns
             df_imputed = df_imputed[df.columns]
             
@@ -198,6 +210,12 @@ def perform_multiple_imputation(df: pd.DataFrame, m: int = 5, method: str = 'aut
             
             # Add Patient_ID back
             df_imputed[id_col] = patient_ids
+            
+            # Add datetime columns back from original dataframe
+            if datetime_cols:
+                for col in datetime_cols:
+                    df_imputed[col] = df[col]
+            
             df_imputed = df_imputed[df.columns]
             
             imputed_datasets.append(df_imputed)

@@ -1,0 +1,29 @@
+{
+  "n_patients": 250025,
+  "retention_rate": 0.7099735632281826,
+  "columns": [
+    "Patient_ID",
+    "Sex",
+    "BirthYear",
+    "Age_at_2015",
+    "SpanMonths",
+    "IndexDate_lab",
+    "IndexDate_unified",
+    "index_date_source",
+    "lab_utilization_phenotype",
+    "Charlson",
+    "LongCOVID_flag",
+    "NYD_count",
+    "NYD_yn",
+    "NYD_general_yn",
+    "NYD_mental_yn",
+    "NYD_neuro_yn",
+    "NYD_cardio_yn",
+    "NYD_resp_yn",
+    "NYD_gi_yn",
+    "NYD_musculo_yn",
+    "NYD_derm_yn",
+    "NYD_gu_yn"
+  ],
+  "timestamp": "2025-07-01T22:34:54.925891"
+}
